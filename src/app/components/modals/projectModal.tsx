@@ -7,6 +7,7 @@ interface AddProjectModalProps {
   errors: FormErrors;
   formik: FormikType;
   handleCreateProject: (values: FormValues) => void;
+  isEdit?: boolean;
 }
 
 interface FormValues {
@@ -33,7 +34,7 @@ interface FormikType {
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }
 
-export default function AddProjectModal({ 
+export default function ProjectModal({ 
   isOpen, 
   onClose, 
   formik,

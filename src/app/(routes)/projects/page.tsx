@@ -15,7 +15,7 @@ import {
   getProjectsForUser,
   createProject,
 } from "@/app/api/projectsRequests";
-import AddProjectModal from "@/app/components/modals/addProjectModal";
+import AddProjectModal from "@/app/components/modals/projectModal";
 import { FormikErrors, useFormik } from "formik";
 import { createProjectSchema } from "@/app/schemas/createProjectSchema";
 import { Toast } from "@/app/components/toast";
