@@ -207,6 +207,7 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+      console.log("hello world");
     const fetchUser = async () => {
       if (isDoneFetchingUser) return;
       else {
@@ -242,6 +243,7 @@ export default function DashboardPage() {
   }, [user, setUser, isDoneFetchingUser]);
 
   useEffect(() => {
+      console.log("hello world");
     if (user) {
       const fetchProjects = async () => {
         const projects = await getProjectsForUser(user.user_id);
@@ -488,6 +490,8 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+      console.log("hello world");
+
     if (!pageLoading) {
       setTimeout(() => setShowLoader(false), 500); // Match transition duration
     }
