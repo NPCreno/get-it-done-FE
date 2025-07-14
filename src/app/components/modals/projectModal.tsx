@@ -1,13 +1,13 @@
 import React from 'react';
 import InputBox from '../inputBox';
 
-interface AddProjectModalProps {
+interface ProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
   errors: FormErrors;
   formik: FormikType;
-  handleCreateProject: (values: FormValues) => void;
-  isEdit?: boolean;
+  submitForm: () => void;
+  isEdit: boolean;
 }
 
 interface FormValues {
@@ -39,10 +39,10 @@ export default function ProjectModal({
   onClose, 
   formik,
   errors,
-  handleCreateProject,
-}: AddProjectModalProps) {
+  submitForm,
+  isEdit,
+}: ProjectModalProps) {
   if (!isOpen) return null;
-
   const dropdownOptions = [
     { name: "Lavender", color: "#E6E6FA" },  
     { name: "Mint", color: "#B5EAD7" },      
@@ -75,14 +75,14 @@ export default function ProjectModal({
       >
         <div className="flex flex-col">
             <div className="flex flex-row justify-between items-center">
-                <h1 className="text-text text-[20px] font-bold font-lato">Create New Project</h1>
+                <h1 className="text-text text-[20px] font-bold font-lato">{isEdit ? "Edit Project" : "Create New Project"}</h1>
                 <button className="cursor-pointer" onClick={onClose}>
                   <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M11.5 4.50098L4.5 11.501M11.5 11.501L4.5 4.50098L11.5 11.501Z" stroke="#666666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                 </button>
             </div>
-            <h2 className="text-[#676767] text-sm font-lato">Add a new project to organize your tasks.</h2>
+            <h2 className="text-[#676767] text-sm font-lato">{isEdit ? "Edit your project" : "Add a new project to organize your tasks."}</h2>
         </div>
 
         <InputBox 
@@ -123,7 +123,11 @@ export default function ProjectModal({
             <InputBox 
                 type="datewithtime"
                 label="Due Date" 
-                value={{ name: formik.values.due_date ? formik.values.due_date.toISOString() : "" }} 
+                value={{ 
+                  name: formik.values.due_date 
+                    ? new Date(formik.values.due_date).toISOString().substring(0, 16) 
+                    : "" 
+                }}
                 onChange={(e) => formik.setFieldValue("due_date", new Date(e.target.value))} 
                 isLabelVisible={true}
                 placeholder="Select due date (optional)"
@@ -135,9 +139,16 @@ export default function ProjectModal({
             <div className="w-full"></div>
             <div className="flex flex-row gap-[10px]">
                 <button className="border border-primary-200 rounded-[5px] flex justify-center items-center text-primary-default 
-                font-lato text-xs p-[10px]" onClick={onClose}>Cancel</button>
+                font-lato text-xs p-[10px]" 
+                onClick={onClose}>
+                  Cancel
+                </button>
+                
                 <button className="bg-primary-default rounded-[5px] flex justify-center items-center text-white font-lato 
-                text-xs p-[10px]" onClick={() => handleCreateProject(formik.values)}>Create</button>
+                text-xs p-[10px]" 
+                onClick={() => submitForm()}>
+                  {isEdit ? "Update" : "Create"}
+                </button>
             </div>
         </div>
       </div>

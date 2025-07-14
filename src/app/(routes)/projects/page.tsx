@@ -14,10 +14,11 @@ import {
 import {
   getProjectsForUser,
   createProject,
+  getProjectById,
+  updateProject,
 } from "@/app/api/projectsRequests";
-import AddProjectModal from "@/app/components/modals/projectModal";
 import { FormikErrors, useFormik } from "formik";
-import { createProjectSchema } from "@/app/schemas/createProjectSchema";
+import { projectSchema } from "@/app/schemas/projectSchema";
 import { Toast } from "@/app/components/toast";
 import ViewProjectModal from "@/app/components/modals/viewProject";
 import { IProject } from "@/app/interface/IProject";
@@ -33,13 +34,27 @@ import { IUser } from "@/app/interface/IUser";
 import LoadingPage from "@/app/components/loader";
 import { IProjectOrTaskFormValues } from "@/app/interface/forms/IProjectorTaskFormValues";
 import { IProjectFormErrors } from "@/app/interface/forms/IProjectFormErrors";
+import ProjectModal from "@/app/components/modals/projectModal";
+import { IProjectResponse } from "@/app/interface/responses/IProjectResponse";
+import { IUpdateProjectResponse } from "@/app/interface/responses/IUpdateProjectResponse";
+import { UpdateProjectDto } from "@/app/interface/dto/update-project-dto";
+
+interface ProjectModalState {
+  isOpen: boolean;
+  projectId: string | undefined;
+  isEdit: boolean;
+}
 
 export default function ProjectsPage() {
   const [user, setUser] = useState<IUser | null>(null);
   const { selectedTaskData } = useFormState();
   const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
   const [projectData, setProjectData] = useState<IProject[]>([]);
-  const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState<ProjectModalState>({
+    isOpen: false,
+    projectId: undefined,
+    isEdit: false,
+  });
   const [isViewProjectModalOpen, setIsViewProjectModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -95,14 +110,14 @@ export default function ProjectsPage() {
     values,
     setErrors,
     errors,
-    handleSubmit,
+    submitForm,
     handleChange,
     setSubmitting,
     setFieldError,
   } = useFormik({
     initialValues,
     enableReinitialize: true,
-    validationSchema: selectedProject ? createTaskSchema : createProjectSchema,
+    validationSchema: selectedProject ? createTaskSchema : projectSchema,
     validateOnChange: false, // Disable real-time validation
     validateOnBlur: false,
     onSubmit: async (values) => {
@@ -119,8 +134,10 @@ export default function ProjectsPage() {
   const handleSubmitForm = async (values: IProjectOrTaskFormValues) => {
     const validationErrors: FormikErrors<typeof values> = await validateForm();
     console.log("validationErrors: ", validationErrors);
-    if (Object.keys(validationErrors).length === 0) {
+    if (Object.keys(validationErrors).length === 0 && !isProjectModalOpen.isEdit) {
       await createProj(values);
+    } else if (Object.keys(validationErrors).length === 0 && isProjectModalOpen.isEdit) {
+      await updateProj(values);
     }
     setSubmitting(false);
   };
@@ -138,7 +155,11 @@ export default function ProjectsPage() {
       if (response.status === "success") {
         setIsLoading(false);
         setRefreshPage(!refreshPage)
-        setIsAddProjectModalOpen(false);
+        setIsProjectModalOpen({
+          isOpen: false,
+          projectId: undefined,
+          isEdit: false,
+        });
         setToastMessage({
           title: "Project Created",
           description: "Your new project has been created successfully",
@@ -181,6 +202,65 @@ export default function ProjectsPage() {
     }
   };
 
+  const updateProj = async (values: IProjectOrTaskFormValues) => {
+    try {
+      setIsLoading(true);
+      if (!user) {
+        console.error("No User data found");
+        return;
+      }
+      const response: IUpdateProjectResponse = await updateProject(
+        values as UpdateProjectDto
+      );
+      if (response.status === "success") {
+        setIsLoading(false);
+        setRefreshPage(!refreshPage)
+        setIsProjectModalOpen({
+          isOpen: false,
+          projectId: undefined,
+          isEdit: false,
+        });
+        setToastMessage({
+          title: "Project Created",
+          description: "Your new project has been created successfully",
+          className: "text-green-600",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+    } catch (error) {
+      setIsLoading(false);
+      if (error instanceof Error) {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: error.message,
+          className: "text-error-default",
+        });
+      } else {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: "An unknown error occurred",
+          className: "text-error-default",
+        });
+      }
+      setShowToast(true);
+      setIsExitingToast(false);
+      setTimeout(() => {
+        setIsExitingToast(true); // Start exit animation
+        setTimeout(() => {
+          setShowToast(false); // Remove after animation completes
+        }, 400); // Must match the toastOut animation duration
+      }, 10000); // Toast display duration
+    }
+  };
   useEffect(() => {
     const fetchUser = async () => {
       if (isDoneFetchingUser) return;
@@ -229,7 +309,7 @@ export default function ProjectsPage() {
       };
       fetchProjects();
     }
-  }, [user, isAddProjectModalOpen, isTaskModalOpen]);
+  }, [user, isProjectModalOpen, isTaskModalOpen]);
 
   const clearValueAndErrors = () => {
     setErrors({});
@@ -238,6 +318,7 @@ export default function ProjectsPage() {
     setFieldValue("due_date", null);
     setFieldValue("colorLabel", "");
     setFieldValue("color", "");
+    
   };
 
   useEffect(() => {
@@ -531,6 +612,7 @@ export default function ProjectsPage() {
       setFieldValue("priority", selectedTaskData?.priority || "");
       setFieldValue("status", selectedTaskData?.status || "");
       setFieldValue("due_date", selectedTaskData?.due_date || null);
+      setFieldValue("project_id", selectedTaskData?.project_id || "");
       setFieldValue("isRecurring", false);
     } else {
       return;
@@ -612,6 +694,30 @@ export default function ProjectsPage() {
       setTimeout(() => setShowLoader(false), 500); // Match transition duration
     }
   }, [pageLoading]);
+
+  useEffect(() => {
+    const fetchProjectById = async () => {
+      try {
+        if (!user) return;
+        if (!isProjectModalOpen.projectId) return;
+        const project: IProjectResponse = await getProjectById(isProjectModalOpen.projectId);
+        if (project?.status === "success") {
+          setFieldValue("title", project.data?.title);
+          setFieldValue("description", project.data?.description);
+          setFieldValue("due_date", project.data?.due_date);
+          setFieldValue("colorLabel", project.data?.colorLabel);
+          setFieldValue("color", project.data?.color);
+          setFieldValue("project_id", project.data?.project_id);
+          return;
+        } 
+      } catch (error) {
+        console.error('Error fetching project:', error);
+        throw error;
+      }
+      
+    };
+    fetchProjectById();
+  }, [isProjectModalOpen.projectId]);
   
   return (
     <MainLayout>
@@ -660,7 +766,11 @@ export default function ProjectsPage() {
                   before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary-200 before:to-primary-default
                   before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300 ml-3"
                   onClick={() => {
-                    setIsAddProjectModalOpen(true);
+                    setIsProjectModalOpen({
+                      isOpen: true,
+                      projectId: undefined,
+                      isEdit: false,
+                    });
                     clearValueAndErrors();
                   }}
                 >
@@ -705,6 +815,13 @@ export default function ProjectsPage() {
                           setSelectedProject(project);
                           setIsTaskModalOpen(true);
                         }}
+                        onEditClick={(e) => {
+                          setIsProjectModalOpen({
+                            isOpen: true,
+                            projectId: project.project_id,
+                            isEdit: true,
+                          });
+                        }}
                       />
                     </div>
                   );
@@ -744,7 +861,11 @@ export default function ProjectsPage() {
                   className="px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato bg-gradient-to-r from-primary-default to-yellow-400 rounded-xl 
                     hover:shadow-lg hover:shadow-primary-default/20 transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5"
                   onClick={() => {
-                    setIsAddProjectModalOpen(true);
+                    setIsProjectModalOpen({
+                      isOpen: true,
+                      projectId: undefined,
+                      isEdit: false,
+                    });
                     clearAllData();
                   }}
                 >
@@ -772,13 +893,20 @@ export default function ProjectsPage() {
         </div>
       </div>
 
-      {isAddProjectModalOpen && (
-        <AddProjectModal
+      {isProjectModalOpen.isOpen && (
+        <ProjectModal
           errors={errors}
-          isOpen={isAddProjectModalOpen}
-          onClose={() => setIsAddProjectModalOpen(false)}
+          isOpen={isProjectModalOpen.isOpen}
+          onClose={() => setIsProjectModalOpen({
+            isOpen: false,
+            projectId: undefined,
+            isEdit: false,
+          })}
           formik={{ values, errors, handleChange, setFieldValue }}
-          handleCreateProject={() => handleSubmit()}
+          submitForm={()=>{
+            submitForm()
+          }} 
+          isEdit={isProjectModalOpen.isEdit}
         />
       )}
 

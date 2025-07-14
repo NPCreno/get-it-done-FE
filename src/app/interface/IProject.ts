@@ -10,4 +10,5 @@ export interface IProject {
     completed_tasks?: number; // Keeping for backward compatibility
     updatedAt?: string;
     createdAt?: string;
+    colorLabel?: string;
   }

@@ -1,7 +1,7 @@
 import { IProject } from "../interface/IProject";
 import { useState } from "react";
 import ConfirmationModal from "./modals/confirmation";
-
+import { Pencil2Icon } from "@radix-ui/react-icons"
 // Helper functions for colors and gradients
 const getGradientClass = (color: string = 'gray') => {
   const gradientMap: Record<string, string> = {
@@ -134,23 +134,22 @@ export default function ProjectCard({
           </div>
         </div>
 
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-1">
-          <button 
+        
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex">
+        <button 
             onClick={(e) => {
               e.stopPropagation();
               onEditClick?.(e);
             }}
-            className="action-button p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors duration-200 text-white/70 hover:text-white"
-            aria-label="Edit project"
+            className="action-button bg-white/10 hover:bg-white/20 transition-colors duration-200 text-blue-400 hover:text-blue-300 z-10"
+            aria-label="Delete project"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <Pencil2Icon width="18" height="18"/>
           </button>
           
           <button 
-            onClick={handleDeleteClick}
-            className="action-button p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors duration-200 text-red-400 hover:text-red-300"
+            onClick={(e)=>handleDeleteClick(e)}
+            className="ml-1 action-button bg-white/10 hover:bg-white/20 transition-colors duration-200 text-red-400 hover:text-red-300 z-10"
             aria-label="Delete project"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -172,7 +171,7 @@ export default function ProjectCard({
             )}
           </span>
           <span className="text-xs text-gray-500">
-            {project.updatedAt ? new Date(project.updatedAt).toLocaleDateString() : ''}
+            {project.due_date ? new Date(project.due_date).toLocaleDateString() : ''}
           </span>
         </div>
       </div>
