@@ -42,7 +42,7 @@ export default function ProjectCard({
   onClick: () => void;
   onAddTaskClick: () => void;
   onEditClick?: (e: React.MouseEvent) => void;
-  onDeleteClick?: (e: React.MouseEvent, project: IProject) => void;
+  onDeleteClick?: (project: IProject) => void;
 }) {
   const projectColor = project.color?.toLowerCase() || 'gray';
   const gradientClass = getGradientClass(projectColor);
@@ -64,23 +64,7 @@ export default function ProjectCard({
   };
 
   const confirmDelete = () => {
-    // Create a synthetic mouse event with the required properties
-    const syntheticEvent = {
-      preventDefault: () => {},
-      stopPropagation: () => {},
-      currentTarget: document.createElement('div'),
-      target: document.createElement('div'),
-      type: 'click',
-      bubbles: true,
-      cancelable: true,
-      button: 0,
-      buttons: 1,
-      clientX: 0,
-      clientY: 0,
-      // Add type assertion to satisfy TypeScript
-    } as unknown as React.MouseEvent<HTMLElement>;
-    
-    onDeleteClick?.(syntheticEvent, project);
+    onDeleteClick?.(project);
     setShowDeleteConfirm(false);
   };
 

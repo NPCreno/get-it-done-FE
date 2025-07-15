@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { updateTaskStatus } from "../api/taskRequests";
 import { useFormState } from "../context/FormProvider";
@@ -16,26 +16,33 @@ export function TaskItem({
   taskUpdateStatus 
 }: TaskItemProps) {
   const { setSelectedTaskData } = useFormState();
-  const [optimisticStatus, setOptimisticStatus] = useState<string | null>(null);
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
-  const updateInProgress = useRef<boolean>(false);
-  
-  const currentStatus = optimisticStatus || task.status;
+  const [updateState, setUpdateState] = useState<{ 
+    status: string | null;
+    isUpdating: boolean;
+    controller: AbortController | null;
+  }>({ status: null, isUpdating: false, controller: null });
+
+  const currentStatus = updateState.status || task.status;
   const isComplete = currentStatus === "Complete";
-  const isCurrentlyUpdating = isUpdating || updateInProgress.current;
+  const isUpdating = updateState.isUpdating;
 
   const handleCheckToggle = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     
-    if (isCurrentlyUpdating) {
+    // Debounce rapid clicks
+    if (isUpdating) {
       console.log('Update already in progress, ignoring click');
       return;
     }
 
     try {
-      // Set updating state optimistically
-      updateInProgress.current = true;
-      setIsUpdating(true);
+      // Set updating state with controller
+      const controller = new AbortController();
+      setUpdateState({
+        status: null,
+        isUpdating: true,
+        controller
+      });
       
       const newStatus = task.status === "Complete" ? "Pending" : "Complete";
       const statusText = newStatus === "Complete" ? "completed" : "marked as pending";
@@ -48,13 +55,20 @@ export function TaskItem({
       taskUpdateStatus?.("Updating task status...", 'info');
       
       // Optimistic UI update
-      setOptimisticStatus(newStatus);
+      setUpdateState(prev => ({
+        ...prev,
+        status: newStatus
+      }));
       
       // Make API call with timeout
-      const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
       
       try {
+        // Check if update was aborted before making API call
+        if (controller.signal.aborted) {
+          throw new Error('Update was cancelled');
+        }
+
         const response = await Promise.race([
           updateTaskStatus(task.task_id, newStatus),
           new Promise((_, reject) => 
@@ -70,11 +84,22 @@ export function TaskItem({
         taskUpdateStatus?.(`Task ${statusText} successfully!`, 'success');
         
       } catch (error) {
+        // Check if error was due to abort
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.log('Update was cancelled');
+          return;
+        }
+        
         // Revert optimistic update on error
-        setOptimisticStatus(null);
+        setUpdateState(prev => ({
+          ...prev,
+          status: null
+        }));
         throw error;
       } finally {
         clearTimeout(timeoutId);
+        // Clean up controller
+        controller.abort();
       }
       
     } catch (error) {
@@ -82,18 +107,23 @@ export function TaskItem({
       const errorMessage = error instanceof Error ? error.message : 'Failed to update task status';
       taskUpdateStatus?.(errorMessage, 'error');
     } finally {
-      // Always clean up the updating state
-      updateInProgress.current = false;
-      setIsUpdating(false);
+      // Reset update state
+      setUpdateState({
+        status: null,
+        isUpdating: false,
+        controller: null
+      });
     }
-  }, [task.status, task.task_id, taskUpdateStatus, isCurrentlyUpdating]);
+  }, [task.status, task.task_id, taskUpdateStatus, isUpdating]);
 
   // Clean up on unmount
   useEffect(() => {
     return () => {
-      updateInProgress.current = false;
+      if (updateState.controller) {
+        updateState.controller.abort();
+      }
     };
-  }, []);
+  }, [updateState.controller]);
 
   return (
     <div 
@@ -114,7 +144,7 @@ export function TaskItem({
             onChange={handleCheckToggle}
             onClick={e => e.stopPropagation()}
             checked={isComplete}
-            disabled={isCurrentlyUpdating}
+            disabled={isUpdating}
             aria-label={isComplete ? 'Mark task as pending' : 'Mark task as complete'}
             className="peer appearance-none w-full h-full cursor-pointer"
           />

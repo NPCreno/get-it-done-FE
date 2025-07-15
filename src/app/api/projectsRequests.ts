@@ -26,7 +26,7 @@ export const createProject = async (payload: CreateProjectDto) => {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error creating project:', err);
     throw err;
   }
 };
@@ -51,7 +51,7 @@ export const getProjectsForUser = async (userId: string) => {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error getting projects:', err);
     throw err;
   }
 };
@@ -76,7 +76,7 @@ export const getProjectById = async (projectId: string) => {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error getting project by id:', err);
     throw err;
   }
 };
@@ -138,7 +138,7 @@ export const deleteProjectById = async (projectId: string) => {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error deleting project:', err);
     throw err;
   }
 };
