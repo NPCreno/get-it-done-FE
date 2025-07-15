@@ -113,10 +113,6 @@ export default function ChartCard({
           {renderChart()}
         </div>
       </div>
-      
-      {/* Subtle hover effects */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary-100 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div className="absolute top-0 right-0 w-20 h-20 -mr-10 -mt-10 bg-primary-100 rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
     </div>
   );
 }

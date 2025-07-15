@@ -52,7 +52,7 @@ export const loginEmail = async (email: string, password: string) => {
 
     return { data, error: null };
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error logging in using email:', err);
     throw err;
   }
 };
@@ -81,7 +81,7 @@ export const loginUsername = async (username: string, password: string) => {
 
     return { data, error: null };
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error logging in using username:', err);
     throw err;
   }
 };
@@ -106,7 +106,7 @@ export const getUser = async (userId: string) => {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error getting user:', err);
     throw err;
   }
 };
@@ -136,7 +136,7 @@ export const updateUser = async (userid: string, payload: UpdateUserDto) => {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error updating user:', err);
     throw err;
   }
 };

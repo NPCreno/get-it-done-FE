@@ -14,10 +14,12 @@ import {
 import {
   getProjectsForUser,
   createProject,
+  getProjectById,
+  updateProject,
+  deleteProjectById,
 } from "@/app/api/projectsRequests";
-import AddProjectModal from "@/app/components/modals/addProjectModal";
 import { FormikErrors, useFormik } from "formik";
-import { createProjectSchema } from "@/app/schemas/createProjectSchema";
+import { projectSchema } from "@/app/schemas/projectSchema";
 import { Toast } from "@/app/components/toast";
 import ViewProjectModal from "@/app/components/modals/viewProject";
 import { IProject } from "@/app/interface/IProject";
@@ -33,13 +35,27 @@ import { IUser } from "@/app/interface/IUser";
 import LoadingPage from "@/app/components/loader";
 import { IProjectOrTaskFormValues } from "@/app/interface/forms/IProjectorTaskFormValues";
 import { IProjectFormErrors } from "@/app/interface/forms/IProjectFormErrors";
+import ProjectModal from "@/app/components/modals/projectModal";
+import { IProjectResponse } from "@/app/interface/responses/IProjectResponse";
+import { IUpdateProjectResponse } from "@/app/interface/responses/IUpdateProjectResponse";
+import { UpdateProjectDto } from "@/app/interface/dto/update-project-dto";
+
+interface ProjectModalState {
+  isOpen: boolean;
+  projectId: string | undefined;
+  isEdit: boolean;
+}
 
 export default function ProjectsPage() {
   const [user, setUser] = useState<IUser | null>(null);
   const { selectedTaskData } = useFormState();
   const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
   const [projectData, setProjectData] = useState<IProject[]>([]);
-  const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState<ProjectModalState>({
+    isOpen: false,
+    projectId: undefined,
+    isEdit: false,
+  });
   const [isViewProjectModalOpen, setIsViewProjectModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -95,14 +111,14 @@ export default function ProjectsPage() {
     values,
     setErrors,
     errors,
-    handleSubmit,
+    submitForm,
     handleChange,
     setSubmitting,
     setFieldError,
   } = useFormik({
     initialValues,
     enableReinitialize: true,
-    validationSchema: selectedProject ? createTaskSchema : createProjectSchema,
+    validationSchema: selectedProject ? createTaskSchema : projectSchema,
     validateOnChange: false, // Disable real-time validation
     validateOnBlur: false,
     onSubmit: async (values) => {
@@ -119,8 +135,10 @@ export default function ProjectsPage() {
   const handleSubmitForm = async (values: IProjectOrTaskFormValues) => {
     const validationErrors: FormikErrors<typeof values> = await validateForm();
     console.log("validationErrors: ", validationErrors);
-    if (Object.keys(validationErrors).length === 0) {
+    if (Object.keys(validationErrors).length === 0 && !isProjectModalOpen.isEdit) {
       await createProj(values);
+    } else if (Object.keys(validationErrors).length === 0 && isProjectModalOpen.isEdit) {
+      await updateProj(values);
     }
     setSubmitting(false);
   };
@@ -138,7 +156,11 @@ export default function ProjectsPage() {
       if (response.status === "success") {
         setIsLoading(false);
         setRefreshPage(!refreshPage)
-        setIsAddProjectModalOpen(false);
+        setIsProjectModalOpen({
+          isOpen: false,
+          projectId: undefined,
+          isEdit: false,
+        });
         setToastMessage({
           title: "Project Created",
           description: "Your new project has been created successfully",
@@ -181,6 +203,65 @@ export default function ProjectsPage() {
     }
   };
 
+  const updateProj = async (values: IProjectOrTaskFormValues) => {
+    try {
+      setIsLoading(true);
+      if (!user) {
+        console.error("No User data found");
+        return;
+      }
+      const response: IUpdateProjectResponse = await updateProject(
+        values as UpdateProjectDto
+      );
+      if (response.status === "success") {
+        setIsLoading(false);
+        setRefreshPage(!refreshPage)
+        setIsProjectModalOpen({
+          isOpen: false,
+          projectId: undefined,
+          isEdit: false,
+        });
+        setToastMessage({
+          title: "Project Created",
+          description: "Your new project has been created successfully",
+          className: "text-green-600",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+    } catch (error) {
+      setIsLoading(false);
+      if (error instanceof Error) {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: error.message,
+          className: "text-error-default",
+        });
+      } else {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: "An unknown error occurred",
+          className: "text-error-default",
+        });
+      }
+      setShowToast(true);
+      setIsExitingToast(false);
+      setTimeout(() => {
+        setIsExitingToast(true); // Start exit animation
+        setTimeout(() => {
+          setShowToast(false); // Remove after animation completes
+        }, 400); // Must match the toastOut animation duration
+      }, 10000); // Toast display duration
+    }
+  };
   useEffect(() => {
     const fetchUser = async () => {
       if (isDoneFetchingUser) return;
@@ -229,7 +310,7 @@ export default function ProjectsPage() {
       };
       fetchProjects();
     }
-  }, [user, isAddProjectModalOpen, isTaskModalOpen]);
+  }, [user, isProjectModalOpen, isTaskModalOpen, refreshPage]);
 
   const clearValueAndErrors = () => {
     setErrors({});
@@ -238,6 +319,7 @@ export default function ProjectsPage() {
     setFieldValue("due_date", null);
     setFieldValue("colorLabel", "");
     setFieldValue("color", "");
+    
   };
 
   useEffect(() => {
@@ -524,6 +606,7 @@ export default function ProjectsPage() {
       }, 10000); // Toast display duration
     }
   };
+
   useEffect(() => {
     if (selectedTaskData) {
       setFieldValue("title", selectedTaskData?.title || "");
@@ -531,6 +614,7 @@ export default function ProjectsPage() {
       setFieldValue("priority", selectedTaskData?.priority || "");
       setFieldValue("status", selectedTaskData?.status || "");
       setFieldValue("due_date", selectedTaskData?.due_date || null);
+      setFieldValue("project_id", selectedTaskData?.project_id || "");
       setFieldValue("isRecurring", false);
     } else {
       return;
@@ -612,6 +696,98 @@ export default function ProjectsPage() {
       setTimeout(() => setShowLoader(false), 500); // Match transition duration
     }
   }, [pageLoading]);
+
+  useEffect(() => {
+    const fetchProjectById = async () => {
+      try {
+        if (!user) return;
+        if (!isProjectModalOpen.projectId) return;
+        const project: IProjectResponse = await getProjectById(isProjectModalOpen.projectId);
+        if (project?.status === "success") {
+          setFieldValue("title", project.data?.title);
+          setFieldValue("description", project.data?.description);
+          setFieldValue("due_date", project.data?.due_date);
+          setFieldValue("colorLabel", project.data?.colorLabel);
+          setFieldValue("color", project.data?.color);
+          setFieldValue("project_id", project.data?.project_id);
+          return;
+        } 
+      } catch (error) {
+        console.error('Error fetching project:', error);
+        throw error;
+      }
+      
+    };
+    fetchProjectById();
+  }, [isProjectModalOpen.projectId, setFieldValue, user]);
+
+  const deleteProject = async (projectId: string) => {
+    try {
+      const response: IProjectResponse = await deleteProjectById(projectId);
+      if (response.status === "success") {
+        clearValueAndErrors();
+        setUpdateTasksData(!updateTasksData);
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: "Project Deleted",
+          description:
+            response.message || "Your project has been deleted successfully",
+          className: "text-green-600",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+        setRefreshPage(!refreshPage);
+      } else {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: response.message,
+          description: response?.error || "Something Went Wrong",
+          className: "text-error-default",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: error.message,
+          className: "text-error-default",
+        });
+      } else {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: "An unknown error occurred",
+          className: "text-error-default",
+        });
+      }
+      setShowToast(true);
+      setIsExitingToast(false);
+      setTimeout(() => {
+        setIsExitingToast(true); // Start exit animation
+        setTimeout(() => {
+          setShowToast(false); // Remove after animation completes
+        }, 400); // Must match the toastOut animation duration
+      }, 10000); // Toast display duration
+    }
+  };
   
   return (
     <MainLayout>
@@ -645,7 +821,7 @@ export default function ProjectsPage() {
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-800 fade-in select-none">
                   Projects
                   </h1>
-                  <p className="font-lato text-sm text-gray-500 fade-in-delay select-none mt-1">
+                  <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none mt-1">
                   Organize your tasks into projects
                   </p>
                 </div>
@@ -654,22 +830,41 @@ export default function ProjectsPage() {
 
               <div className="flex flex-row gap-[10px] items-end">
                 <button
-                  className="px-4 py-[5px] flex flex-row gap-4 text-white font-lato bg-primary-default rounded-[10px] 
-                            hover:shadow-[0px_4px_10.9px_0px_rgba(0,_0,_0,_0.25)] transition-all duration-300 ml-3"
+                  className="relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
+                  bg-gradient-to-r from-primary-default to-primary-200 shadow-md hover:shadow-lg
+                  transform transition-all duration-300 hover:translate-y-[-1px] active:translate-y-0 active:scale-95 overflow-hidden group
+                  before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary-200 before:to-primary-default
+                  before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300 ml-3"
                   onClick={() => {
-                    setIsAddProjectModalOpen(true);
+                    setIsProjectModalOpen({
+                      isOpen: true,
+                      projectId: undefined,
+                      isEdit: false,
+                    });
                     clearValueAndErrors();
                   }}
                 >
-                  <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="0.0234375" y="0.523438" width="23.9531" height="23.9531" stroke="white" stroke-width="0.046875"/>
-                  <path d="M3 9.50147V6.12646C3 5.62918 3.19754 5.15227 3.54917 4.80064C3.90081 4.44901 4.37772 4.25146 4.875 4.25146H8.43234C8.80256 4.25147 9.16448 4.36108 9.4725 4.56646L10.7775 5.43646C11.0855 5.64185 11.4474 5.75146 11.8177 5.75146H19.125C19.6223 5.75146 20.0992 5.94901 20.4508 6.30064C20.8025 6.65227 21 7.12918 21 7.62647V9.50147" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M22.4954 11.122L21.7351 18.8774C21.7351 19.3742 21.538 19.8506 21.1871 20.2021C20.8362 20.5536 20.3601 20.7516 19.8634 20.7524H4.1368C3.64009 20.7516 3.16402 20.5536 2.8131 20.2021C2.46218 19.8506 2.26508 19.3742 2.26508 18.8774L1.50477 11.122C1.48827 10.9156 1.51468 10.708 1.58234 10.5123C1.65001 10.3166 1.75745 10.137 1.89792 9.98489C2.03838 9.83275 2.20882 9.71135 2.39851 9.62832C2.5882 9.54529 2.79302 9.50243 3.00008 9.50244H21.0048C21.2114 9.50308 21.4158 9.54641 21.6049 9.62973C21.794 9.71304 21.9639 9.83454 22.1038 9.98661C22.2438 10.1387 22.3508 10.318 22.4182 10.5134C22.4856 10.7088 22.5119 10.916 22.4954 11.122V11.122Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <line x1="12" y1="12" x2="12" y2="18" stroke="white" stroke-width="2"/>
-                  <line x1="9" y1="15" x2="15" y2="15" stroke="white" stroke-width="2"/>
-                  </svg>
+                  {/* Animated ring effect */}
+                  <span className="absolute inset-0 rounded-xl overflow-hidden">
+                    <span className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                  </span>
 
-                  <span className="min-w-[87px]">New Project</span>
+                  {/* Project icon */}
+                  <div className="relative z-10 flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
+                      <path d="M3 9.50147V6.12646C3 5.62918 3.19754 5.15227 3.54917 4.80064C3.90081 4.44901 4.37772 4.25146 4.875 4.25146H8.43234C8.80256 4.25147 9.16448 4.36108 9.4725 4.56646L10.7775 5.43646C11.0855 5.64185 11.4474 5.75146 11.8177 5.75146H19.125C19.6223 5.75146 20.0992 5.94901 20.4508 6.30064C20.8025 6.65227 21 7.12918 21 7.62647V9.50147" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M22.4954 11.122L21.7351 18.8774C21.7351 19.3742 21.538 19.8506 21.1871 20.2021C20.8362 20.5536 20.3601 20.7516 19.8634 20.7524H4.1368C3.64009 20.7516 3.16402 20.5536 2.8131 20.2021C2.46218 19.8506 2.26508 19.3742 2.26508 18.8774L1.50477 11.122C1.48827 10.9156 1.51468 10.708 1.58234 10.5123C1.65001 10.3166 1.75745 10.137 1.89792 9.98489C2.03838 9.83275 2.20882 9.71135 2.39851 9.62832C2.5882 9.54529 2.79302 9.50243 3.00008 9.50244H21.0048C21.2114 9.50308 21.4158 9.54641 21.6049 9.62973C21.794 9.71304 21.9639 9.83454 22.1038 9.98661C22.2438 10.1387 22.3508 10.318 22.4182 10.5134C22.4856 10.7088 22.5119 10.916 22.4954 11.122V11.122Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <line x1="12" y1="13" x2="12" y2="17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      <line x1="10" y1="15" x2="14" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+
+                  <span className="relative z-10 text-base font-medium tracking-wide">
+                    New Project
+                  </span>
+
+                  {/* Subtle shine effect on hover */}
+                  <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
                 </button>
               </div>
             </div>
@@ -677,7 +872,9 @@ export default function ProjectsPage() {
             <div className="grid gap-5 lg:grid-cols-4 md:grid-cols-2">
               {projectData.length > 0 ? (
                 projectData.map((project, index) => {
-                  const animationClass = `fade-in${index > 0 ? `-delay-${Math.min(index, 4)}` : ''}`;
+                  // Calculate column index (0-3) based on the card's position
+                  const columnIndex = index % 4;
+                  const animationClass = `fade-in-delay-${columnIndex + 1}`;
                   return (
                     <div key={index} className={animationClass}>
                       <ProjectCard
@@ -689,6 +886,18 @@ export default function ProjectsPage() {
                         onAddTaskClick={() => {
                           setSelectedProject(project);
                           setIsTaskModalOpen(true);
+                        }}
+                        onEditClick={() => {
+                          setIsProjectModalOpen({
+                            isOpen: true,
+                            projectId: project.project_id,
+                            isEdit: true,
+                          });
+                        }}
+                        onDeleteClick={() => {
+                          if (project.project_id) {
+                            deleteProject(project.project_id);
+                          }
                         }}
                       />
                     </div>
@@ -716,7 +925,7 @@ export default function ProjectsPage() {
                   <path d="M36 61H64" stroke="#FEAD03" stroke-width="7" stroke-linecap="round"/>
                 </svg>
                 <div className="space-y-2">
-                  <h1 className="font-lato text-2xl md:text-3xl text-gray-800 font-bold fade-in-delay bg-gradient-to-r from-primary-default to-yellow-400 bg-clip-text text-transparent">
+                  <h1 className="font-lato text-2xl md:text-3xl text-gray-800 font-bold fade-in-delay-1 bg-gradient-to-r from-primary-default to-yellow-400 bg-clip-text text-transparent">
                     No Projects Yet ✨
                   </h1>
                   <p className="font-lato text-gray-600 fade-in-delay-2 max-w-md leading-relaxed">
@@ -729,7 +938,11 @@ export default function ProjectsPage() {
                   className="px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato bg-gradient-to-r from-primary-default to-yellow-400 rounded-xl 
                     hover:shadow-lg hover:shadow-primary-default/20 transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5"
                   onClick={() => {
-                    setIsAddProjectModalOpen(true);
+                    setIsProjectModalOpen({
+                      isOpen: true,
+                      projectId: undefined,
+                      isEdit: false,
+                    });
                     clearAllData();
                   }}
                 >
@@ -757,13 +970,20 @@ export default function ProjectsPage() {
         </div>
       </div>
 
-      {isAddProjectModalOpen && (
-        <AddProjectModal
+      {isProjectModalOpen.isOpen && (
+        <ProjectModal
           errors={errors}
-          isOpen={isAddProjectModalOpen}
-          onClose={() => setIsAddProjectModalOpen(false)}
+          isOpen={isProjectModalOpen.isOpen}
+          onClose={() => setIsProjectModalOpen({
+            isOpen: false,
+            projectId: undefined,
+            isEdit: false,
+          })}
           formik={{ values, errors, handleChange, setFieldValue }}
-          handleCreateProject={() => handleSubmit()}
+          submitForm={()=>{
+            submitForm()
+          }} 
+          isEdit={isProjectModalOpen.isEdit}
         />
       )}
 

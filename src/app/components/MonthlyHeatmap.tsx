@@ -84,10 +84,10 @@ export default function MonthlyHeatmap({
   const getDayClass = (day: Date) => {
     const dayKey = format(day, 'yyyy-MM-dd');
     const count = valueMap[dayKey] || 0;
-    let classes = 'w-6 h-6 rounded-sm';
+    let classes = 'w-6 h-6 rounded-sm flex items-center justify-center text-xs';
     
     if (!isSameMonth(day, monthStart)) {
-      return classes + ' bg-gray-50';
+      return classes + ' bg-gray-50 text-gray-300';
     }
     
     if (isToday(day)) {
@@ -95,13 +95,13 @@ export default function MonthlyHeatmap({
     }
     
     if (count > 0) {
-      if (count <= 1) classes += ' bg-success-100';
-      else if (count <= 2) classes += ' bg-success-200';
-      else if (count <= 4) classes += ' bg-success-default';
-      else if (count <= 6) classes += ' bg-success-600';
-      else classes += ' bg-success-700';
+      if (count <= 1) classes += ' bg-success-100 text-gray-800';
+      else if (count <= 2) classes += ' bg-success-200 text-gray-800';
+      else if (count <= 4) classes += ' bg-success-default text-white';
+      else if (count <= 6) classes += ' bg-success-600 text-white';
+      else classes += ' bg-success-700 text-white';
     } else {
-      classes += ' bg-gray-50';
+      classes += ' bg-gray-50 text-gray-800';
     }
     
     return classes;
@@ -134,7 +134,9 @@ export default function MonthlyHeatmap({
           key={day.toString()}
           className={getDayClass(day)}
           title={`${dayKey}: ${count} ${count === 1 ? 'task' : 'tasks'}`}
-        />
+        >
+          {format(day, 'd')}
+        </div>
       );
       day = addDays(day, 1);
     }

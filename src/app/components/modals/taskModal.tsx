@@ -209,8 +209,8 @@ export default function TaskModal({
             onChange={(e) => formik.setFieldValue("title", e.target.value)}
             isLabelVisible={true}
             error={formik.errors.title}
-            customClass="fade-in-delay"
-            labelCustomClass="fade-in-delay"
+            customClass="fade-in-delay-1"
+            labelCustomClass="fade-in-delay-1"
           />
 
           <InputBox
@@ -331,7 +331,7 @@ export default function TaskModal({
               {formik.values.isRecurring && (
                 <>
                   <div className="fade-in">
-                    <div className="flex flex-row gap-5 fade-in-delay">
+                    <div className="flex flex-row gap-5 fade-in-delay-1">
                       <InputBox
                         type="dropdown"
                         label="Repeat Every"

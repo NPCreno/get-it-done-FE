@@ -25,7 +25,7 @@ export const createTaskApi = async (payload: CreateTaskDto) => {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error creating task:', err);
     throw err;
   }
 };
@@ -51,7 +51,7 @@ export const updateTaskApi = async (payload: UpdateTaskDto) => {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error updating task:', err);
     throw err;
   }
 };
@@ -76,7 +76,7 @@ export const deleteTaskApi = async (taskId: string) => {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error deleting task:', err);
     throw err;
   }
 };
@@ -104,7 +104,7 @@ export const getTasksByUser= async (userId: string, startDate: string, endDate: 
 
     return data;
   } catch (err) {
-    console.error('Error fetching user:', err);
+    console.error('Error getting tasks by user:', err);
     throw err;
   }
 };
@@ -129,7 +129,7 @@ export const getTasksByProject= async (project_id: string, startDate: string, en
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error getting tasks by project:', err);
     throw err;
   }
 };
@@ -156,8 +156,8 @@ export const getDashboardData= async (userId: string, startDate: string, endDate
     }
 
     return data;
-  } catch (err) {
-    console.error('Error fetching dashboard data:', err);
+  } catch (err) { 
+    console.error('Error getting dashboard data:', err);
     throw err;
   }
 };
@@ -185,7 +185,7 @@ export const getTaskCompletionTrend= async (userId: string, startDate: string, e
 
     return data;
   } catch (err) {
-    console.error('Error fetching dashboard data:', err);
+    console.error('Error getting task completion trend:', err);
     throw err;
   }
 };
@@ -213,7 +213,7 @@ export const getTaskDistributionData= async (userId: string, month: string, year
 
     return data;
   } catch (err) {
-    console.error('Error fetching dashboard data:', err);
+    console.error('Error getting task distribution data:', err);
     throw err;
   }
 };
@@ -243,7 +243,7 @@ export const getCalendarHeatmap = async (userId: string, month: string, year: st
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error fetching calendar heatmap data:', err);
+    console.error('Error getting calendar heatmap data:', err);
     // Return empty data structure instead of throwing error
     return { data: [] };
   }

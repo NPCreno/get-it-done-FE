@@ -529,7 +529,7 @@ export default function DashboardPage() {
                       <h1 className="text-2xl md:text-3xl font-bold text-gray-800 fade-in select-none bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                         Dashboard
                       </h1>
-                      <p className="font-lato text-sm text-gray-500 fade-in-delay select-none transition-all duration-300 group-hover:text-gray-600">
+                      <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none transition-all duration-300 group-hover:text-gray-600">
                         Track your tasks and monitor your progress
                       </p>
                     </div>
@@ -739,200 +739,293 @@ export default function DashboardPage() {
                     className="h-full hover:bg-gradient-to-br from-white to-green-50/30 transition-all duration-300"
                   />
                 </div>
-              </div>
+              </div> 
 
-              {/* Chart cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 w-full fade-in-delay-2">
-                <div className="transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg hover:shadow-primary-100/20">
-                  <ChartCard
-                    header="Task Completion Trend"
-                    delay="fade-in-left-delay-1"
-                    taskCompletionData={taskCompletionData}
-                  />
-                </div>
-                <div className="transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg hover:shadow-amber-100/20">
-                  <ChartCard
-                    header="Task Distribution by project"
-                    delay="fade-in-left-delay-2"
-                    taskDistributionData={taskDistributionData}
-                  />
-                </div>
-                <div className="transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg hover:shadow-blue-100/20">
-                  <ChartCard
-                    header="Productivity Streak"
-                    delay="fade-in-left-delay-3"
-                    streakCount={streakCount}
-                  />
-                </div>
-                <div className="transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg hover:shadow-green-100/20">
-                  <ChartCard
-                    header="Calendar Heat map"
-                    delay="fade-in-left-delay-4"
-                    calendarHeatmapData={calendarHeatmapData || []}
-                  />
-                </div>
-              </div>
-
-              <div className="w-full p-6 flex flex-col bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 fade-in-delay-2 flex-grow border border-gray-100">
-                {/* Header - Fixed */}
-                <div className="flex flex-col sm:flex-row justify-between gap-4 border-gray-100">
-                  <div>
-                    <h1 className="text-xl font-lato font-bold text-gray-800">
-                      Recent Tasks
-                    </h1>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Your most recent activities and tasks
-                    </p>
-                  </div>
-                  <button
-                    className="relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
-                  bg-gradient-to-r from-primary-default to-primary-200 shadow-md hover:shadow-lg
-                  transform transition-all duration-300 hover:translate-y-[-1px] active:translate-y-0 active:scale-95 overflow-hidden group
-                  before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary-200 before:to-primary-default
-                  before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
-                    onClick={() => {
-                      setIsTaskModalOpen(true);
-                      clearAllData();
-                      setIsUpdateTask(false);
-                    }}
-                  >
-                    {/* Animated ring effect */}
-                    <span className="absolute inset-0 rounded-xl overflow-hidden">
-                      <span className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                    </span>
-
-                    {/* Plus icon with subtle animation */}
-                    <div className="relative z-10 flex items-center justify-center">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 25 25"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="transition-transform duration-300 group-hover:rotate-90"
-                      >
-                        <path
-                          d="M18.7501 12.499H5.25012M12.0001 5.74902V19.249"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-white"
-                        />
-                      </svg>
+              <div className="w-full h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5 items-center justify-center text-center">
+                {/* Task board */}
+                <div className="w-full h-full p-6 flex flex-col bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 fade-in-delay-2 flex-grow border border-gray-100">
+                  {/* Header - Fixed */}
+                  <div className="flex flex-col sm:flex-row justify-between gap-4 border-gray-100">
+                    <div>
+                      <h1 className="text-xl font-lato font-bold text-gray-800 text-start">
+                        Recent Tasks
+                      </h1>
+                      <p className="text-sm text-gray-500 mt-1 text-start">
+                        Your most recent activities and tasks
+                      </p>
                     </div>
+                    <button
+                      className="relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
+                    bg-gradient-to-r from-primary-default to-primary-200 shadow-md hover:shadow-lg
+                    transform transition-all duration-300 hover:translate-y-[-1px] active:translate-y-0 active:scale-95 overflow-hidden group
+                    before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary-200 before:to-primary-default
+                    before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
+                      onClick={() => {
+                        setIsTaskModalOpen(true);
+                        clearAllData();
+                        setIsUpdateTask(false);
+                      }}
+                    >
+                      {/* Animated ring effect */}
+                      <span className="absolute inset-0 rounded-xl overflow-hidden">
+                        <span className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                      </span>
 
-                    {/* Button text with subtle tracking */}
-                    <span className="relative z-10 text-base font-medium tracking-wide">
-                      New Task
-                    </span>
-
-                    {/* Subtle shine effect on hover */}
-                    <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
-                  </button>
-                </div>
-
-                {/* Scrollable Task List */}
-                <div className="flex flex-col gap-[10px] mt-5 lg:overflow-y-auto flex-grow basis-0">
-                  {/* Active Tasks */}
-                  {tasks.filter(task => task.status !== 'Complete').length > 0 ? (
-                    tasks
-                      .filter(task => task.status !== 'Complete')
-                      .map((task, index) => (
-                      <TaskItem
-                        key={`active-${index}`}
-                        task={task}
-                        handleUpdateTask={() => {
-                          setSelectedTaskData(task);
-                          setIsTaskModalOpen(true);
-                          setIsUpdateTask(true);
-                        }}
-                        taskUpdateStatus={(message: string, status: string) => {
-                          setUpdateTaskDashboard(!updateTaskDashboard);
-                          setToastMessage({
-                            title: `Task marked as ${status}`,
-                            description: message,
-                            className:
-                              status === "Complete"
-                                ? "text-success-default"
-                                : "text-accent-default",
-                          });
-                          setShowToast(true);
-                          setIsExitingToast(false);
-                          setTimeout(() => {
-                            setIsExitingToast(true);
-                            setTimeout(() => {
-                              setShowToast(false);
-                            }, 400);
-                          }, 5000);
-                        }}
-                      />
-                    )))
-                    : (
-                      <div className="flex flex-col items-center justify-center px-4 text-center">
-                        <div className="w-24 h-24 mb-6 text-primary-default">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <h3 className="text-xl font-semibold text-gray-800 mb-2">All caught up!</h3>
-                        <p className="text-gray-500 mb-6 max-w-md">You&apos;ve completed all your tasks. Time to celebrate or add a new challenge!</p>
-                      </div>
-                    )}
-
-                  {/* Completed Tasks Section */}
-                  {tasks.some(task => task.status === 'Complete') && (
-                    <div className="mt-4">
-                      <button
-                        onClick={() => setShowCompletedTasks(!showCompletedTasks)}
-                        className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors mb-2"
-                      >
-                        <span>Completed ({tasks.filter(task => task.status === 'Complete').length})</span>
+                      {/* Plus icon with subtle animation */}
+                      <div className="relative z-10 flex items-center justify-center">
                         <svg
-                          className={`w-4 h-4 transition-transform duration-200 ${showCompletedTasks ? 'rotate-180' : ''}`}
+                          width="20"
+                          height="20"
+                          viewBox="0 0 25 25"
                           fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="transition-transform duration-300 group-hover:rotate-90"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          <path
+                            d="M18.7501 12.499H5.25012M12.0001 5.74902V19.249"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-white"
+                          />
                         </svg>
-                      </button>
-                      
-                      {showCompletedTasks && (
-                        <div className="space-y-2 pl-4 border-l-2 border-gray-200">
-                          {tasks
-                            .filter(task => task.status === 'Complete')
-                            .map((task, index) => (
-                              <TaskItem
-                                key={`completed-${index}`}
-                                task={task}
-                                handleUpdateTask={() => {
-                                  setSelectedTaskData(task);
-                                  setIsTaskModalOpen(true);
-                                  setIsUpdateTask(true);
-                                }}
-                                taskUpdateStatus={(message: string, status: string) => {
-                                  setUpdateTaskDashboard(!updateTaskDashboard);
-                                  setToastMessage({
-                                    title: `Task marked as ${status}`,
-                                    description: message,
-                                    className: status === "Complete" ? "text-success-default" : "text-accent-default",
-                                  });
-                                  setShowToast(true);
-                                  setIsExitingToast(false);
-                                  setTimeout(() => {
-                                    setIsExitingToast(true);
-                                    setTimeout(() => setShowToast(false), 400);
-                                  }, 5000);
-                                }}
-                              />
-                            ))}
+                      </div>
+
+                      {/* Button text with subtle tracking */}
+                      <span className="relative z-10 text-base font-medium tracking-wide">
+                        New Task
+                      </span>
+
+                      {/* Subtle shine effect on hover */}
+                      <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
+                    </button>
+                  </div>
+
+                  {/* Scrollable Task List */}
+                  <div className="flex flex-col h-full">
+                    {/* Active Tasks - Centered */}
+                    <div className={`flex-grow flex flex-col ${tasks.filter(task => task.status !== 'Complete').length > 0 ? 'justify-start mt-5' : 'justify-center'}`}>
+                    {tasks.filter(task => task.status !== 'Complete').length > 0 ? (
+                      tasks
+                        .filter(task => task.status !== 'Complete')
+                        .map((task) => (
+                        <TaskItem
+                          key={`active-${task.task_id}-${task.status}`}
+                          task={task}
+                          handleUpdateTask={() => {
+                            setSelectedTaskData(task);
+                            setIsTaskModalOpen(true);
+                            setIsUpdateTask(true);
+                          }}
+                          taskUpdateStatus={(message: string, type?: 'info' | 'success' | 'error' | 'warning') => {
+                            // For backward compatibility, we'll use the message to determine the new status
+                            // since the type parameter is used for the toast style
+                            const newStatus = message.toLowerCase().includes('completed') ? 'Complete' : 'Pending';
+                            
+                            // Optimistically update the task status in the local state
+                            setTasks(currentTasks => 
+                              currentTasks.map(t => 
+                                t.task_id === task.task_id 
+                                  ? { ...t, status: newStatus } 
+                                  : t
+                              )
+                            );
+                            
+                            // Update dashboard data optimistically
+                            if (dashboardData) {
+                              setDashboardData(prev => {
+                                if (!prev) return prev;
+                                const newData = { ...prev };
+                                
+                                // Decrease the count of the old status
+                                if (task.status === 'Complete') {
+                                  newData.complete_tasks = Math.max(0, newData.complete_tasks - 1);
+                                } else {
+                                  newData.pending_tasks = Math.max(0, newData.pending_tasks - 1);
+                                }
+                                
+                                // Increase the count of the new status
+                                if (newStatus === 'Complete') {
+                                  newData.complete_tasks += 1;
+                                } else {
+                                  newData.pending_tasks += 1;
+                                }
+                                
+                                return newData;
+                              });
+                            }
+
+                            // Show toast notification with the provided type
+                            setToastMessage({
+                              title: `Task ${newStatus.toLowerCase()}`,
+                              description: message,
+                              className: type === 'success' 
+                                ? 'text-success-default' 
+                                : type === 'error' 
+                                  ? 'text-error-default'
+                                  : type === 'warning'
+                                    ? 'text-warning-default'
+                                    : 'text-accent-default',
+                            });
+                            setShowToast(true);
+                            setIsExitingToast(false);
+                            
+                            // Auto-hide toast after delay
+                            setTimeout(() => {
+                              setIsExitingToast(true);
+                              setTimeout(() => setShowToast(false), 400);
+                            }, 3000);
+                          }}
+                        />
+                      )))
+                      : (
+                        <div className="flex flex-col items-center justify-center text-center">
+                          <div className="w-24 h-24 mb-6 text-primary-default">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-xl font-semibold text-gray-800 mb-2">All caught up!</h3>
+                          <p className="text-gray-500 mb-6 max-w-md">You&apos;ve completed all your tasks. Time to celebrate or add a new challenge!</p>
                         </div>
                       )}
                     </div>
-                  )}
+
+                    {/* Completed Tasks Section - Stuck to bottom */}
+                    <div className="mt-auto">
+                    {tasks.some(task => task.status === 'Complete') && (
+                      <div className="mt-4">
+                        <button
+                          onClick={() => setShowCompletedTasks(!showCompletedTasks)}
+                          className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors mb-2"
+                        >
+                          <span>Completed ({tasks.filter(task => task.status === 'Complete').length})</span>
+                          <svg
+                            className={`w-4 h-4 transition-transform duration-200 ${showCompletedTasks ? 'rotate-180' : ''}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        
+                        {showCompletedTasks && (
+                          <div className="space-y-2 pl-4 border-l-2 border-gray-200">
+                            {tasks
+                              .filter(task => task.status === 'Complete')
+                              .map((task) => (
+                                <TaskItem
+                                  key={`completed-${task.task_id}-${task.status}`}
+                                  task={task}
+                                  handleUpdateTask={() => {
+                                    setSelectedTaskData(task);
+                                    setIsTaskModalOpen(true);
+                                    setIsUpdateTask(true);
+                                  }}
+                                  taskUpdateStatus={(message: string, type?: 'info' | 'success' | 'error' | 'warning') => {
+                                    // For backward compatibility, we'll use the message to determine the new status
+                                    // since the type parameter is used for the toast style
+                                    const newStatus = message.toLowerCase().includes('completed') ? 'Complete' : 'Pending';
+                                    
+                                    // Optimistically update the task status in the local state
+                                    setTasks(currentTasks => 
+                                      currentTasks.map(t => 
+                                        t.task_id === task.task_id 
+                                          ? { ...t, status: newStatus } 
+                                          : t
+                                      )
+                                    );
+                                    
+                                    // Update dashboard data optimistically
+                                    if (dashboardData) {
+                                      setDashboardData(prev => {
+                                        if (!prev) return prev;
+                                        const newData = { ...prev };
+                                        
+                                        // Decrease the count of the old status
+                                        if (task.status === 'Complete') {
+                                          newData.complete_tasks = Math.max(0, newData.complete_tasks - 1);
+                                        } else {
+                                          newData.pending_tasks = Math.max(0, newData.pending_tasks - 1);
+                                        }
+                                        
+                                        // Increase the count of the new status
+                                        if (newStatus === 'Complete') {
+                                          newData.complete_tasks += 1;
+                                        } else {
+                                          newData.pending_tasks += 1;
+                                        }
+                                        
+                                        return newData;
+                                      });
+                                    }
+
+                                    // Show toast notification with the provided type
+                                    setToastMessage({
+                                      title: `Task ${newStatus.toLowerCase()}`,
+                                      description: message,
+                                      className: type === 'success' 
+                                        ? 'text-success-default' 
+                                        : type === 'error' 
+                                          ? 'text-error-default'
+                                          : type === 'warning'
+                                            ? 'text-warning-default'
+                                            : 'text-accent-default',
+                                    });
+                                    setShowToast(true);
+                                    setIsExitingToast(false);
+                                    
+                                    // Auto-hide toast after delay
+                                    setTimeout(() => {
+                                      setIsExitingToast(true);
+                                      setTimeout(() => setShowToast(false), 400);
+                                    }, 3000);
+                                  }}
+                                />
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chart cards */}
+                <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-5 w-full fade-in-delay-2">
+                  <div className="transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg hover:shadow-primary-100/20">
+                    <ChartCard
+                      header="Task Completion Trend"
+                      delay="fade-in-left-delay-1"
+                      taskCompletionData={taskCompletionData}
+                    />
+                  </div>
+                  <div className="transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg hover:shadow-amber-100/20">
+                    <ChartCard
+                      header="Task Distribution by project"
+                      delay="fade-in-left-delay-2"
+                      taskDistributionData={taskDistributionData}
+                    />
+                  </div>
+                  <div className="transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg hover:shadow-blue-100/20">
+                    <ChartCard
+                      header="Productivity Streak"
+                      delay="fade-in-left-delay-3"
+                      streakCount={streakCount}
+                    />
+                  </div>
+                  <div className="transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg hover:shadow-green-100/20">
+                    <ChartCard
+                      header="Calendar Heat map"
+                      delay="fade-in-left-delay-4"
+                      calendarHeatmapData={calendarHeatmapData || []}
+                    />
+                  </div>
                 </div>
               </div>
+              
             </>
           )}
 
@@ -1006,7 +1099,7 @@ export default function DashboardPage() {
                     </defs>
                   </svg>
                   <div className="space-y-2">
-                    <h1 className="font-lato text-2xl md:text-3xl text-gray-800 font-bold fade-in-delay bg-gradient-to-r from-primary-default to-yellow-400 bg-clip-text text-transparent">
+                    <h1 className="font-lato text-2xl md:text-3xl text-gray-800 font-bold fade-in-delay-1 bg-gradient-to-r from-primary-default to-yellow-400 bg-clip-text text-transparent">
                       Welcome to Your Dashboard ✨
                     </h1>
                     <p className="font-lato text-gray-600 fade-in-delay-2 max-w-md leading-relaxed">

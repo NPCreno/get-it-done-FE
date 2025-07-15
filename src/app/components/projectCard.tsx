@@ -1,7 +1,7 @@
 import { IProject } from "../interface/IProject";
-import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-
+import ConfirmationModal from "./modals/confirmation";
+import { Pencil2Icon } from "@radix-ui/react-icons"
 // Helper functions for colors and gradients
 const getGradientClass = (color: string = 'gray') => {
   const gradientMap: Record<string, string> = {
@@ -41,13 +41,33 @@ export default function ProjectCard({
   project: IProject & { priority?: 'high' | 'medium' | 'low' | string };
   onClick: () => void;
   onAddTaskClick: () => void;
-  onEditClick?: () => void;
-  onDeleteClick?: () => void;
+  onEditClick?: (e: React.MouseEvent) => void;
+  onDeleteClick?: (project: IProject) => void;
 }) {
-  const [showActions, setShowActions] = useState(false);
   const projectColor = project.color?.toLowerCase() || 'gray';
   const gradientClass = getGradientClass(projectColor);
   const textColor = getTextColor(projectColor);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent card click when clicking on action buttons
+    if ((e.target as HTMLElement).closest('.action-button')) {
+      e.stopPropagation();
+      return;
+    }
+    onClick();
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    onDeleteClick?.(project);
+    setShowDeleteConfirm(false);
+  };
+
   const progress = project.task_count 
     ? Math.round(((project.task_completed ?? 0) / project.task_count) * 100) 
     : 0;
@@ -59,22 +79,14 @@ export default function ProjectCard({
   const daysUntilDue = dueDate ? Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
   const isOverdue = dueDate && daysUntilDue !== null && daysUntilDue < 0;
   const priority = project.priority || 'none';
-  
-  // Mock team members - replace with actual data
-  const teamMembers = [
-    { id: 1, name: 'User 1', avatar: 'U1' },
-    { id: 2, name: 'User 2', avatar: 'U2' },
-  ];
 
   return (
-    <motion.div
-      whileHover={{ y: -6, scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-      onClick={onClick}
+    <>
+    <div
+      onClick={handleCardClick}
       className={`group relative p-5 rounded-2xl bg-gradient-to-br ${gradientClass} 
         border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 
-        cursor-pointer overflow-hidden relative ${
+        cursor-pointer overflow-hidden w-full h-full flex flex-col ${
           progress >= 100 
             ? 'shadow-[0_0_20px_5px_rgba(52,211,153,0.3)]' 
             : progress >= 80 
@@ -82,32 +94,23 @@ export default function ProjectCard({
               : ''
         }`}
     >
-      {/* Glow effect for completed projects */}
+      {/* Simple overlay for completed projects */}
       {progress >= 80 && (
-        <motion.div 
-          className="absolute inset-0 rounded-2xl pointer-events-none"
-          initial={{ opacity: 0 }}
-          animate={{ 
-            opacity: progress >= 100 ? 0.3 : progress >= 90 ? 0.2 : 0.1,
+        <div 
+          className={`absolute inset-0 rounded-2xl pointer-events-none ${
+            progress >= 100 ? 'bg-opacity-30' : progress >= 90 ? 'bg-opacity-20' : 'bg-opacity-10'
+          }`}
+          style={{
             boxShadow: progress >= 100 
               ? '0 0 40px 20px rgba(52, 211, 153, 0.5)'
               : progress >= 90 
                 ? '0 0 30px 10px rgba(52, 211, 153, 0.3)'
                 : '0 0 20px 5px rgba(52, 211, 153, 0.2)'
           }}
-          transition={{ 
-            duration: 2,
-            repeat: progress >= 100 ? Infinity : 0,
-            repeatType: 'reverse'
-          }}
         />
       )}
-      {/* Animated gradient overlay on hover */}
-      <motion.div 
-        className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/0 group-hover:from-white/5 group-hover:to-white/10 transition-all duration-500"
-        initial={{ opacity: 0 }}
-        whileHover={{ opacity: 1 }}
-      />
+      {/* Simple hover overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/0 group-hover:from-white/5 group-hover:to-white/10 transition-all duration-300" />
       {/* Header with title and menu button */}
       <div className="flex justify-between items-start gap-3 mb-3">
         <div className="flex-1 min-w-0">
@@ -131,64 +134,28 @@ export default function ProjectCard({
           </div>
         </div>
 
-        <div className="relative">
-          <button 
+        
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex">
+        <button 
             onClick={(e) => {
               e.stopPropagation();
-              setShowActions(!showActions);
+              onEditClick?.(e);
             }}
-            className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all duration-200 text-white/70 hover:text-white"
-            aria-label="More options"
+            className="action-button bg-white/10 hover:bg-white/20 transition-colors duration-200 text-blue-400 hover:text-blue-300 z-10"
+            aria-label="Delete project"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 13C12.5523 13 13 12.5523 13 12C13 11.4477 12.5523 11 12 11C11.4477 11 11 11.4477 11 12C11 12.5523 11.4477 13 12 13Z" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 6C12.5523 6 13 5.55228 13 5C13 4.44772 12.5523 4 12 4C11.4477 4 11 4.44772 11 5C11 5.55228 11.4477 6 12 6Z" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 20C12.5523 20 13 19.5523 13 19C13 18.4477 12.5523 18 12 18C11.4477 18 11 18.4477 11 19C11 19.5523 11.4477 20 12 20Z" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <Pencil2Icon width="18" height="18"/>
           </button>
           
-          <AnimatePresence>
-            {showActions && (
-              <motion.div 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 z-10 overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditClick?.();
-                    setShowActions(false);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M11 4H4V20H20V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Edit Project
-                </button>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteClick?.();
-                    setShowActions(false);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 6H5H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M10 11V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M14 11V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Delete
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <button 
+            onClick={(e)=>handleDeleteClick(e)}
+            className="ml-1 action-button bg-white/10 hover:bg-white/20 transition-colors duration-200 text-red-400 hover:text-red-300 z-10"
+            aria-label="Delete project"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -204,62 +171,23 @@ export default function ProjectCard({
             )}
           </span>
           <span className="text-xs text-gray-500">
-            {project.updatedAt ? new Date(project.updatedAt).toLocaleDateString() : ''}
+            {project.due_date ? new Date(project.due_date).toLocaleDateString() : ''}
           </span>
         </div>
       </div>
 
       {/* Footer */}
-      <motion.div 
-        className="flex items-center justify-between pt-4 mt-3 border-t border-white/10"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        {/* Team avatars */}
-        <div className="flex -space-x-2">
-          {teamMembers.map((member) => (
-            <div 
-              key={member.id}
-              className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center text-xs font-medium text-gray-700 border-2 border-white"
-              title={member.name}
-            >
-              {member.avatar}
-            </div>
-          ))}
-          <motion.button 
-            className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center text-xs text-gray-700 border-2 border-white hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md"
-            whileHover={{ scale: 1.1, rotate: 90 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddTaskClick();
-            }}
-            title="Add new task"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-current">
-              <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </motion.button>
-        </div>
-
+      <div className="flex items-center justify-between pt-4 mt-3 border-t border-white/10">
         {/* Quick actions */}
-        <motion.div 
-          className="flex items-center gap-2"
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.15 }}
-        >
-          <motion.button 
+        <div className="flex items-center gap-2">
+          <button 
             onClick={(e) => {
               e.stopPropagation();
               onAddTaskClick();
             }}
             className="relative px-4 py-2 flex flex-row gap-2 items-center justify-center rounded-xl h-[36px] font-medium text-white 
                      bg-gradient-to-r from-primary-default to-primary-200 shadow-sm hover:shadow-md
-                     transform transition-all duration-300 hover:translate-y-[-1px] active:translate-y-0 active:scale-95 overflow-hidden group
-                     before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary-200 before:to-primary-default
-                     before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
+                     transition-all duration-300 hover:opacity-90 active:opacity-100 overflow-hidden"
           >
             
             {/* Plus icon with subtle animation */}
@@ -288,10 +216,10 @@ export default function ProjectCard({
             
             {/* Subtle shine effect on hover */}
             <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
-          </motion.button>
+          </button>
           
           {dueDate && (
-            <motion.div 
+            <div 
               className={`flex items-center text-xs px-3 py-1.5 rounded-xl border shadow-sm ${
                 isOverdue || daysUntilDue === 0
                   ? 'bg-error-100 text-error-700 border-error-200' 
@@ -301,7 +229,6 @@ export default function ProjectCard({
                       ? 'bg-accent-100 text-accent-700 border-accent-200'
                       : 'bg-white/90 text-gray-800 border-white/30'
               }`}
-              whileHover={{ y: -1 }}
             >
               <svg 
                 width="14" 
@@ -320,22 +247,24 @@ export default function ProjectCard({
                 />
               </svg>
               {dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </motion.div>
+            </div>
           )}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
+    </div>
 
-      {/* Decorative elements */}
-      <motion.div 
-        className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-white/20"
-        whileHover={{ scale: 1.1 }}
-        transition={{ duration: 0.3 }}
-      />
-      <motion.div 
-        className="absolute -right-3 -bottom-3 w-12 h-12 rounded-full bg-white/30"
-        whileHover={{ scale: 1.2 }}
-        transition={{ duration: 0.3 }}
-      />
-    </motion.div>
+    {showDeleteConfirm && (
+        <div className="absolute inset-0 z-10 rounded-2xl overflow-hidden">
+          <ConfirmationModal
+            onClose={() => setShowDeleteConfirm(false)}
+            onConfirm={confirmDelete}
+            confirmationTitle="Delete Project"
+            confirmationDescription={`Are you sure you want to delete "${project.title}"? This action cannot be undone.`}
+            confirmBtnLabel="Delete"
+            fullScreen={true}
+          />
+        </div>
+    )}
+    </>
   );
 }

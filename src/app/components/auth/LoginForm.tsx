@@ -4,7 +4,6 @@ import { useFormik } from "formik";
 import { loginSchema } from "@/app/schemas/loginSchema";
 import { useRouter } from "next/navigation";
 import { loginEmail, loginUsername } from "@/app/api/userRequests";
-import { Button } from "@/app/components/shadcn/button";
 import { Loader2 } from "lucide-react";
 import InputBox from "@/app/components/inputBox";
 import Cookies from 'js-cookie';
@@ -22,7 +21,8 @@ export default function LoginForm({
 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
   const formik = useFormik<LoginFormValues>({
     initialValues: {
@@ -66,9 +66,14 @@ export default function LoginForm({
           }
         }
 
-        // Redirect to dashboard
-        router.push('/dashboard');
-        router.refresh(); // Ensure the layout updates with the new auth state
+        // Show success state
+        setLoginSuccess(true);
+        
+        // Redirect after a short delay to show the success state
+        setTimeout(() => {
+          router.push('/dashboard');
+          router.refresh(); // Ensure the layout updates with the new auth state
+        }, 800);
       } catch (error) {
         console.error("Login error:", error);
         if (error instanceof Error) {
@@ -85,6 +90,8 @@ export default function LoginForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     formik.setFieldValue(fieldName, e.target.value);
+    // Reset login success when user starts typing again
+    if (loginSuccess) setLoginSuccess(false);
   };
   
   // Handle checkbox change
@@ -120,7 +127,7 @@ export default function LoginForm({
               error={formik.touched.usernameOrEmail ? formik.errors.usernameOrEmail : undefined}
               disabled={isLoading}
               isLabelVisible={true}
-              customClass="w-full"
+              customClass={loginSuccess ? 'ring-2 ring-green-500 ring-offset-2 transition-all duration-500' : 'w-full'}
             />
           </div>
         </div>
@@ -130,16 +137,7 @@ export default function LoginForm({
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Password
             </label>
-            <div className="text-right mt-1">
-              <button
-                type="button"
-                onClick={() => onChangeView("forgotPassword")}
-                disabled={isLoading}
-                className="text-sm font-medium text-primary-default hover:text-primary-hover transition-colors"
-              >
-                Forgot password?
-              </button>
-            </div>
+
           </div>
           <div>
             <InputBox
@@ -152,43 +150,75 @@ export default function LoginForm({
               error={formik.touched.password ? formik.errors.password : undefined}
               disabled={isLoading}
               isLabelVisible={false}
-              customClass="w-full"
+              customClass={loginSuccess ? 'ring-2 ring-green-500 ring-offset-2 transition-all duration-500' : 'w-full'}
             />
           </div>
           
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              name="rememberMe"
-              checked={formik.values.rememberMe}
-              onChange={handleCheckboxChange}
-              disabled={isLoading}
-              className="h-4 w-4 text-primary-default focus:ring-primary-default border-gray-300 rounded"
-            />
-            <label
-              htmlFor="rememberMe"
-              className="text-sm font-medium text-gray-700 cursor-pointer"
-            >
-              Remember me
-            </label>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                name="rememberMe"
+                checked={formik.values.rememberMe}
+                onChange={handleCheckboxChange}
+                disabled={isLoading}
+                className="h-4 w-4 text-primary-default focus:ring-primary-default border-gray-300 rounded"
+              />
+              <label
+                htmlFor="rememberMe"
+                className="text-sm font-medium text-gray-700 cursor-pointer"
+              >
+                Remember me
+              </label>
+            </div>
+
+            <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => onChangeView("forgotPassword")}
+                  disabled={isLoading}
+                  className="text-sm font-medium text-primary-default hover:text-primary-hover transition-colors items-center"
+                >
+                  Forgot password?
+                </button>
+              </div>
           </div>
         </div>
         
-        <Button 
-          type="submit" 
-          className="w-full bg-primary-default hover:bg-primary-600"
+        <button 
+          type="submit"
+          className="relative w-full px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-sm h-10 font-lato font-medium text-white 
+          bg-gradient-to-r from-primary-default to-primary-200 shadow-md hover:shadow-lg
+          transform transition-all duration-300 hover:translate-y-[-1px] active:translate-y-0 active:scale-95 overflow-hidden group
+          before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary-200 before:to-primary-default
+          before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
+          disabled:opacity-70 disabled:cursor-not-allowed"
           disabled={isLoading}
         >
+          {/* Animated ring effect */}
+          <span className="absolute inset-0 rounded-sm overflow-hidden">
+            <span className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+          </span>
+
           {isLoading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Signing in...
+              <div className="relative z-10 flex items-center justify-center">
+                <Loader2 className="h-4 w-4 animate-spin text-white" />
+              </div>
+              <span className="relative z-10 text-base font-medium tracking-wide">
+                Signing in...
+              </span>
             </>
           ) : (
-            'Sign in'
+            <span className="relative z-10 text-base font-medium tracking-wide">
+              Sign in
+            </span>
           )}
-        </Button>
+
+          {/* Subtle shine effect on hover */}
+          <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
+        </button>
       </form>
       
       <div className="text-sm text-center text-gray-600 dark:text-gray-400">
