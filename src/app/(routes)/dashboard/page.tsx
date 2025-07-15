@@ -529,7 +529,7 @@ export default function DashboardPage() {
                       <h1 className="text-2xl md:text-3xl font-bold text-gray-800 fade-in select-none bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                         Dashboard
                       </h1>
-                      <p className="font-lato text-sm text-gray-500 fade-in-delay select-none transition-all duration-300 group-hover:text-gray-600">
+                      <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none transition-all duration-300 group-hover:text-gray-600">
                         Track your tasks and monitor your progress
                       </p>
                     </div>
@@ -1083,7 +1083,7 @@ export default function DashboardPage() {
                     </defs>
                   </svg>
                   <div className="space-y-2">
-                    <h1 className="font-lato text-2xl md:text-3xl text-gray-800 font-bold fade-in-delay bg-gradient-to-r from-primary-default to-yellow-400 bg-clip-text text-transparent">
+                    <h1 className="font-lato text-2xl md:text-3xl text-gray-800 font-bold fade-in-delay-1 bg-gradient-to-r from-primary-default to-yellow-400 bg-clip-text text-transparent">
                       Welcome to Your Dashboard ✨
                     </h1>
                     <p className="font-lato text-gray-600 fade-in-delay-2 max-w-md leading-relaxed">

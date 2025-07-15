@@ -102,7 +102,11 @@
   animation: fadeIn 0.4s ease-out;
 }
 
-.fade-in-delay {
+.fade-in-delay-0 {
+  animation: fadeIn 0.4s ease-out 0s both;
+}
+
+.fade-in-delay-1 {
   animation: fadeIn 0.4s ease-out 0.2s both;
 }
 

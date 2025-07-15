@@ -16,6 +16,7 @@ import {
   createProject,
   getProjectById,
   updateProject,
+  deleteProjectById,
 } from "@/app/api/projectsRequests";
 import { FormikErrors, useFormik } from "formik";
 import { projectSchema } from "@/app/schemas/projectSchema";
@@ -309,7 +310,7 @@ export default function ProjectsPage() {
       };
       fetchProjects();
     }
-  }, [user, isProjectModalOpen, isTaskModalOpen]);
+  }, [user, isProjectModalOpen, isTaskModalOpen, refreshPage]);
 
   const clearValueAndErrors = () => {
     setErrors({});
@@ -605,6 +606,7 @@ export default function ProjectsPage() {
       }, 10000); // Toast display duration
     }
   };
+
   useEffect(() => {
     if (selectedTaskData) {
       setFieldValue("title", selectedTaskData?.title || "");
@@ -718,6 +720,74 @@ export default function ProjectsPage() {
     };
     fetchProjectById();
   }, [isProjectModalOpen.projectId]);
+
+  const deleteProject = async (projectId: string) => {
+    try {
+      const response: IProjectResponse = await deleteProjectById(projectId);
+      if (response.status === "success") {
+        clearValueAndErrors();
+        setUpdateTasksData(!updateTasksData);
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: "Project Deleted",
+          description:
+            response.message || "Your project has been deleted successfully",
+          className: "text-green-600",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+        setRefreshPage(!refreshPage);
+      } else {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: response.message,
+          description: response?.error || "Something Went Wrong",
+          className: "text-error-default",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: error.message,
+          className: "text-error-default",
+        });
+      } else {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: "An unknown error occurred",
+          className: "text-error-default",
+        });
+      }
+      setShowToast(true);
+      setIsExitingToast(false);
+      setTimeout(() => {
+        setIsExitingToast(true); // Start exit animation
+        setTimeout(() => {
+          setShowToast(false); // Remove after animation completes
+        }, 400); // Must match the toastOut animation duration
+      }, 10000); // Toast display duration
+    }
+  };
   
   return (
     <MainLayout>
@@ -751,7 +821,7 @@ export default function ProjectsPage() {
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-800 fade-in select-none">
                   Projects
                   </h1>
-                  <p className="font-lato text-sm text-gray-500 fade-in-delay select-none mt-1">
+                  <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none mt-1">
                   Organize your tasks into projects
                   </p>
                 </div>
@@ -802,7 +872,9 @@ export default function ProjectsPage() {
             <div className="grid gap-5 lg:grid-cols-4 md:grid-cols-2">
               {projectData.length > 0 ? (
                 projectData.map((project, index) => {
-                  const animationClass = `fade-in${index > 0 ? `-delay-${Math.min(index, 4)}` : ''}`;
+                  // Calculate column index (0-3) based on the card's position
+                  const columnIndex = index % 4;
+                  const animationClass = `fade-in-delay-${columnIndex + 1}`;
                   return (
                     <div key={index} className={animationClass}>
                       <ProjectCard
@@ -821,6 +893,11 @@ export default function ProjectsPage() {
                             projectId: project.project_id,
                             isEdit: true,
                           });
+                        }}
+                        onDeleteClick={(e) => {
+                          if (project.project_id) {
+                            deleteProject(project.project_id);
+                          }
                         }}
                       />
                     </div>
@@ -848,7 +925,7 @@ export default function ProjectsPage() {
                   <path d="M36 61H64" stroke="#FEAD03" stroke-width="7" stroke-linecap="round"/>
                 </svg>
                 <div className="space-y-2">
-                  <h1 className="font-lato text-2xl md:text-3xl text-gray-800 font-bold fade-in-delay bg-gradient-to-r from-primary-default to-yellow-400 bg-clip-text text-transparent">
+                  <h1 className="font-lato text-2xl md:text-3xl text-gray-800 font-bold fade-in-delay-1 bg-gradient-to-r from-primary-default to-yellow-400 bg-clip-text text-transparent">
                     No Projects Yet ✨
                   </h1>
                   <p className="font-lato text-gray-600 fade-in-delay-2 max-w-md leading-relaxed">

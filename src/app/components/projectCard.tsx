@@ -42,7 +42,7 @@ export default function ProjectCard({
   onClick: () => void;
   onAddTaskClick: () => void;
   onEditClick?: (e: React.MouseEvent) => void;
-  onDeleteClick?: (e: React.MouseEvent) => void;
+  onDeleteClick?: (e: React.MouseEvent, project: IProject) => void;
 }) {
   const [showActions, setShowActions] = useState(false);
   const projectColor = project.color?.toLowerCase() || 'gray';
@@ -65,7 +65,7 @@ export default function ProjectCard({
   };
 
   const confirmDelete = () => {
-    onDeleteClick?.(new MouseEvent('click') as any);
+    onDeleteClick?.(new MouseEvent('click') as any, project);
     setShowDeleteConfirm(false);
   };
 
@@ -82,11 +82,12 @@ export default function ProjectCard({
   const priority = project.priority || 'none';
 
   return (
+    <>
     <div
       onClick={handleCardClick}
       className={`group relative p-5 rounded-2xl bg-gradient-to-br ${gradientClass} 
         border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 
-        cursor-pointer overflow-hidden relative ${
+        cursor-pointer overflow-hidden w-full h-full flex flex-col ${
           progress >= 100 
             ? 'shadow-[0_0_20px_5px_rgba(52,211,153,0.3)]' 
             : progress >= 80 
@@ -251,15 +252,20 @@ export default function ProjectCard({
           )}
         </div>
       </div>
-      {showDeleteConfirm && (
-      <ConfirmationModal
-        onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={confirmDelete}
-        confirmationTitle="Delete Project"
-        confirmationDescription={`Are you sure you want to delete "${project.title}"? This action cannot be undone.`}
-        confirmBtnLabel="Delete"
-      />
-    )}
     </div>
+
+    {showDeleteConfirm && (
+        <div className="absolute inset-0 z-10 rounded-2xl overflow-hidden">
+          <ConfirmationModal
+            onClose={() => setShowDeleteConfirm(false)}
+            onConfirm={confirmDelete}
+            confirmationTitle="Delete Project"
+            confirmationDescription={`Are you sure you want to delete "${project.title}"? This action cannot be undone.`}
+            confirmBtnLabel="Delete"
+            fullScreen={true}
+          />
+        </div>
+    )}
+    </>
   );
 }

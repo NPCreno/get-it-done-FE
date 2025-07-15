@@ -118,3 +118,27 @@ export const updateProject = async (payload: UpdateProjectDto) => {
   }
 };
 
+export const deleteProjectById = async (projectId: string) => {
+  try {
+    const token = getAccessToken();
+    const response = await fetch(`${apiUrl}/projects/${projectId}`, 
+        { 
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to get user');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error('Error creating user:', err);
+    throw err;
+  }
+};

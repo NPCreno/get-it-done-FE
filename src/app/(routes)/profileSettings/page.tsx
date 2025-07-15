@@ -196,7 +196,7 @@ export default function ProfileSettingsPage() {
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-800 fade-in select-none">
                   Profile Settings
                   </h1>
-                  <p className="font-lato text-sm text-gray-500 fade-in-delay select-none mt-1">
+                  <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none mt-1">
                   Manage Your Profile & Preferences
                   </p>
                 </div>
@@ -234,11 +234,11 @@ export default function ProfileSettingsPage() {
                         />
                       </svg>
 
-                      <p className="font-lato text-2xl text-primary-default fade-in-delay select-none">
+                      <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                         Profile Information
                       </p>
                     </div>
-                    <p className="font-lato text-[13px] text-text fade-in-delay select-none">
+                    <p className="font-lato text-[13px] text-text fade-in-delay-1 select-none">
                       Update your personal information
                     </p>
                   </div>
@@ -262,7 +262,7 @@ export default function ProfileSettingsPage() {
                     </svg>
 
                     <p
-                      className="font-lato text-base font-bold text-primary-default fade-in-delay hover:cursor-pointer"
+                      className="font-lato text-base font-bold text-primary-default fade-in-delay-1 hover:cursor-pointer"
                       onClick={() => {
                         setIsEditEnabled(true);
                       }}
@@ -272,7 +272,7 @@ export default function ProfileSettingsPage() {
                   </div>
                 </div>
 
-                <div className="mt-5 fade-in-delay">
+                <div className="mt-5 fade-in-delay-1">
                   {/* fullname input */}
                   <div className="min-h-[95px]">
                     <div className={` ${errors.fullname ? "shake" : ""}`}>
@@ -423,24 +423,24 @@ export default function ProfileSettingsPage() {
                         />
                       </svg>
 
-                      <p className="font-lato text-2xl text-primary-default fade-in-delay select-none">
+                      <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                         Notifications
                       </p>
                     </div>
-                    <p className="font-lato text-[13px] text-text fade-in-delay select-none">
+                    <p className="font-lato text-[13px] text-text fade-in-delay-1 select-none">
                       Configure notification preferences
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-5 fade-in-delay">
+                <div className="mt-5 fade-in-delay-1">
                   {/* Enable notifications */}
                   <div className="flex flex-row justify-between h-20 border-b border-border">
                     <div className="flex flex-col justify-center">
-                      <p className="font-lato text-2xl text-primary-default fade-in-delay select-none">
+                      <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                         Enable notifications
                       </p>
-                      <p className="font-lato text-[13px] text-text fade-in-delay select-none">
+                      <p className="font-lato text-[13px] text-text fade-in-delay-1 select-none">
                         Recieve notifications for tasks and reminders
                       </p>
                     </div>
@@ -452,7 +452,7 @@ export default function ProfileSettingsPage() {
                         onChange={setFieldValue}
                         onLabel="Enabled"
                         offLabel="Disabled"
-                        className="fade-in-delay"
+                        className="fade-in-delay-1"
                       />
                     </div>
                   </div>
@@ -460,10 +460,10 @@ export default function ProfileSettingsPage() {
                   {/*  */}
                   <div className="flex flex-row justify-between h-20">
                     <div className="flex flex-col justify-center">
-                      <p className="font-lato text-2xl text-primary-default fade-in-delay select-none">
+                      <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                         Sound Effects
                       </p>
-                      <p className="font-lato text-[13px] text-text fade-in-delay select-none">
+                      <p className="font-lato text-[13px] text-text fade-in-delay-1 select-none">
                         Play sound when completing tasks
                       </p>
                     </div>
@@ -475,7 +475,7 @@ export default function ProfileSettingsPage() {
                         onChange={setFieldValue}
                         onLabel="Enabled"
                         offLabel="Disabled"
-                        className="fade-in-delay"
+                        className="fade-in-delay-1"
                       />
                     </div>
                   </div>
@@ -484,14 +484,14 @@ export default function ProfileSettingsPage() {
             </div>
 
             {/* right side */}
-            <div className="flex flex-col gap-5 w-full md:w-[350px] lg:w-[350px] fade-in-delay-2">
+            <div className="flex flex-col gap-5 w-full md:w-[350px] lg:w-[350px] fade-in-delay-1-2">
               <div className="flex flex-col gap-5 p-5 bg-white rounded-[10px]">
                 {/* Appearance header */}
                 <div className="flex-flex-col">
-                  <p className="font-lato text-2xl text-primary-default fade-in-delay select-none">
+                  <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                     Appearance
                   </p>
-                  <p className="font-lato text-[13px] text-text fade-in-delay select-none">
+                  <p className="font-lato text-[13px] text-text fade-in-delay-1 select-none">
                     Customize how Task Tracker looks
                   </p>
                 </div>
@@ -513,7 +513,7 @@ export default function ProfileSettingsPage() {
                       />
                     </svg>
 
-                    <p className="font-lato text-base font-bold text-text fade-in-delay select-none">
+                    <p className="font-lato text-base font-bold text-text fade-in-delay-1 select-none">
                       Dark Mode
                     </p>
                   </div>
@@ -525,7 +525,7 @@ export default function ProfileSettingsPage() {
                     }
                     onLabel="Dark"
                     offLabel="Light"
-                    className="fade-in-delay"
+                    className="fade-in-delay-1"
                   />
                 </div>
               </div>

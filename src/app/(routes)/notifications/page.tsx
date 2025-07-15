@@ -148,7 +148,7 @@ useEffect(() => {
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-800 fade-in select-none">
                   Notifications
                   </h1>
-                  <p className="font-lato text-sm text-gray-500 fade-in-delay select-none mt-1">
+                  <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none mt-1">
                   Never Miss an Important Update
                   </p>
                 </div>
@@ -173,7 +173,7 @@ useEffect(() => {
 
 
           {(rawNotifications.length != 0 && !pageLoading)&&(
-          <div className="flex flex-col gap-[10px] overflow-y-auto fade-in-delay max-h-[calc(100vh-130px)] pr-2 hide-scrollbar">
+          <div className="flex flex-col gap-[10px] overflow-y-auto fade-in-delay-1 max-h-[calc(100vh-130px)] pr-2 hide-scrollbar">
             {notifications.map((notif, index) => (
               <NotificationCard key={index} {...notif} />
             ))}
@@ -189,7 +189,7 @@ useEffect(() => {
                 <path d="M68.75 34.3877L42.5 65.6377L31.25 53.1377" stroke="#FEAD03" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
 
-                <h1 className="font-lato text-2xl text-primary-default font-bold fade-in-delay text-center">
+                <h1 className="font-lato text-2xl text-primary-default font-bold fade-in-delay-1 text-center">
                   You&apos;re All Caught Up! ✨
                 </h1>
                 <span className="font-lato text-base text-text text-center fade-in-delay-2">
