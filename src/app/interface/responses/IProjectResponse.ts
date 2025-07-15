@@ -4,5 +4,5 @@ export interface IProjectResponse{
     status: string;
     message: string;
     data?: IProject;
-    error?: any;
+    error?: string;
 }

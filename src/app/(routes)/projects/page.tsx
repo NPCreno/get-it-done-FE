@@ -719,7 +719,7 @@ export default function ProjectsPage() {
       
     };
     fetchProjectById();
-  }, [isProjectModalOpen.projectId]);
+  }, [isProjectModalOpen.projectId, setFieldValue, user]);
 
   const deleteProject = async (projectId: string) => {
     try {
@@ -887,14 +887,14 @@ export default function ProjectsPage() {
                           setSelectedProject(project);
                           setIsTaskModalOpen(true);
                         }}
-                        onEditClick={(e) => {
+                        onEditClick={() => {
                           setIsProjectModalOpen({
                             isOpen: true,
                             projectId: project.project_id,
                             isEdit: true,
                           });
                         }}
-                        onDeleteClick={(e) => {
+                        onDeleteClick={() => {
                           if (project.project_id) {
                             deleteProject(project.project_id);
                           }

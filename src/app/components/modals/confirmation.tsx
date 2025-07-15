@@ -20,18 +20,18 @@ export default function ConfirmationModal({
   const [isClosing, setIsClosing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
  
-  const handleEscapeKey = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'Escape' && !isClosing) {
-      handleClose();
-    }
-  }, [isClosing]);
-
   const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
       onClose();
     }, 200); // Match this with the popOut animation duration
   }, [onClose]);
+
+  const handleEscapeKey = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape' && !isClosing) {
+      handleClose();
+    }
+  }, [isClosing, handleClose]);
 
   const handleConfirm = useCallback(() => {
     setIsConfirming(true);

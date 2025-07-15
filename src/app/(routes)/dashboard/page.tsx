@@ -818,7 +818,11 @@ export default function DashboardPage() {
                             setIsTaskModalOpen(true);
                             setIsUpdateTask(true);
                           }}
-                          taskUpdateStatus={(message: string, newStatus: string) => {
+                          taskUpdateStatus={(message: string, type?: 'info' | 'success' | 'error' | 'warning') => {
+                            // For backward compatibility, we'll use the message to determine the new status
+                            // since the type parameter is used for the toast style
+                            const newStatus = message.toLowerCase().includes('completed') ? 'Complete' : 'Pending';
+                            
                             // Optimistically update the task status in the local state
                             setTasks(currentTasks => 
                               currentTasks.map(t => 
@@ -852,13 +856,17 @@ export default function DashboardPage() {
                               });
                             }
 
-                            // Show toast notification
+                            // Show toast notification with the provided type
                             setToastMessage({
-                              title: `Task marked as ${newStatus}`,
+                              title: `Task ${newStatus.toLowerCase()}`,
                               description: message,
-                              className: newStatus === "Complete" 
-                                ? "text-success-default" 
-                                : "text-accent-default",
+                              className: type === 'success' 
+                                ? 'text-success-default' 
+                                : type === 'error' 
+                                  ? 'text-error-default'
+                                  : type === 'warning'
+                                    ? 'text-warning-default'
+                                    : 'text-accent-default',
                             });
                             setShowToast(true);
                             setIsExitingToast(false);
@@ -916,7 +924,11 @@ export default function DashboardPage() {
                                     setIsTaskModalOpen(true);
                                     setIsUpdateTask(true);
                                   }}
-                                  taskUpdateStatus={(message: string, newStatus: string) => {
+                                  taskUpdateStatus={(message: string, type?: 'info' | 'success' | 'error' | 'warning') => {
+                                    // For backward compatibility, we'll use the message to determine the new status
+                                    // since the type parameter is used for the toast style
+                                    const newStatus = message.toLowerCase().includes('completed') ? 'Complete' : 'Pending';
+                                    
                                     // Optimistically update the task status in the local state
                                     setTasks(currentTasks => 
                                       currentTasks.map(t => 
@@ -950,13 +962,17 @@ export default function DashboardPage() {
                                       });
                                     }
 
-                                    // Show toast notification
+                                    // Show toast notification with the provided type
                                     setToastMessage({
-                                      title: `Task marked as ${newStatus}`,
+                                      title: `Task ${newStatus.toLowerCase()}`,
                                       description: message,
-                                      className: newStatus === "Complete" 
-                                        ? "text-success-default" 
-                                        : "text-accent-default",
+                                      className: type === 'success' 
+                                        ? 'text-success-default' 
+                                        : type === 'error' 
+                                          ? 'text-error-default'
+                                          : type === 'warning'
+                                            ? 'text-warning-default'
+                                            : 'text-accent-default',
                                     });
                                     setShowToast(true);
                                     setIsExitingToast(false);
