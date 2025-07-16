@@ -141,6 +141,7 @@ export function TaskItem({
       const taskDate = new Date(dueDate);
       return taskDate < today;
     } catch (error) {
+      console.error("Error checking if task is overdue:", error);
       return false;
     }
   };
@@ -151,6 +152,7 @@ export function TaskItem({
       const date = new Date(dateString);
       return format(date, 'MMM d');
     } catch (error) {
+      console.error("Error formatting due date:", error);
       return '';
     }
   };
