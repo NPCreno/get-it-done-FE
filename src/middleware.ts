@@ -8,6 +8,27 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get("access_token")?.value;
 
+  // Handle root route - redirect to dashboard if authenticated
+  if (pathname === "/") {
+    if (token) {
+      try {
+        // Verify token is valid
+        const [, payload] = token.split(".");
+        const decoded = JSON.parse(base64UrlDecode(payload));
+        const exp = decoded.exp * 1000;
+
+        if (Date.now() < exp) {
+          // Token is valid, redirect to dashboard
+          return NextResponse.redirect(new URL("/dashboard", req.url));
+        }
+      } catch (err) {
+        console.error("Token verification failed:", err);
+        // If token is invalid, continue to root
+      }
+    }
+    return NextResponse.next();
+  }
+
   // Handle public routes - allow access regardless of auth state
   if (publicRoutes.some(route => pathname.startsWith(route))) {
     if (token) {
@@ -38,10 +59,7 @@ export async function middleware(req: NextRequest) {
         return response;
       }
 
-      // Allow access to root path without redirection
-      if (pathname === "/") {
-        return NextResponse.next();
-      }
+      // Root path is now handled at the beginning of the middleware
 
       return NextResponse.next();
     } catch (err) {
