@@ -1,8 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
 import { loginSchema } from "@/app/schemas/loginSchema";
-import { useRouter } from "next/navigation";
 import { loginEmail, loginUsername } from "@/app/api/userRequests";
 import { Loader2 } from "lucide-react";
 import InputBox from "@/app/components/inputBox";
