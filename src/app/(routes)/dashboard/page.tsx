@@ -3,7 +3,8 @@ import MainLayout from "@/app/components/MainLayout";
 import ChartCard from "../../components/chartCard";
 import StatsCard from "../../components/statsCard";
 import TaskModal from "@/app/components/modals/taskModal";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState, useEffect, useRef, useMemo } from 'react';
+import PomodoroButton from '@/app/components/PomodoroButton';
 import { useFormState } from "@/app/context/FormProvider";
 import { FormikErrors, useFormik } from "formik";
 import { createTaskSchema } from "@/app/schemas/createTaskSchema";
@@ -34,13 +35,13 @@ import { ITaskResponse } from "@/app/interface/responses/ITaskResponse";
 import { IUser } from "@/app/interface/IUser";
 import LoadingPage from "@/app/components/loader";
 import { IDashboardData } from "@/app/interface/IDashboardData";
-import PomodoroModal from "@/app/components/modals/pomodoro";
 import { ITaskCompletionTrendData } from "@/app/interface/ITaskCompletionTrendData";
 import { TaskItem } from "@/app/components/taskItem";
 import { ITaskFormErrors } from "@/app/interface/forms/ITaskFormErrors";
 import { ITaskFormValues } from "@/app/interface/forms/ITaskFormValues";
 import { ITaskDistribution } from "@/app/interface/ITaskDistribution";
 import { IHeatmapData } from "@/app/interface/IHeatmapData";
+import PomodoroModal from "@/app/components/modals/pomodoro";
 
 export default function DashboardPage() {
   const { selectedTaskData, setSelectedTaskData, selectedMonth, selectedYear, calendarMonthYear } = useFormState();
@@ -712,55 +713,10 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <button
-                    className="relative px-5 py-2 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
-                  bg-gradient-to-r from-amber-300 to-amber-500 shadow-md hover:shadow-lg
-                  transform transition-all duration-300 hover:translate-y-[-1px] active:translate-y-0 active:scale-95 overflow-hidden group
-                  before:absolute before:inset-0 before:bg-gradient-to-r before:from-amber-400 before:to-amber-600 
-                  before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
-                    onClick={() => setIsPomodoroModalOpen(true)}
-                  >
-                    {/* Animated shine effect */}
-                    <span className="absolute inset-0 rounded-xl overflow-hidden">
-                      <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                    </span>
-
-                    {/* Timer icon with subtle animation */}
-                    <div className="relative z-10 flex items-center justify-center">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 30 30"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="transition-transform duration-300 group-hover:rotate-12"
-                      >
-                        <path
-                          d="M6.6156 7.49915C4.79638 9.53097 3.77785 12.1549 3.74978 14.882C3.68064 21.1134 8.76834 26.2374 14.9998 26.2492C21.2224 26.2609 26.2498 21.2201 26.2498 14.9992C26.2498 8.87376 21.3543 3.88919 15.2635 3.74916C15.2292 3.74805 15.195 3.75387 15.163 3.76625C15.131 3.77863 15.1019 3.79733 15.0773 3.82122C15.0527 3.84512 15.0331 3.87372 15.0198 3.90533C15.0065 3.93694 14.9997 3.97091 14.9998 4.00521V8.9054"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-amber-800"
-                        />
-                        <path
-                          d="M15.745 14.481H15.746C15.9144 14.6024 16.0355 14.7775 16.0897 14.9761L16.1083 15.063C16.1431 15.2679 16.1067 15.478 16.0057 15.6577L15.9579 15.7329C15.8386 15.9033 15.6649 16.0266 15.4667 16.0835L15.3807 16.104C15.1479 16.1469 14.908 16.0958 14.7118 15.9634C14.6695 15.9336 14.6294 15.9009 14.5927 15.8647L14.4872 15.7417L11.5594 11.5542L15.745 14.481Z"
-                          fill="currentColor"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          className="text-amber-800"
-                        />
-                      </svg>
-                    </div>
-
-                    {/* Button text */}
-                    <span className="relative z-10 text-base font-medium tracking-wide text-white">
-                      Start Pomodoro
-                    </span>
-
-                    {/* Subtle pulse effect */}
-                    <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
-                  </button>
+                  <PomodoroButton 
+                    onOpenChange={setIsPomodoroModalOpen}
+                  />
+                    
                 </div>
               </div>
 
