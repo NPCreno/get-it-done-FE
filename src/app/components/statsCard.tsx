@@ -49,10 +49,10 @@ export default function StatsCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: parseFloat(delay.split('-').pop() || '0') * 0.1 }}
-      className={`p-5 flex flex-row items-center gap-6 rounded-xl w-full h-full transition-all duration-300 
+      className={`lg:p-5 p-1 flex flex-row items-center gap-6 rounded-xl w-full h-full transition-all duration-300 
       hover:shadow-lg group ${getGradientClass()} ${className}`}
     >
-      <div className={`relative p-3 rounded-xl bg-white shadow-sm group-hover:shadow-md transition-all duration-300 ${getIconColor()}`}>
+      <div className={`relative sm:p-3 rounded-xl bg-white shadow-sm group-hover:shadow-md transition-all duration-300 ${getIconColor()}`}>
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
@@ -69,11 +69,11 @@ export default function StatsCard({
       </div>
       
       <div className="flex-1">
-        <span className="text-sm font-medium text-gray-500 font-lato tracking-wide">
+        <span className="sm:text-sm text-[8px] font-medium text-gray-500 font-lato tracking-wide">
           {header.toUpperCase()}
         </span>
         <motion.p 
-          className="text-2xl font-bold text-gray-800 font-lato mt-1"
+          className="sm:text-2xl text-lg font-bold text-gray-800 font-lato mt-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}

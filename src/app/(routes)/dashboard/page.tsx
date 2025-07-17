@@ -765,7 +765,7 @@ export default function DashboardPage() {
               </div>
 
               {/* first row cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full fade-in-delay-2 group/cards">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 w-full fade-in-delay-2 group/cards">
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary-100/30">
                   <StatsCard
                     icon="/svgs/list-outline.svg"
