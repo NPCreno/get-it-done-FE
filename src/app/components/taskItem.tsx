@@ -8,12 +8,14 @@ import { format } from 'date-fns';
 interface TaskItemProps {
   task: ITask;
   handleUpdateTask: () => void;
+  handleDeleteTask: (taskId: string) => void;
   taskUpdateStatus?: (message: string, type?: 'info' | 'success' | 'error' | 'warning') => void;
 }
 
 export function TaskItem({ 
   task, 
   handleUpdateTask, 
+  handleDeleteTask,
   taskUpdateStatus 
 }: TaskItemProps) {
   const { setSelectedTaskData } = useFormState();
@@ -22,10 +24,30 @@ export function TaskItem({
     isUpdating: boolean;
     controller: AbortController | null;
   }>({ status: null, isUpdating: false, controller: null });
-
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const currentStatus = updateState.status || task.status;
   const isComplete = currentStatus === "Complete";
   const isUpdating = updateState.isUpdating;
+
+  const handleDelete = useCallback(async (taskId: string) => {
+    if (isDeleting) return;
+    
+    try {
+      setIsDeleting(true);
+      
+      // Optimistic UI update - the parent component should handle the actual removal from the UI
+      await handleDeleteTask(taskId);
+      
+      // Show success message
+      taskUpdateStatus?.('Task deleted successfully', 'success');
+    } catch (error) {
+      taskUpdateStatus?.('Failed to delete task', 'error');
+      throw error; // Re-throw to allow parent component to handle the error
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [handleDeleteTask, isDeleting, taskUpdateStatus]);
 
   const handleCheckToggle = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
@@ -169,6 +191,8 @@ export function TaskItem({
         setSelectedTaskData(task);
         handleUpdateTask();
       }}
+      onMouseEnter={() => setShowDeleteModal(true)} 
+      onMouseLeave={() => setShowDeleteModal(false)}
     >
       <div className="flex items-center justify-center">
         <div className="group w-6 h-6 relative">
@@ -206,16 +230,36 @@ export function TaskItem({
           </p>
         )}
           </div>
-          <div className="flex items-center space-x-2 ml-2">
-            {task.due_date && (
-              <span className={`text-xs whitespace-nowrap ${
-                isOverdue(task.due_date.toString()) && !isComplete 
-                  ? 'text-red-500 font-medium' 
-                  : 'text-gray-400'
-              }`}>
-                {formatDueDate(task.due_date.toString())}
-              </span>
+          <div className="flex flex-row gap-2">            
+            {showDeleteModal && (
+              <div 
+                className={`cursor-pointer ${isDeleting ? 'opacity-50' : ''}`} 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(task.task_id).catch(console.error);
+                }}
+                title={isDeleting ? 'Deleting...' : 'Delete task'}
+              >
+                <Image 
+                  src="/svgs/trash-outline.svg" 
+                  alt={isDeleting ? 'Deleting...' : 'Delete'} 
+                  width={20} 
+                  height={20} 
+                  className={isDeleting ? 'animate-pulse' : ''}
+                />
+              </div>
             )}
+            <div className="flex items-center space-x-2 ml-2">
+              {task.due_date && (
+                <span className={`text-xs whitespace-nowrap ${
+                  isOverdue(task.due_date.toString()) && !isComplete 
+                    ? 'text-red-500 font-medium' 
+                    : 'text-gray-400'
+                }`}>
+                  {formatDueDate(task.due_date.toString())}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

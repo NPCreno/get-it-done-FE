@@ -16,6 +16,7 @@ import {
   getTaskDistributionData,
   getCalendarHeatmap,
   getStreakCount,
+  deleteTaskApi,
 } from "@/app/api/taskRequests";
 import { getProjectsForUser } from "@/app/api/projectsRequests";
 import { getUser } from "@/app/api/userRequests";
@@ -394,7 +395,7 @@ export default function DashboardPage() {
       if (response.status === "success") {
         setIsLoading(false);
         setUpdateTaskDashboard(!updateTaskDashboard);
-        clearAllData();
+        clearValueAndErrors();
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Task Updated",
@@ -414,7 +415,7 @@ export default function DashboardPage() {
         }, 10000); // Toast display duration
       } else {
         setIsLoading(false);
-        clearAllData();
+        clearValueAndErrors();
         setIsTaskModalOpen(false);
         setToastMessage({
           title: response.message,
@@ -467,7 +468,7 @@ export default function DashboardPage() {
     setFieldValue("isRecurring", false);
   }, [selectedTaskData, setFieldValue]);
 
-  const clearAllData = () => {
+  const clearValueAndErrors = () => {
     setFieldValue("title", "");
     setFieldValue("description", "");
     setFieldValue("priority", "");
@@ -492,6 +493,76 @@ export default function DashboardPage() {
       setTimeout(() => setShowLoader(false), 500); // Match transition duration
     }
   }, [pageLoading]);
+
+  const handleDeleteTask = async (taskId: string) => {
+    await deleteTask(taskId);
+  };
+
+  const deleteTask = async (taskId: string) => {
+    try {
+      const response: ITaskResponse = await deleteTaskApi(taskId);
+      if (response.status === "success") {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: "Task Deleted",
+          description:
+            response.message || "Your task has been deleted successfully",
+          className: "text-green-600",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      } else {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: response.message,
+          description: response?.error || "Something Went Wrong",
+          className: "text-error-default",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: error.message,
+          className: "text-error-default",
+        });
+      } else {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: "An unknown error occurred",
+          className: "text-error-default",
+        });
+      }
+      setShowToast(true);
+      setIsExitingToast(false);
+      setTimeout(() => {
+        setIsExitingToast(true); // Start exit animation
+        setTimeout(() => {
+          setShowToast(false); // Remove after animation completes
+        }, 400); // Must match the toastOut animation duration
+      }, 10000); // Toast display duration
+    }
+  };
 
   return (
     <MainLayout>
@@ -762,7 +833,7 @@ export default function DashboardPage() {
                     before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
                       onClick={() => {
                         setIsTaskModalOpen(true);
-                        clearAllData();
+                        clearValueAndErrors();
                         setIsUpdateTask(false);
                       }}
                     >
@@ -818,6 +889,7 @@ export default function DashboardPage() {
                             setIsTaskModalOpen(true);
                             setIsUpdateTask(true);
                           }}
+                          handleDeleteTask={(taskId: string) => handleDeleteTask(taskId)}
                           taskUpdateStatus={(message: string, type?: 'info' | 'success' | 'error' | 'warning') => {
                             // For backward compatibility, we'll use the message to determine the new status
                             // since the type parameter is used for the toast style
@@ -919,6 +991,7 @@ export default function DashboardPage() {
                                 <TaskItem
                                   key={`completed-${task.task_id}-${task.status}`}
                                   task={task}
+                                  handleDeleteTask={() => handleDeleteTask(task.task_id)}
                                   handleUpdateTask={() => {
                                     setSelectedTaskData(task);
                                     setIsTaskModalOpen(true);
@@ -1113,7 +1186,7 @@ export default function DashboardPage() {
                     hover:shadow-lg hover:shadow-primary-default/20 transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5"
                     onClick={() => {
                       setIsTaskModalOpen(true);
-                      clearAllData();
+                      clearValueAndErrors();
                       setIsUpdateTask(false);
                     }}
                   >
