@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { useFormik } from "formik";
 import { loginSchema } from "@/app/schemas/loginSchema";
-import { useRouter } from "next/navigation";
 import { loginEmail, loginUsername } from "@/app/api/userRequests";
 import { Loader2 } from "lucide-react";
 import InputBox from "@/app/components/inputBox";
@@ -19,7 +18,6 @@ export default function LoginForm({
 }: {
   onChangeView: (view: "signup" | "forgotPassword") => void;
 }) {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loginSuccess, setLoginSuccess] = useState(false);
@@ -69,11 +67,10 @@ export default function LoginForm({
         // Show success state
         setLoginSuccess(true);
         
-        // Redirect after a short delay to show the success state
+        // Add a small delay to ensure the UI updates before navigation
         setTimeout(() => {
-          router.push('/dashboard');
-          router.refresh(); // Ensure the layout updates with the new auth state
-        }, 800);
+          window.location.href = '/dashboard'; // Navigate to dashboard with a hard refresh to ensure all data is fresh
+        }, 100);
       } catch (error) {
         console.error("Login error:", error);
         if (error instanceof Error) {

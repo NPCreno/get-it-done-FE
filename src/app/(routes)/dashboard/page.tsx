@@ -3,7 +3,8 @@ import MainLayout from "@/app/components/MainLayout";
 import ChartCard from "../../components/chartCard";
 import StatsCard from "../../components/statsCard";
 import TaskModal from "@/app/components/modals/taskModal";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState, useEffect, useRef, useMemo } from 'react';
+import PomodoroButton from '@/app/components/PomodoroButton';
 import { useFormState } from "@/app/context/FormProvider";
 import { FormikErrors, useFormik } from "formik";
 import { createTaskSchema } from "@/app/schemas/createTaskSchema";
@@ -16,6 +17,7 @@ import {
   getTaskDistributionData,
   getCalendarHeatmap,
   getStreakCount,
+  deleteTaskApi,
 } from "@/app/api/taskRequests";
 import { getProjectsForUser } from "@/app/api/projectsRequests";
 import { getUser } from "@/app/api/userRequests";
@@ -33,13 +35,13 @@ import { ITaskResponse } from "@/app/interface/responses/ITaskResponse";
 import { IUser } from "@/app/interface/IUser";
 import LoadingPage from "@/app/components/loader";
 import { IDashboardData } from "@/app/interface/IDashboardData";
-import PomodoroModal from "@/app/components/modals/pomodoro";
 import { ITaskCompletionTrendData } from "@/app/interface/ITaskCompletionTrendData";
 import { TaskItem } from "@/app/components/taskItem";
 import { ITaskFormErrors } from "@/app/interface/forms/ITaskFormErrors";
 import { ITaskFormValues } from "@/app/interface/forms/ITaskFormValues";
 import { ITaskDistribution } from "@/app/interface/ITaskDistribution";
 import { IHeatmapData } from "@/app/interface/IHeatmapData";
+import PomodoroModal from "@/app/components/modals/pomodoro";
 
 export default function DashboardPage() {
   const { selectedTaskData, setSelectedTaskData, selectedMonth, selectedYear, calendarMonthYear } = useFormState();
@@ -394,7 +396,7 @@ export default function DashboardPage() {
       if (response.status === "success") {
         setIsLoading(false);
         setUpdateTaskDashboard(!updateTaskDashboard);
-        clearAllData();
+        clearValueAndErrors();
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Task Updated",
@@ -414,7 +416,7 @@ export default function DashboardPage() {
         }, 10000); // Toast display duration
       } else {
         setIsLoading(false);
-        clearAllData();
+        clearValueAndErrors();
         setIsTaskModalOpen(false);
         setToastMessage({
           title: response.message,
@@ -467,7 +469,7 @@ export default function DashboardPage() {
     setFieldValue("isRecurring", false);
   }, [selectedTaskData, setFieldValue]);
 
-  const clearAllData = () => {
+  const clearValueAndErrors = () => {
     setFieldValue("title", "");
     setFieldValue("description", "");
     setFieldValue("priority", "");
@@ -492,6 +494,76 @@ export default function DashboardPage() {
       setTimeout(() => setShowLoader(false), 500); // Match transition duration
     }
   }, [pageLoading]);
+
+  const handleDeleteTask = async (taskId: string) => {
+    await deleteTask(taskId);
+  };
+
+  const deleteTask = async (taskId: string) => {
+    try {
+      const response: ITaskResponse = await deleteTaskApi(taskId);
+      if (response.status === "success") {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: "Task Deleted",
+          description:
+            response.message || "Your task has been deleted successfully",
+          className: "text-green-600",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      } else {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: response.message,
+          description: response?.error || "Something Went Wrong",
+          className: "text-error-default",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: error.message,
+          className: "text-error-default",
+        });
+      } else {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: "An unknown error occurred",
+          className: "text-error-default",
+        });
+      }
+      setShowToast(true);
+      setIsExitingToast(false);
+      setTimeout(() => {
+        setIsExitingToast(true); // Start exit animation
+        setTimeout(() => {
+          setShowToast(false); // Remove after animation completes
+        }, 400); // Must match the toastOut animation duration
+      }, 10000); // Toast display duration
+    }
+  };
 
   return (
     <MainLayout>
@@ -641,60 +713,15 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <button
-                    className="relative px-5 py-2 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
-                  bg-gradient-to-r from-amber-300 to-amber-500 shadow-md hover:shadow-lg
-                  transform transition-all duration-300 hover:translate-y-[-1px] active:translate-y-0 active:scale-95 overflow-hidden group
-                  before:absolute before:inset-0 before:bg-gradient-to-r before:from-amber-400 before:to-amber-600 
-                  before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
-                    onClick={() => setIsPomodoroModalOpen(true)}
-                  >
-                    {/* Animated shine effect */}
-                    <span className="absolute inset-0 rounded-xl overflow-hidden">
-                      <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                    </span>
-
-                    {/* Timer icon with subtle animation */}
-                    <div className="relative z-10 flex items-center justify-center">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 30 30"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="transition-transform duration-300 group-hover:rotate-12"
-                      >
-                        <path
-                          d="M6.6156 7.49915C4.79638 9.53097 3.77785 12.1549 3.74978 14.882C3.68064 21.1134 8.76834 26.2374 14.9998 26.2492C21.2224 26.2609 26.2498 21.2201 26.2498 14.9992C26.2498 8.87376 21.3543 3.88919 15.2635 3.74916C15.2292 3.74805 15.195 3.75387 15.163 3.76625C15.131 3.77863 15.1019 3.79733 15.0773 3.82122C15.0527 3.84512 15.0331 3.87372 15.0198 3.90533C15.0065 3.93694 14.9997 3.97091 14.9998 4.00521V8.9054"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-amber-800"
-                        />
-                        <path
-                          d="M15.745 14.481H15.746C15.9144 14.6024 16.0355 14.7775 16.0897 14.9761L16.1083 15.063C16.1431 15.2679 16.1067 15.478 16.0057 15.6577L15.9579 15.7329C15.8386 15.9033 15.6649 16.0266 15.4667 16.0835L15.3807 16.104C15.1479 16.1469 14.908 16.0958 14.7118 15.9634C14.6695 15.9336 14.6294 15.9009 14.5927 15.8647L14.4872 15.7417L11.5594 11.5542L15.745 14.481Z"
-                          fill="currentColor"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          className="text-amber-800"
-                        />
-                      </svg>
-                    </div>
-
-                    {/* Button text */}
-                    <span className="relative z-10 text-base font-medium tracking-wide text-white">
-                      Start Pomodoro
-                    </span>
-
-                    {/* Subtle pulse effect */}
-                    <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
-                  </button>
+                  <PomodoroButton 
+                    onOpenChange={setIsPomodoroModalOpen}
+                  />
+                    
                 </div>
               </div>
 
               {/* first row cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full fade-in-delay-2 group/cards">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 w-full fade-in-delay-2 group/cards">
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary-100/30">
                   <StatsCard
                     icon="/svgs/list-outline.svg"
@@ -762,7 +789,7 @@ export default function DashboardPage() {
                     before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
                       onClick={() => {
                         setIsTaskModalOpen(true);
-                        clearAllData();
+                        clearValueAndErrors();
                         setIsUpdateTask(false);
                       }}
                     >
@@ -818,6 +845,7 @@ export default function DashboardPage() {
                             setIsTaskModalOpen(true);
                             setIsUpdateTask(true);
                           }}
+                          handleDeleteTask={(taskId: string) => handleDeleteTask(taskId)}
                           taskUpdateStatus={(message: string, type?: 'info' | 'success' | 'error' | 'warning') => {
                             // For backward compatibility, we'll use the message to determine the new status
                             // since the type parameter is used for the toast style
@@ -919,6 +947,7 @@ export default function DashboardPage() {
                                 <TaskItem
                                   key={`completed-${task.task_id}-${task.status}`}
                                   task={task}
+                                  handleDeleteTask={() => handleDeleteTask(task.task_id)}
                                   handleUpdateTask={() => {
                                     setSelectedTaskData(task);
                                     setIsTaskModalOpen(true);
@@ -1113,7 +1142,7 @@ export default function DashboardPage() {
                     hover:shadow-lg hover:shadow-primary-default/20 transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5"
                     onClick={() => {
                       setIsTaskModalOpen(true);
-                      clearAllData();
+                      clearValueAndErrors();
                       setIsUpdateTask(false);
                     }}
                   >

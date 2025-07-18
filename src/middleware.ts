@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { jwtVerify } from "jose";
+import { cookies } from 'next/headers';
 import { base64UrlDecode } from "./app/utils/utils";
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-256-bit-secret';
+const JWT_ALGORITHM = 'HS256';
 
 const publicRoutes = ["/login", "/signup", "/forgot-password"];
 const protectedRoutes = ["/dashboard", "/projects", "/notifications", "/profile-settings"];
@@ -7,6 +12,30 @@ const protectedRoutes = ["/dashboard", "/projects", "/notifications", "/profile-
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get("access_token")?.value;
+
+  // Handle root route - redirect to dashboard if authenticated
+  if (pathname === "/") {
+    if (token) {
+      try {
+        // Verify token with proper signature validation
+        const secret = new TextEncoder().encode(JWT_SECRET);
+        const { payload } = await jwtVerify(token, secret, {
+          algorithms: [JWT_ALGORITHM],
+        });
+
+        // Check token expiration
+        if (payload.exp && Date.now() < payload.exp * 1000) {
+          // Token is valid, redirect to dashboard
+          return NextResponse.redirect(new URL("/dashboard", req.url));
+        }
+      } catch (err) {
+        console.error("Token verification failed:", err);
+        // Clear invalid token
+        cookies().delete('access_token');
+      }
+    }
+    return NextResponse.next();
+  }
 
   // Handle public routes - allow access regardless of auth state
   if (publicRoutes.some(route => pathname.startsWith(route))) {
@@ -38,10 +67,7 @@ export async function middleware(req: NextRequest) {
         return response;
       }
 
-      // Allow access to root path without redirection
-      if (pathname === "/") {
-        return NextResponse.next();
-      }
+      // Root path is now handled at the beginning of the middleware
 
       return NextResponse.next();
     } catch (err) {

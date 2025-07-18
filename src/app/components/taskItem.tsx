@@ -3,16 +3,19 @@ import Image from 'next/image';
 import { updateTaskStatus } from "../api/taskRequests";
 import { useFormState } from "../context/FormProvider";
 import { ITask } from "../interface/ITask";
+import { format } from 'date-fns';
 
 interface TaskItemProps {
   task: ITask;
   handleUpdateTask: () => void;
+  handleDeleteTask: (taskId: string) => void;
   taskUpdateStatus?: (message: string, type?: 'info' | 'success' | 'error' | 'warning') => void;
 }
 
 export function TaskItem({ 
   task, 
   handleUpdateTask, 
+  handleDeleteTask,
   taskUpdateStatus 
 }: TaskItemProps) {
   const { setSelectedTaskData } = useFormState();
@@ -21,10 +24,53 @@ export function TaskItem({
     isUpdating: boolean;
     controller: AbortController | null;
   }>({ status: null, isUpdating: false, controller: null });
-
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<{[key: string]: boolean}>({});
   const currentStatus = updateState.status || task.status;
   const isComplete = currentStatus === "Complete";
   const isUpdating = updateState.isUpdating;
+
+  const handleDelete = useCallback(async (taskId: string) => {
+    // Prevent multiple delete attempts for the same task
+    if (isDeleting[taskId]) {
+      console.log('Delete already in progress for task:', taskId);
+      return;
+    }
+    
+    try {
+      // Mark this task as being deleted
+      setIsDeleting(prev => ({ ...prev, [taskId]: true }));
+      
+      // Create a promise with a timeout
+      const deletePromise = handleDeleteTask(taskId);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Delete operation timed out')), 10000)
+      );
+      
+      // Race between the delete operation and timeout
+      await Promise.race([deletePromise, timeoutPromise]);
+      
+      // If we get here, the delete was successful
+      taskUpdateStatus?.('Task deleted successfully', 'success');
+      return true;
+      
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete task';
+      taskUpdateStatus?.(`Delete failed: ${errorMessage}`, 'error');
+      
+      // Re-throw to allow parent component to handle the error if needed
+      throw error;
+      
+    } finally {
+      // Clean up the loading state
+      setIsDeleting(prev => {
+        const newState = { ...prev };
+        delete newState[taskId];
+        return newState;
+      });
+    }
+  }, [handleDeleteTask, isDeleting, taskUpdateStatus]);
 
   const handleCheckToggle = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
@@ -125,19 +171,54 @@ export function TaskItem({
     };
   }, [updateState.controller]);
 
+  // Priority color mapping (more subtle)
+  const priorityColors = {
+    'Low': 'border-l-2 border-blue-400',
+    'Medium': 'border-l-2 border-orange-400',
+    'High': 'border-l-2 border-red-400',
+  };
+
+  // Check if task is overdue
+  const isOverdue = (dueDate: string): boolean => {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const taskDate = new Date(dueDate);
+      return taskDate < today;
+    } catch (error) {
+      console.error("Error checking if task is overdue:", error);
+      return false;
+    }
+  };
+
+  // Format due date
+  const formatDueDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return format(date, 'MMM d');
+    } catch (error) {
+      console.error("Error formatting due date:", error);
+      return '';
+    }
+  };
+
+  // Get priority color class
+  const priorityColor = priorityColors[task.priority as keyof typeof priorityColors] || '';
+
   return (
     <div 
-      className={`flex flex-row w-full h-[42px] items-center justify-between rounded-[10px] hover:bg-[#FAFAFA] cursor-pointer gap-5 pr-5 pl-5 ${isUpdating ? 'opacity-70' : ''}`}
+      className={`flex flex-row w-full h-[46px] items-center rounded-[10px] hover:bg-[#FAFAFA] cursor-pointer gap-3 pr-4 pl-3 mb-1 ${
+        isComplete ? 'opacity-70' : ''
+      } ${priorityColor}`}
       onClick={() => {
         setSelectedTaskData(task);
         handleUpdateTask();
       }}
+      onMouseEnter={() => setShowDeleteModal(true)} 
+      onMouseLeave={() => setShowDeleteModal(false)}
     >
-      <div className="flex flex-row gap-5 items-center">
-        <div 
-          className="group w-6 h-6 relative"
-          
-        >
+      <div className="flex items-center justify-center">
+        <div className="group w-6 h-6 relative">
           <input
             id={`checkTask-${task.task_id}`}
             type="checkbox"
@@ -160,20 +241,48 @@ export function TaskItem({
         </div>
       </div>
       
-      <div className="flex flex-row gap-5 items-center flex-grow w-full justify-end">
-        <div className="flex flex-row justify-between w-full">
-          <span className={`font-lato text-4 text-text ${isComplete ? 'line-through' : ''}`}>
-            {task.title}
-          </span>
-          <div className="flex flex-row gap-2 items-center">
-            {task.project_title && (
-              <div className="bg-[#D4D4D4] font-lato text-[13px] text-text font-bold rounded-[10px] px-2 h-[25px] flex items-center justify-center">
-                {task.project_title}
+      <div className="flex flex-col flex-1 min-w-0">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex flex-col items-start">
+            <span className={`font-lato text-4 text-text ${isComplete ? 'line-through' : ''} truncate`}>
+              {task.title}
+            </span>
+            {task.description && (
+          <p className="text-xs text-gray-400 truncate">
+            {task.description}
+          </p>
+        )}
+          </div>
+          <div className="flex flex-row gap-2">            
+            {showDeleteModal && (
+              <div 
+                className={`cursor-pointer ${isDeleting ? 'opacity-50' : ''}`} 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(task.task_id).catch(console.error);
+                }}
+                title={isDeleting ? 'Deleting...' : 'Delete task'}
+              >
+                <Image 
+                  src="/svgs/trash-outline.svg" 
+                  alt={isDeleting ? 'Deleting...' : 'Delete'} 
+                  width={20} 
+                  height={20} 
+                  className={isDeleting ? 'animate-pulse' : ''}
+                />
               </div>
             )}
-            <div 
-              className={`rounded-[10px] w-[10px] h-[10px] ${isComplete ? 'bg-green-600' : 'bg-[#FFC087]'}`}
-            />
+            <div className="flex items-center space-x-2 ml-2">
+              {task.due_date && (
+                <span className={`text-xs whitespace-nowrap ${
+                  isOverdue(task.due_date.toString()) && !isComplete 
+                    ? 'text-red-500 font-medium' 
+                    : 'text-gray-400'
+                }`}>
+                  {formatDueDate(task.due_date.toString())}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
