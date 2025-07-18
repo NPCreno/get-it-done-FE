@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { cookies } from 'next/headers';
 import { base64UrlDecode } from "./app/utils/utils";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-256-bit-secret';
@@ -17,21 +16,19 @@ export async function middleware(req: NextRequest) {
   if (pathname === "/") {
     if (token) {
       try {
-        // Verify token with proper signature validation
         const secret = new TextEncoder().encode(JWT_SECRET);
         const { payload } = await jwtVerify(token, secret, {
           algorithms: [JWT_ALGORITHM],
         });
-
-        // Check token expiration
+  
         if (payload.exp && Date.now() < payload.exp * 1000) {
-          // Token is valid, redirect to dashboard
           return NextResponse.redirect(new URL("/dashboard", req.url));
         }
       } catch (err) {
         console.error("Token verification failed:", err);
-        // Clear invalid token
-        cookies().delete('access_token');
+        const response = NextResponse.next();
+        response.cookies.set("access_token", "", { path: "/", expires: new Date(0) });
+        return response;
       }
     }
     return NextResponse.next();
