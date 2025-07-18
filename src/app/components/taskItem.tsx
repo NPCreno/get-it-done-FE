@@ -25,27 +25,50 @@ export function TaskItem({
     controller: AbortController | null;
   }>({ status: null, isUpdating: false, controller: null });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<{[key: string]: boolean}>({});
   const currentStatus = updateState.status || task.status;
   const isComplete = currentStatus === "Complete";
   const isUpdating = updateState.isUpdating;
 
   const handleDelete = useCallback(async (taskId: string) => {
-    if (isDeleting) return;
+    // Prevent multiple delete attempts for the same task
+    if (isDeleting[taskId]) {
+      console.log('Delete already in progress for task:', taskId);
+      return;
+    }
     
     try {
-      setIsDeleting(true);
+      // Mark this task as being deleted
+      setIsDeleting(prev => ({ ...prev, [taskId]: true }));
       
-      // Optimistic UI update - the parent component should handle the actual removal from the UI
-      await handleDeleteTask(taskId);
+      // Create a promise with a timeout
+      const deletePromise = handleDeleteTask(taskId);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Delete operation timed out')), 10000)
+      );
       
-      // Show success message
+      // Race between the delete operation and timeout
+      await Promise.race([deletePromise, timeoutPromise]);
+      
+      // If we get here, the delete was successful
       taskUpdateStatus?.('Task deleted successfully', 'success');
+      return true;
+      
     } catch (error) {
-      taskUpdateStatus?.('Failed to delete task', 'error');
-      throw error; // Re-throw to allow parent component to handle the error
+      console.error('Error deleting task:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete task';
+      taskUpdateStatus?.(`Delete failed: ${errorMessage}`, 'error');
+      
+      // Re-throw to allow parent component to handle the error if needed
+      throw error;
+      
     } finally {
-      setIsDeleting(false);
+      // Clean up the loading state
+      setIsDeleting(prev => {
+        const newState = { ...prev };
+        delete newState[taskId];
+        return newState;
+      });
     }
   }, [handleDeleteTask, isDeleting, taskUpdateStatus]);
 
