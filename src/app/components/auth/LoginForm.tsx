@@ -47,15 +47,15 @@ export default function LoginForm({
         }
 
         // Store the access token in a cookie
-        if (response.data?.access_token) {
+        if (response.data?.data?.access_token) {
           const cookieOptions = {
-            expires: values.rememberMe ? 30 : 1, // 30 days if remember me is checked, otherwise 1 day
+            expires: response.data.data.expires_in,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict' as const,
             path: '/',
           };
           
-          Cookies.set('access_token', response.data.access_token, cookieOptions);
+          Cookies.set('access_token', response.data.data.access_token, cookieOptions);
           // Store the remember me preference
           if (values.rememberMe) {
             localStorage.setItem('rememberMe', 'true');
