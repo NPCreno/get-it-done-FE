@@ -36,9 +36,9 @@ export default function LoginForm({
 
         let response;
         if (values.usernameOrEmail.includes('@')) {
-          response = await loginEmail(values.usernameOrEmail, values.password);
+          response = await loginEmail(values.usernameOrEmail, values.password, values.rememberMe);
         } else {
-          response = await loginUsername(values.usernameOrEmail, values.password);
+          response = await loginUsername(values.usernameOrEmail, values.password, values.rememberMe);
         }
 
         // The API returns { data, error } format
@@ -56,12 +56,7 @@ export default function LoginForm({
           };
           
           Cookies.set('access_token', response.data.data.access_token, cookieOptions);
-          // Store the remember me preference
-          if (values.rememberMe) {
-            localStorage.setItem('rememberMe', 'true');
-          } else {
-            localStorage.removeItem('rememberMe');
-          }
+          localStorage.setItem('refresh_token', response.data.data.refresh_token);
         }
 
         // Show success state
