@@ -6,6 +6,7 @@ import { loginEmail, loginUsername } from "@/app/api/userRequests";
 import { Loader2 } from "lucide-react";
 import InputBox from "@/app/components/inputBox";
 import Cookies from 'js-cookie';
+import { getIPAddress } from "@/app/utils/utils";
 
 interface LoginFormValues {
   usernameOrEmail: string;
@@ -34,11 +35,12 @@ export default function LoginForm({
         setIsLoading(true);
         setError('');
 
+        const ipAddress = await getIPAddress();
         let response;
         if (values.usernameOrEmail.includes('@')) {
-          response = await loginEmail(values.usernameOrEmail, values.password, values.rememberMe);
+          response = await loginEmail(values.usernameOrEmail, values.password, values.rememberMe, ipAddress);
         } else {
-          response = await loginUsername(values.usernameOrEmail, values.password, values.rememberMe);
+          response = await loginUsername(values.usernameOrEmail, values.password, values.rememberMe, ipAddress);
         }
 
         // The API returns { data, error } format
