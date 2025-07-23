@@ -58,7 +58,7 @@ export default function LoginForm({
           };
           
           Cookies.set('access_token', response.data.data.access_token, cookieOptions);
-          localStorage.setItem('refresh_token', response.data.data.refresh_token);
+          Cookies.set('refresh_token', response.data.data.refresh_token, cookieOptions);
         }
 
         // Show success state
