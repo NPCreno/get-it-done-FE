@@ -256,13 +256,23 @@ export default function ProjectCard({
     {showDeleteConfirm && (
         <div className="absolute inset-0 z-10 rounded-2xl overflow-hidden">
           <ConfirmationModal
-            onClose={() => setShowDeleteConfirm(false)}
-            onConfirm={confirmDelete}
-            confirmationTitle="Delete Project"
-            confirmationDescription={`Are you sure you want to delete "${project.title}"? This action cannot be undone.`}
-            confirmBtnLabel="Delete"
-            fullScreen={true}
-          />
+          onClose={() => setShowDeleteConfirm(false)}
+          title="Delete Project"
+          description={`Are you sure you want to delete "${project.title}"? This action cannot be undone.`}
+          actions={[
+            {
+              label: 'Cancel',
+              onClick: () => setShowDeleteConfirm(false),
+              variant: 'secondary'
+            },
+            {
+              label: 'Delete',
+              onClick: confirmDelete,
+              variant: 'danger'
+            }
+          ]}
+          fullScreen={true}
+        />
         </div>
     )}
     </>

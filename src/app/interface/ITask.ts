@@ -7,4 +7,5 @@ export interface ITask {
     status: string;
     priority: string;
     project_title?: string;
+    template_id?: string;
 }

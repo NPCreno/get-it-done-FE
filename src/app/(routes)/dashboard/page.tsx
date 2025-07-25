@@ -18,6 +18,7 @@ import {
   getCalendarHeatmap,
   getStreakCount,
   deleteTaskApi,
+  deleteRecurringTasksApi,
 } from "@/app/api/taskRequests";
 import { getProjectsForUser } from "@/app/api/projectsRequests";
 import { getUser } from "@/app/api/userRequests";
@@ -42,6 +43,7 @@ import { ITaskFormValues } from "@/app/interface/forms/ITaskFormValues";
 import { ITaskDistribution } from "@/app/interface/ITaskDistribution";
 import { IHeatmapData } from "@/app/interface/IHeatmapData";
 import PomodoroModal from "@/app/components/modals/pomodoro";
+import ConfirmationModal from "@/app/components/modals/confirmation";
 
 export default function DashboardPage() {
   const { selectedTaskData, setSelectedTaskData, selectedMonth, selectedYear, calendarMonthYear } = useFormState();
@@ -75,6 +77,9 @@ export default function DashboardPage() {
   const [streakCount, setStreakCount] = useState(0);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const isFirstLoad = useRef(true);
+  const [taskTemplateIdToDelete, setTaskTemplateIdToDelete] = useState<string | null>(null);
+  const [taskIdToDelete, setTaskIdToDelete] = useState<string | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const handleToastClose = () => {
     setIsExitingToast(true);
     setTimeout(() => {
@@ -499,6 +504,55 @@ export default function DashboardPage() {
     await deleteTask(taskId);
   };
 
+  const handleDeleteRecurringTasks = (taskTemplate_id: string) => {
+    setTaskTemplateIdToDelete(taskTemplate_id);
+    setShowConfirmation(true);
+  };
+   
+  const handleConfirmDelete = async () => {
+    // after confirming to delete
+    if (taskTemplateIdToDelete) {
+      try {
+        await deleteRecurringTasksApi(taskTemplateIdToDelete);
+        // Optionally refresh tasks or show success message
+        setToastMessage({
+          title: "Success",
+          description: "Recurring tasks deleted successfully",
+          className: "text-green-600",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      } catch (error) {
+        console.error('Failed to delete recurring tasks:', error);
+        setToastMessage({
+          title: "Error",
+          description: "Failed to delete recurring tasks",
+          className: "text-error-default",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+      setShowConfirmation(false);
+      setTaskTemplateIdToDelete(null);
+    }
+  };
+
   const deleteTask = async (taskId: string) => {
     try {
       const response: ITaskResponse = await deleteTaskApi(taskId);
@@ -509,6 +563,72 @@ export default function DashboardPage() {
           title: "Task Deleted",
           description:
             response.message || "Your task has been deleted successfully",
+          className: "text-green-600",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      } else {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: response.message,
+          description: response?.error || "Something Went Wrong",
+          className: "text-error-default",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: error.message,
+          className: "text-error-default",
+        });
+      } else {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: "An unknown error occurred",
+          className: "text-error-default",
+        });
+      }
+      setShowToast(true);
+      setIsExitingToast(false);
+      setTimeout(() => {
+        setIsExitingToast(true); // Start exit animation
+        setTimeout(() => {
+          setShowToast(false); // Remove after animation completes
+        }, 400); // Must match the toastOut animation duration
+      }, 10000); // Toast display duration
+    }
+  };
+
+  const deleteRecurringTasks = async (taskTemplate_id: string) => {
+    try {
+      const response: ITaskResponse = await deleteRecurringTasksApi(taskTemplate_id);
+      if (response.status === "success") {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: "Task Deleted",
+          description:
+            response.message || "Your recurring tasks has been deleted successfully",
           className: "text-green-600",
         });
 
@@ -846,6 +966,10 @@ export default function DashboardPage() {
                             setIsUpdateTask(true);
                           }}
                           handleDeleteTask={(taskId: string) => handleDeleteTask(taskId)}
+                          handleDeleteRecurringTasks={
+                            (taskTemplate_id: string) => 
+                            handleDeleteRecurringTasks(taskTemplate_id)
+                          }
                           taskUpdateStatus={(message: string, type?: 'info' | 'success' | 'error' | 'warning') => {
                             // For backward compatibility, we'll use the message to determine the new status
                             // since the type parameter is used for the toast style
@@ -953,6 +1077,9 @@ export default function DashboardPage() {
                                     setIsTaskModalOpen(true);
                                     setIsUpdateTask(true);
                                   }}
+                                  handleDeleteRecurringTasks={(taskTemplate_id: string) => 
+                                    handleDeleteRecurringTasks(taskTemplate_id)
+                                  }
                                   taskUpdateStatus={(message: string, type?: 'info' | 'success' | 'error' | 'warning') => {
                                     // For backward compatibility, we'll use the message to determine the new status
                                     // since the type parameter is used for the toast style
@@ -1190,6 +1317,35 @@ export default function DashboardPage() {
 
       {isPomodoroModalOpen && (
         <PomodoroModal onClose={() => setIsPomodoroModalOpen(false)} />
+      )}
+
+      {showConfirmation && (
+        <ConfirmationModal
+          onClose={() => setShowConfirmation(false)}
+          title="Delete Recurring Tasks"
+          description="How would you like to delete these tasks?"
+          actions={[
+            {
+              label: 'Delete This Task Only',
+              onClick: () => {
+                setShowConfirmation(false);
+              },
+              variant: 'primary'
+            },
+            {
+              label: 'Delete All Recurring Tasks',
+              onClick: async () => {
+                  debugger;
+              },
+              variant: 'danger'
+            },
+            {
+              label: 'Cancel',
+              onClick: () => setShowConfirmation(false),
+              className: 'ml-auto'
+            }
+          ]}
+        />
       )}
     </MainLayout>
   );

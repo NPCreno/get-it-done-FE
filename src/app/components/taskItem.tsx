@@ -9,6 +9,7 @@ interface TaskItemProps {
   task: ITask;
   handleUpdateTask: () => void;
   handleDeleteTask: (taskId: string) => void;
+  handleDeleteRecurringTasks: (taskTemplate_id: string) => void;
   taskUpdateStatus?: (message: string, type?: 'info' | 'success' | 'error' | 'warning') => void;
 }
 
@@ -16,7 +17,8 @@ export function TaskItem({
   task, 
   handleUpdateTask, 
   handleDeleteTask,
-  taskUpdateStatus 
+  taskUpdateStatus,
+  handleDeleteRecurringTasks,
 }: TaskItemProps) {
   const { setSelectedTaskData } = useFormState();
   const [updateState, setUpdateState] = useState<{ 
@@ -259,7 +261,12 @@ export function TaskItem({
                 className={`cursor-pointer ${isDeleting ? 'opacity-50' : ''}`} 
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDelete(task.task_id).catch(console.error);
+                  if(task.template_id){
+                    handleDeleteRecurringTasks(task.template_id);
+                  }
+                  else{
+                    handleDelete(task.task_id);
+                  }
                 }}
                 title={isDeleting ? 'Deleting...' : 'Delete task'}
               >
