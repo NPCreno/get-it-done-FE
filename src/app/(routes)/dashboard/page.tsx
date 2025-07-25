@@ -77,8 +77,8 @@ export default function DashboardPage() {
   const [streakCount, setStreakCount] = useState(0);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const isFirstLoad = useRef(true);
-  const [taskTemplateIdToDelete, setTaskTemplateIdToDelete] = useState<string | null>(null);
-  const [taskIdToDelete, setTaskIdToDelete] = useState<string | null>(null);
+  const [taskTemplateIdToDelete, setTaskTemplateIdToDelete] = useState<string>("");
+  const [taskIdToDelete, setTaskIdToDelete] = useState<string>("");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const handleToastClose = () => {
     setIsExitingToast(true);
@@ -504,8 +504,9 @@ export default function DashboardPage() {
     await deleteTask(taskId);
   };
 
-  const handleDeleteRecurringTasks = (taskTemplate_id: string) => {
+  const handleDeleteRecurringTasks = (taskTemplate_id: string, taskId: string) => {
     setTaskTemplateIdToDelete(taskTemplate_id);
+    setTaskIdToDelete(taskId);
     setShowConfirmation(true);
   };
    
@@ -549,7 +550,7 @@ export default function DashboardPage() {
         }, 10000); // Toast display duration
       }
       setShowConfirmation(false);
-      setTaskTemplateIdToDelete(null);
+      setTaskTemplateIdToDelete("");
     }
   };
 
@@ -685,6 +686,65 @@ export default function DashboardPage() {
     }
   };
 
+  const handleTaskUpdateStatus = (message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
+    // For backward compatibility, we'll use the message to determine the new status
+    // since the type parameter is used for the toast style
+    const newStatus = message.toLowerCase().includes('completed') ? 'Complete' : 'Pending';
+    
+    // Optimistically update the task status in the local state
+    setTasks(currentTasks => 
+      currentTasks.map(t => 
+        t.task_id === task.task_id 
+          ? { ...t, status: newStatus } 
+          : t
+      )
+    );
+    
+    // Update dashboard data optimistically
+    if (dashboardData) {
+      setDashboardData(prev => {
+        if (!prev) return prev;
+        const newData = { ...prev };
+        
+        // Decrease the count of the old status
+        if (task.status === 'Complete') {
+          newData.complete_tasks = Math.max(0, newData.complete_tasks - 1);
+        } else {
+          newData.pending_tasks = Math.max(0, newData.pending_tasks - 1);
+        }
+        
+        // Increase the count of the new status
+        if (newStatus === 'Complete') {
+          newData.complete_tasks += 1;
+        } else {
+          newData.pending_tasks += 1;
+        }
+        
+        return newData;
+      });
+    }
+
+    // Show toast notification with the provided type
+    setToastMessage({
+      title: `Task ${newStatus.toLowerCase()}`,
+      description: message,
+      className: type === 'success' 
+        ? 'text-success-default' 
+        : type === 'error' 
+          ? 'text-error-default'
+          : type === 'warning'
+            ? 'text-warning-default'
+            : 'text-accent-default',
+    });
+    setShowToast(true);
+    setIsExitingToast(false);
+    
+    // Auto-hide toast after delay
+    setTimeout(() => {
+      setIsExitingToast(true);
+      setTimeout(() => setShowToast(false), 400);
+    }, 3000);
+  };
   return (
     <MainLayout>
       {showToast && (
@@ -967,67 +1027,11 @@ export default function DashboardPage() {
                           }}
                           handleDeleteTask={(taskId: string) => handleDeleteTask(taskId)}
                           handleDeleteRecurringTasks={
-                            (taskTemplate_id: string) => 
-                            handleDeleteRecurringTasks(taskTemplate_id)
+                            (taskTemplate_id: string, taskId: string) => 
+                            handleDeleteRecurringTasks(taskTemplate_id, taskId)
                           }
-                          taskUpdateStatus={(message: string, type?: 'info' | 'success' | 'error' | 'warning') => {
-                            // For backward compatibility, we'll use the message to determine the new status
-                            // since the type parameter is used for the toast style
-                            const newStatus = message.toLowerCase().includes('completed') ? 'Complete' : 'Pending';
-                            
-                            // Optimistically update the task status in the local state
-                            setTasks(currentTasks => 
-                              currentTasks.map(t => 
-                                t.task_id === task.task_id 
-                                  ? { ...t, status: newStatus } 
-                                  : t
-                              )
-                            );
-                            
-                            // Update dashboard data optimistically
-                            if (dashboardData) {
-                              setDashboardData(prev => {
-                                if (!prev) return prev;
-                                const newData = { ...prev };
-                                
-                                // Decrease the count of the old status
-                                if (task.status === 'Complete') {
-                                  newData.complete_tasks = Math.max(0, newData.complete_tasks - 1);
-                                } else {
-                                  newData.pending_tasks = Math.max(0, newData.pending_tasks - 1);
-                                }
-                                
-                                // Increase the count of the new status
-                                if (newStatus === 'Complete') {
-                                  newData.complete_tasks += 1;
-                                } else {
-                                  newData.pending_tasks += 1;
-                                }
-                                
-                                return newData;
-                              });
-                            }
-
-                            // Show toast notification with the provided type
-                            setToastMessage({
-                              title: `Task ${newStatus.toLowerCase()}`,
-                              description: message,
-                              className: type === 'success' 
-                                ? 'text-success-default' 
-                                : type === 'error' 
-                                  ? 'text-error-default'
-                                  : type === 'warning'
-                                    ? 'text-warning-default'
-                                    : 'text-accent-default',
-                            });
-                            setShowToast(true);
-                            setIsExitingToast(false);
-                            
-                            // Auto-hide toast after delay
-                            setTimeout(() => {
-                              setIsExitingToast(true);
-                              setTimeout(() => setShowToast(false), 400);
-                            }, 3000);
+                          taskUpdateStatus={(message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
+                            handleTaskUpdateStatus(message, type, task);
                           }}
                         />
                       )))
@@ -1077,8 +1081,8 @@ export default function DashboardPage() {
                                     setIsTaskModalOpen(true);
                                     setIsUpdateTask(true);
                                   }}
-                                  handleDeleteRecurringTasks={(taskTemplate_id: string) => 
-                                    handleDeleteRecurringTasks(taskTemplate_id)
+                                  handleDeleteRecurringTasks={(taskTemplate_id: string, taskId: string) => 
+                                    handleDeleteRecurringTasks(taskTemplate_id, taskId)
                                   }
                                   taskUpdateStatus={(message: string, type?: 'info' | 'success' | 'error' | 'warning') => {
                                     // For backward compatibility, we'll use the message to determine the new status
@@ -1328,6 +1332,7 @@ export default function DashboardPage() {
             {
               label: 'Delete This Task Only',
               onClick: () => {
+                handleDeleteTask(taskIdToDelete);
                 setShowConfirmation(false);
               },
               variant: 'primary'
@@ -1335,7 +1340,8 @@ export default function DashboardPage() {
             {
               label: 'Delete All Recurring Tasks',
               onClick: async () => {
-                  debugger;
+                handleConfirmDelete();
+                setShowConfirmation(false);
               },
               variant: 'danger'
             },

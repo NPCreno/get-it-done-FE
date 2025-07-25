@@ -9,8 +9,8 @@ interface TaskItemProps {
   task: ITask;
   handleUpdateTask: () => void;
   handleDeleteTask: (taskId: string) => void;
-  handleDeleteRecurringTasks: (taskTemplate_id: string) => void;
-  taskUpdateStatus?: (message: string, type?: 'info' | 'success' | 'error' | 'warning') => void;
+  handleDeleteRecurringTasks: (taskTemplate_id: string, taskId: string) => void;
+  taskUpdateStatus?: (message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => void;
 }
 
 export function TaskItem({ 
@@ -53,13 +53,13 @@ export function TaskItem({
       await Promise.race([deletePromise, timeoutPromise]);
       
       // If we get here, the delete was successful
-      taskUpdateStatus?.('Task deleted successfully', 'success');
+      taskUpdateStatus?.('Task deleted successfully', 'success', task);
       return true;
       
     } catch (error) {
       console.error('Error deleting task:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete task';
-      taskUpdateStatus?.(`Delete failed: ${errorMessage}`, 'error');
+      taskUpdateStatus?.(`Delete failed: ${errorMessage}`, 'error', task);
       
       // Re-throw to allow parent component to handle the error if needed
       throw error;
@@ -100,7 +100,7 @@ export function TaskItem({
       audio.play().catch(error => console.warn('Audio playback failed:', error));
       
       // Show updating message
-      taskUpdateStatus?.("Updating task status...", 'info');
+      taskUpdateStatus?.("Updating task status...", 'info', task);
       
       // Optimistic UI update
       setUpdateState(prev => ({
@@ -129,7 +129,7 @@ export function TaskItem({
         }
         
         // Show success message
-        taskUpdateStatus?.(`Task ${statusText} successfully!`, 'success');
+        taskUpdateStatus?.(`Task ${statusText} successfully!`, 'success', task);
         
       } catch (error) {
         // Check if error was due to abort
@@ -153,7 +153,7 @@ export function TaskItem({
     } catch (error) {
       console.error("Error updating task status:", error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to update task status';
-      taskUpdateStatus?.(errorMessage, 'error');
+      taskUpdateStatus?.(errorMessage, 'error', task);
     } finally {
       // Reset update state
       setUpdateState({
@@ -262,7 +262,7 @@ export function TaskItem({
                 onClick={(e) => {
                   e.stopPropagation();
                   if(task.template_id){
-                    handleDeleteRecurringTasks(task.template_id);
+                    handleDeleteRecurringTasks(task.template_id, task.task_id);
                   }
                   else{
                     handleDelete(task.task_id);
