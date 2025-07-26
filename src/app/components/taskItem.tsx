@@ -72,7 +72,7 @@ export function TaskItem({
         return newState;
       });
     }
-  }, [handleDeleteTask, isDeleting, taskUpdateStatus]);
+  }, [handleDeleteTask, isDeleting, taskUpdateStatus, task]);
 
   const handleCheckToggle = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
@@ -162,7 +162,7 @@ export function TaskItem({
         controller: null
       });
     }
-  }, [task.status, task.task_id, taskUpdateStatus, isUpdating]);
+  }, [task.status, task.task_id, taskUpdateStatus, isUpdating, task]);
 
   // Clean up on unmount
   useEffect(() => {

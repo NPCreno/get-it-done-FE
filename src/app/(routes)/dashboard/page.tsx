@@ -510,7 +510,7 @@ export default function DashboardPage() {
     setShowConfirmation(true);
   };
    
-  const handleConfirmDelete = async () => {
+  const handleConfirmDeleteRecurringTasks = async () => {
     // after confirming to delete
     if (taskTemplateIdToDelete) {
       try {
@@ -564,72 +564,6 @@ export default function DashboardPage() {
           title: "Task Deleted",
           description:
             response.message || "Your task has been deleted successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      } else {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        setToastMessage({
-          title: response.message,
-          description: response?.error || "Something Went Wrong",
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
-    }
-  };
-
-  const deleteRecurringTasks = async (taskTemplate_id: string) => {
-    try {
-      const response: ITaskResponse = await deleteRecurringTasksApi(taskTemplate_id);
-      if (response.status === "success") {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        setToastMessage({
-          title: "Task Deleted",
-          description:
-            response.message || "Your recurring tasks has been deleted successfully",
           className: "text-green-600",
         });
 
@@ -1340,7 +1274,7 @@ export default function DashboardPage() {
             {
               label: 'Delete All Recurring Tasks',
               onClick: async () => {
-                handleConfirmDelete();
+                handleConfirmDeleteRecurringTasks();
                 setShowConfirmation(false);
               },
               variant: 'danger'
