@@ -95,13 +95,13 @@ export const deleteRecurringTasksApi = async (taskTemplate_id: string) => {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Failed to create user');
+      throw new Error(error.message || 'Failed to delete recurring tasks');
     }
 
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error deleting task:', err);
+    console.error('Error deleting recurring tasks:', err);
     throw err;
   }
 };

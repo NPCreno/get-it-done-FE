@@ -1,65 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { base64UrlDecode, getIPAddress } from "./app/utils/utils";
-
+import { refreshAccessToken } from "./app/api/auth/authRequests";
 const JWT_SECRET = process.env.JWT_SECRET || 'your-256-bit-secret';
 const JWT_ALGORITHM = 'HS256';
 
 const publicRoutes = ["/login", "/signup", "/forgot-password"];
 const protectedRoutes = ["/dashboard", "/projects", "/notifications", "/profile-settings"];
-
-// Helper function to refresh token
-async function refreshAccessToken(refreshToken: string, ipAddress: string) {
-  try {
-    console.log("Attempting to refresh token...");
-    const refreshResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refreshToken, ipAddress }),
-    });
-
-    if (refreshResponse.ok) {
-      const data = await refreshResponse.json() as {
-        status: string;
-        message: string;
-        data?: {
-          access_token: string;
-          refresh_token: string;
-          expires_in: number;
-        };
-      };
-      
-      if (data.data?.access_token) {
-        console.log("Successfully refreshed token, setting new cookies");
-        
-        const response = NextResponse.next();
-        
-        // Calculate expiry date (expires_in is typically in seconds)
-        const expiryDate = new Date(Date.now() + (data.data.expires_in * 1000));
-        
-        // Set the new access token cookie
-        response.cookies.set("access_token", data.data.access_token, {
-          expires: expiryDate,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          path: '/',
-          httpOnly: true,
-        });
-
-        console.log("New access token set, continuing to protected route");
-        return response;
-      }
-    }
-    
-    console.log("Refresh token request failed");
-    return null;
-  } catch (error) {
-    console.error("Error refreshing token:", error);
-    return null;
-  }
-}
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -83,6 +30,7 @@ export async function middleware(req: NextRequest) {
         console.error("Token verification failed:", err);
         const response = NextResponse.next();
         response.cookies.delete("access_token");
+        response.cookies.delete("refresh_token");
         return response;
       }
     }
@@ -109,6 +57,7 @@ export async function middleware(req: NextRequest) {
     if (!token && refreshToken) {
       const refreshResult = await refreshAccessToken(refreshToken, ipAddress);
       if (refreshResult) {
+        // Return the response from refreshAccessToken which already has the cookies set
         return refreshResult;
       }
       
@@ -129,11 +78,12 @@ export async function middleware(req: NextRequest) {
         const now = Date.now();
 
         // If token is expired or expiring in less than 1 minute
-        if (now > exp - 60000) {
+        if (now > exp - 60000) { // Changed from 1000ms to 60000ms (1 minute)
           if (refreshToken) {
             console.log("Access token expiring soon, attempting refresh...");
             const refreshResult = await refreshAccessToken(refreshToken, ipAddress);
             if (refreshResult) {
+              // Return the response from refreshAccessToken which already has the cookies set
               return refreshResult;
             }
           }

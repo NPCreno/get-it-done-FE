@@ -57,6 +57,7 @@ export default function SignupForm({
   
       if (data) {
         document.cookie = `access_token=${data.access_token}; path=/; secure; SameSite=Strict`; // Store in cookie
+        document.cookie = `refresh_token=${data.refresh_token}; path=/; secure; SameSite=Strict`; // Store in cookie
         onChangeView("signedUp");
       }
       

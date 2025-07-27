@@ -135,7 +135,7 @@ export default function ProfileSettingsPage() {
 
   const confirmLogout = () => {
     Cookies.remove('access_token');
-    localStorage.removeItem('refresh_token');
+    Cookies.remove('refresh_token');
     localStorage.removeItem('pomodoroTimerState');
     window.location.href = '/';
   };
