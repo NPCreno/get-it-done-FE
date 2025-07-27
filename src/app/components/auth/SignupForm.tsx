@@ -4,6 +4,7 @@ import { useFormik } from "formik";
 import { signUpSchema } from "@/app/schemas/signUpSchema";
 import { createUser, loginEmail } from "@/app/api/userRequests";
 import InputBox from "@/app/components/inputBox";
+import { getIPAddress } from "@/app/utils/utils";
 
 interface SignupFormValues {
   username: string;
@@ -33,7 +34,8 @@ export default function SignupForm({
   const handleSubmit = async (values: SignupFormValues) => {
     setIsLoading(true);
     setError("");
-
+    const ipAddress = await getIPAddress();
+    
     try {
       // Create user payload
       const userPayload = {
@@ -51,10 +53,11 @@ export default function SignupForm({
       }
 
       // Log in the user
-      const { data } = await loginEmail(values.email, values.password);
+      const { data } = await loginEmail(values.email, values.password, true, ipAddress);
   
       if (data) {
         document.cookie = `access_token=${data.access_token}; path=/; secure; SameSite=Strict`; // Store in cookie
+        document.cookie = `refresh_token=${data.refresh_token}; path=/; secure; SameSite=Strict`; // Store in cookie
         onChangeView("signedUp");
       }
       

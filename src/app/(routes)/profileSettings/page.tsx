@@ -135,6 +135,8 @@ export default function ProfileSettingsPage() {
 
   const confirmLogout = () => {
     Cookies.remove('access_token');
+    Cookies.remove('refresh_token');
+    localStorage.removeItem('pomodoroTimerState');
     window.location.href = '/';
   };
 
@@ -589,13 +591,23 @@ export default function ProfileSettingsPage() {
       </div>
 
       {isLogoutModalOpen && (
-        <ConfirmationModal
-          onClose={() => setIsLogoutModalOpen(false)}
-          onConfirm={confirmLogout}
-          confirmationTitle={"Are you sure you want to log out?"}
-          confirmationDescription={"This will end your current session. You can log in again anytime"}
-          confirmBtnLabel={"Log out"}
-        ></ConfirmationModal>
+       <ConfirmationModal
+       onClose={() => setIsLogoutModalOpen(false)}
+       title="Are you sure you want to log out?"
+       description="This will end your current session. You can log in again anytime"
+       actions={[
+         {
+           label: 'Cancel',
+           onClick: () => setIsLogoutModalOpen(false),
+           variant: 'secondary'
+         },
+         {
+           label: 'Log out',
+           onClick: confirmLogout,
+           variant: 'danger'
+         }
+       ]}
+     />
       )}
     </MainLayout>
   );

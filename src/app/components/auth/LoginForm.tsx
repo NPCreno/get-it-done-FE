@@ -6,6 +6,7 @@ import { loginEmail, loginUsername } from "@/app/api/userRequests";
 import { Loader2 } from "lucide-react";
 import InputBox from "@/app/components/inputBox";
 import Cookies from 'js-cookie';
+import { getIPAddress } from "@/app/utils/utils";
 
 interface LoginFormValues {
   usernameOrEmail: string;
@@ -34,11 +35,12 @@ export default function LoginForm({
         setIsLoading(true);
         setError('');
 
+        const ipAddress = await getIPAddress();
         let response;
         if (values.usernameOrEmail.includes('@')) {
-          response = await loginEmail(values.usernameOrEmail, values.password);
+          response = await loginEmail(values.usernameOrEmail, values.password, values.rememberMe, ipAddress);
         } else {
-          response = await loginUsername(values.usernameOrEmail, values.password);
+          response = await loginUsername(values.usernameOrEmail, values.password, values.rememberMe, ipAddress);
         }
 
         // The API returns { data, error } format
@@ -47,21 +49,16 @@ export default function LoginForm({
         }
 
         // Store the access token in a cookie
-        if (response.data?.access_token) {
+        if (response.data?.data?.access_token) {
           const cookieOptions = {
-            expires: values.rememberMe ? 30 : 1, // 30 days if remember me is checked, otherwise 1 day
+            expires: response.data.data.expires_in,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict' as const,
             path: '/',
           };
           
-          Cookies.set('access_token', response.data.access_token, cookieOptions);
-          // Store the remember me preference
-          if (values.rememberMe) {
-            localStorage.setItem('rememberMe', 'true');
-          } else {
-            localStorage.removeItem('rememberMe');
-          }
+          Cookies.set('access_token', response.data.data.access_token, cookieOptions);
+          Cookies.set('refresh_token', response.data.data.refresh_token, cookieOptions);
         }
 
         // Show success state

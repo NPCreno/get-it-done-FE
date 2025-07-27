@@ -28,11 +28,13 @@ export const createUser = async (payload: CreateUserDto) => {
   }
 };
 
-export const loginEmail = async (email: string, password: string) => {
+export const loginEmail = async (email: string, password: string, rememberMe: boolean, ipAddress: string) => {
   try {
     const payload = {
       email,
-      password
+      password,
+      rememberMe,
+      ipAddress
     };
 
     const response = await fetch(`${apiUrl}/user/loginEmail`, { 
@@ -57,11 +59,13 @@ export const loginEmail = async (email: string, password: string) => {
   }
 };
 
-export const loginUsername = async (username: string, password: string) => {
+export const loginUsername = async (username: string, password: string, rememberMe: boolean, ipAddress: string) => {
   try {
     const payload = {
       username,
-      password
+      password,
+      rememberMe,
+      ipAddress
     };
 
     const response = await fetch(`${apiUrl}/user/loginUsername`, { 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { base64UrlDecode } from "./app/utils/utils";
-
+import { base64UrlDecode, getIPAddress } from "./app/utils/utils";
+import { refreshAccessToken } from "./app/api/auth/authRequests";
 const JWT_SECRET = process.env.JWT_SECRET || 'your-256-bit-secret';
 const JWT_ALGORITHM = 'HS256';
 
@@ -11,6 +11,8 @@ const protectedRoutes = ["/dashboard", "/projects", "/notifications", "/profile-
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get("access_token")?.value;
+  const refreshToken = req.cookies.get("refresh_token")?.value;
+  const ipAddress = await getIPAddress();
 
   // Handle root route - redirect to dashboard if authenticated
   if (pathname === "/") {
@@ -27,7 +29,8 @@ export async function middleware(req: NextRequest) {
       } catch (err) {
         console.error("Token verification failed:", err);
         const response = NextResponse.next();
-        response.cookies.set("access_token", "", { path: "/", expires: new Date(0) });
+        response.cookies.delete("access_token");
+        response.cookies.delete("refresh_token");
         return response;
       }
     }
@@ -43,36 +46,64 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Handle protected routes - exclude root path from protection
+  // Handle protected routes
   if (protectedRoutes.some(route => pathname.startsWith(route))) {
-    if (!token) {
-      // Redirect to login if no token
+    // If no tokens at all, redirect to login
+    if (!token && !refreshToken) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
 
-    try {
-      // Verify token is valid
-      const [, payload] = token.split(".");
-      const decoded = JSON.parse(base64UrlDecode(payload));
-      const exp = decoded.exp * 1000;
+    // If no access token but have refresh token, try to refresh
+    if (!token && refreshToken) {
+      const refreshResult = await refreshAccessToken(refreshToken, ipAddress);
+      if (refreshResult) {
+        // Return the response from refreshAccessToken which already has the cookies set
+        return refreshResult;
+      }
+      
+      // If refresh failed, redirect to login
+      const response = NextResponse.redirect(new URL("/login", req.url));
+      response.cookies.delete("access_token");
+      response.cookies.delete("refresh_token");
+      return response;
+    }
 
-      if (Date.now() > exp) {
-        // Token expired
+    // If we have an access token, verify it
+    if (token) {
+      try {
+        // Check if token is expired or about to expire
+        const [, payload] = token.split(".");
+        const decoded = JSON.parse(base64UrlDecode(payload));
+        const exp = decoded.exp * 1000;
+        const now = Date.now();
+
+        // If token is expired or expiring in less than 1 minute
+        if (now > exp - 60000) { // Changed from 1000ms to 60000ms (1 minute)
+          if (refreshToken) {
+            console.log("Access token expiring soon, attempting refresh...");
+            const refreshResult = await refreshAccessToken(refreshToken, ipAddress);
+            if (refreshResult) {
+              // Return the response from refreshAccessToken which already has the cookies set
+              return refreshResult;
+            }
+          }
+          
+          // If refresh failed or no refresh token, redirect to login
+          const response = NextResponse.redirect(new URL("/login", req.url));
+          response.cookies.delete("access_token");
+          response.cookies.delete("refresh_token");
+          return response;
+        }
+
+        // Token is still valid, continue
+        return NextResponse.next();
+      } catch (err) {
+        console.error("Token verification failed:", err);
         const response = NextResponse.redirect(new URL("/login", req.url));
-        // Clear the access token cookie
-        response.cookies.set("access_token", "", { path: "/", expires: new Date(0) });
+        response.cookies.delete("access_token");
+        response.cookies.delete("refresh_token");
         return response;
       }
-
-      // Root path is now handled at the beginning of the middleware
-
-      return NextResponse.next();
-    } catch (err) {
-      console.error("Token verification failed:", err);
-      const response = NextResponse.redirect(new URL("/login", req.url));
-      // Clear the access token cookie
-      response.cookies.set("access_token", "", { path: "/", expires: new Date(0) });
-      return response;
     }
   }
 

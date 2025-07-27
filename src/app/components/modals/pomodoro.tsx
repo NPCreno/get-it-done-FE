@@ -145,10 +145,20 @@ export default function PomodoroModal({
     return (
       <ConfirmationModal
         onClose={handleCancelChange}
-        onConfirm={handleConfirmChange}
-        confirmationTitle={`Switch to ${pendingTimerType.replace(/^\w/, c => c.toUpperCase())}?`}
-        confirmationDescription={`Switching to ${pendingTimerType.replace(/^\w/, c => c.toUpperCase())} mode will reset the timer.`}
-        confirmBtnLabel="Switch"
+        title={`Switch to ${pendingTimerType.replace(/^\w/, c => c.toUpperCase())}?`}
+        description={`Switching to ${pendingTimerType.replace(/^\w/, c => c.toUpperCase())} mode will reset the timer.`}
+        actions={[
+          {
+            label: 'Cancel',
+            onClick: handleCancelChange,
+            variant: 'secondary'
+          },
+          {
+            label: 'Switch',
+            onClick: handleConfirmChange,
+            variant: 'primary'
+          }
+        ]}
       />
     );
   }, [showConfirm, pendingTimerType, handleCancelChange, handleConfirmChange]);

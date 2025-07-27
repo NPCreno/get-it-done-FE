@@ -222,8 +222,8 @@ export default function ProjectsPage() {
           isEdit: false,
         });
         setToastMessage({
-          title: "Project Created",
-          description: "Your new project has been created successfully",
+          title: "Project Updated",
+          description: "Your project has been updated successfully",
           className: "text-green-600",
         });
 
