@@ -1,26 +1,35 @@
-# Install dependencies only when needed
-FROM node:18-alpine AS deps
+FROM node:18-alpine as base
+RUN apk add --no-cache g++ make py3-pip libc6-compat
 WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci
+COPY package*.json ./
+EXPOSE 3000
 
-# Build the app
-FROM node:18-alpine AS builder
+FROM base as builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# Production image
-FROM node:18-alpine AS runner
+
+FROM base as production
 WORKDIR /app
 
 ENV NODE_ENV=production
+RUN npm ci
 
-# If using Next.js App Router (13+), use standalone output
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+USER nextjs
+
+
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
 
-EXPOSE 3000
-CMD ["node", "server.js"]
+CMD npm start
+
+FROM base as dev
+ENV NODE_ENV=development
+RUN npm install 
+COPY . .
+CMD npm run dev
