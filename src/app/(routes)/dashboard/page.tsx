@@ -967,6 +967,7 @@ export default function DashboardPage() {
                           taskUpdateStatus={(message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
                             handleTaskUpdateStatus(message, type, task);
                           }}
+                          subTasks={task.subInstances}
                         />
                       )))
                       : (

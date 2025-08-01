@@ -4,6 +4,7 @@ import { updateTaskStatus } from "../api/taskRequests";
 import { useFormState } from "../context/FormProvider";
 import { ITask } from "../interface/ITask";
 import { format } from 'date-fns';
+import { ISubTask } from '../interface/ISubTask';
 
 interface TaskItemProps {
   task: ITask;
@@ -11,6 +12,7 @@ interface TaskItemProps {
   handleDeleteTask: (taskId: string) => void;
   handleDeleteRecurringTasks: (taskTemplate_id: string, taskId: string) => void;
   taskUpdateStatus?: (message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => void;
+  subTasks?: ISubTask[] | null;
 }
 
 export function TaskItem({ 
@@ -19,6 +21,7 @@ export function TaskItem({
   handleDeleteTask,
   taskUpdateStatus,
   handleDeleteRecurringTasks,
+  subTasks
 }: TaskItemProps) {
   const { setSelectedTaskData } = useFormState();
   const [updateState, setUpdateState] = useState<{ 
@@ -28,9 +31,11 @@ export function TaskItem({
   }>({ status: null, isUpdating: false, controller: null });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState<{[key: string]: boolean}>({});
+  const [showSubtasks, setShowSubtasks] = useState(false);
   const currentStatus = updateState.status || task.status;
   const isComplete = currentStatus === "Complete";
   const isUpdating = updateState.isUpdating;
+  const hasSubtasks = subTasks && subTasks.length > 0;
 
   const handleDelete = useCallback(async (taskId: string) => {
     // Prevent multiple delete attempts for the same task
@@ -208,91 +213,150 @@ export function TaskItem({
   const priorityColor = priorityColors[task.priority as keyof typeof priorityColors] || '';
 
   return (
-    <div 
-      className={`flex flex-row w-full h-[46px] items-center rounded-[10px] hover:bg-[#FAFAFA] cursor-pointer gap-3 pr-4 pl-3 mb-1 ${
-        isComplete ? 'opacity-70' : ''
-      } ${priorityColor}`}
-      onClick={() => {
-        setSelectedTaskData(task);
-        handleUpdateTask();
-      }}
-      onMouseEnter={() => setShowDeleteModal(true)} 
-      onMouseLeave={() => setShowDeleteModal(false)}
-    >
-      <div className="flex items-center justify-center">
-        <div className="group w-6 h-6 relative">
-          <input
-            id={`checkTask-${task.task_id}`}
-            type="checkbox"
-            onChange={handleCheckToggle}
-            onClick={e => e.stopPropagation()}
-            checked={isComplete}
-            disabled={isUpdating}
-            aria-label={isComplete ? 'Mark task as pending' : 'Mark task as complete'}
-            className="peer appearance-none w-full h-full cursor-pointer"
-          />
-          <div className="absolute inset-0 rounded-full border-[2px] border-solid border-gray-300 peer-checked:border-0 group-hover:border-0 pointer-events-none" />
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
-            <Image
-              src="/svgs/checkmark-circle-green.svg"
-              alt="Check"
-              width={26}
-              height={26}
+    <div className="w-full">
+      <div 
+        className={`flex flex-row w-full h-[46px] items-center rounded-[10px] hover:bg-[#FAFAFA] cursor-pointer gap-3 pr-4 pl-3 mb-1 ${
+          isComplete ? 'opacity-70' : ''
+        } ${priorityColor}`}
+        onClick={() => {
+          setSelectedTaskData(task);
+          handleUpdateTask();
+        }}
+        onMouseEnter={() => setShowDeleteModal(true)} 
+        onMouseLeave={() => setShowDeleteModal(false)}
+      >
+        <div className="flex items-center justify-center">
+          <div className="group w-6 h-6 relative">
+            <input
+              id={`checkTask-${task.task_id}`}
+              type="checkbox"
+              onChange={handleCheckToggle}
+              onClick={e => e.stopPropagation()}
+              checked={isComplete}
+              disabled={isUpdating}
+              aria-label={isComplete ? 'Mark task as pending' : 'Mark task as complete'}
+              className="peer appearance-none w-full h-full cursor-pointer"
             />
+            <div className="absolute inset-0 rounded-full border-[2px] border-solid border-gray-300 peer-checked:border-0 group-hover:border-0 pointer-events-none" />
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
+              <Image
+                src="/svgs/checkmark-circle-green.svg"
+                alt="Check"
+                width={26}
+                height={26}
+              />
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div className="flex flex-col flex-1 min-w-0">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex flex-col items-start">
-            <span className={`font-lato text-4 text-text ${isComplete ? 'line-through' : ''} truncate`}>
-              {task.title}
-            </span>
-            {task.description && (
-          <p className="text-xs text-gray-400 truncate">
-            {task.description}
-          </p>
-        )}
-          </div>
-          <div className="flex flex-row gap-2">            
-            {showDeleteModal && (
-              <div 
-                className={`cursor-pointer ${isDeleting ? 'opacity-50' : ''}`} 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if(task.template_id){
-                    handleDeleteRecurringTasks(task.template_id, task.task_id);
-                  }
-                  else{
-                    handleDelete(task.task_id);
-                  }
-                }}
-                title={isDeleting ? 'Deleting...' : 'Delete task'}
-              >
-                <Image 
-                  src="/svgs/trash-outline.svg" 
-                  alt={isDeleting ? 'Deleting...' : 'Delete'} 
-                  width={20} 
-                  height={20} 
-                  className={isDeleting ? 'animate-pulse' : ''}
-                />
-              </div>
-            )}
-            <div className="flex items-center space-x-2 ml-2">
-              {task.due_date && (
-                <span className={`text-xs whitespace-nowrap ${
-                  isOverdue(task.due_date.toString()) && !isComplete 
-                    ? 'text-red-500 font-medium' 
-                    : 'text-gray-400'
-                }`}>
-                  {formatDueDate(task.due_date.toString())}
-                </span>
+        
+        <div className="flex flex-col flex-1 min-w-0">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex flex-col items-start">
+              <span className={`font-lato text-4 text-text ${isComplete ? 'line-through' : ''} truncate`}>
+                {task.title}
+              </span>
+              {task.description && (
+                <p className="text-xs text-gray-400 truncate">
+                  {task.description}
+                </p>
               )}
+            </div>
+            <div className="flex flex-row gap-2">            
+              {showDeleteModal && (
+                <div 
+                  className={`cursor-pointer ${isDeleting ? 'opacity-50' : ''}`} 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if(task.template_id){
+                      handleDeleteRecurringTasks(task.template_id, task.task_id);
+                    }
+                    else{
+                      handleDelete(task.task_id);
+                    }
+                  }}
+                  title={isDeleting ? 'Deleting...' : 'Delete task'}
+                >
+                  <Image 
+                    src="/svgs/trash-outline.svg" 
+                    alt={isDeleting ? 'Deleting...' : 'Delete'} 
+                    width={20} 
+                    height={20} 
+                    className={isDeleting ? 'animate-pulse' : ''}
+                  />
+                </div>
+              )}
+              <div className="flex items-center space-x-2 ml-2">
+                {hasSubtasks && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSubtasks(!showSubtasks);
+                    }}
+                    className="p-1 -mr-2 text-gray-400 hover:text-gray-600"
+                    aria-label={showSubtasks ? 'Hide subtasks' : 'Show subtasks'}
+                  >
+                    <svg 
+                      className={`w-4 h-4 transition-transform duration-200 ${showSubtasks ? 'rotate-180' : ''}`}
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                )}
+                {task.due_date && (
+                  <span className={`text-xs whitespace-nowrap ${
+                    isOverdue(task.due_date.toString()) && !isComplete 
+                      ? 'text-red-500 font-medium' 
+                      : 'text-gray-400'
+                  }`}>
+                    {formatDueDate(task.due_date.toString())}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
+      
+      {/* Subtasks Section */}
+      {hasSubtasks && showSubtasks && (
+        <div className="ml-8 pl-2 border-l-2 border-gray-200">
+          {subTasks.map((subtask) => (
+            <div 
+              key={subtask.id} 
+              className="flex items-center py-2 px-3 text-sm text-gray-600 hover:bg-gray-50 rounded gap-2"
+            >
+              <div className="group w-6 h-6 relative flex-shrink-0">
+                <input
+                  type="checkbox"
+                  className="peer appearance-none w-full h-full cursor-pointer"
+                  checked={subtask.status === 'Complete'}
+                  readOnly
+                />
+                <div className="absolute inset-0 rounded-full border-[2px] border-solid border-gray-300 peer-checked:border-0 group-hover:border-0 pointer-events-none" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
+                  <Image
+                    src="/svgs/checkmark-circle-green.svg"
+                    alt="Check"
+                    width={26}
+                    height={26}
+                  />
+                </div>
+              </div>
+              <span className={`${subtask.status === 'Complete' ? 'line-through text-gray-400' : ''}`}>
+                {subtask.title}
+              </span>
+              {subtask.due_date && (
+                <span className="ml-auto text-xs text-gray-400">
+                  {formatDueDate(subtask.due_date.toString())}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
