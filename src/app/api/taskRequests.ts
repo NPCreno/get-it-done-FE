@@ -331,3 +331,30 @@ export const updateTaskStatus= async (taskId: string, status: string) => {
     throw err;
   }
 };
+
+export const updateSubTaskStatus= async (taskSubInstance_id: string, status: string) => {
+  try {
+    const token = getAccessToken();
+    let data;
+    const response = await fetch(`${apiUrl}/tasks/update-subtask-status/${taskSubInstance_id}/status/${status}`, 
+        { 
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (response.ok) {
+      data = await response.json();
+    }
+    else {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText || 'Unknown error'}`);
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Error updating task status:', err);
+    throw err;
+  }
+};

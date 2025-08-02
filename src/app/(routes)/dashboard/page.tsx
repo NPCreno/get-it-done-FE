@@ -947,7 +947,7 @@ export default function DashboardPage() {
                   <div className="flex flex-col h-full">
                     {/* Active Tasks - Centered */}
                     <div className={`flex-grow flex flex-col ${tasks.filter(task => task.status !== 'Complete').length > 0 ? 'justify-start mt-5' : 'justify-center'}`}>
-                    {tasks.filter(task => task.status !== 'Complete').length > 0 ? (
+                      {tasks.filter(task => task.status !== 'Complete').length > 0 ? (
                       tasks
                         .filter(task => task.status !== 'Complete')
                         .map((task) => (
@@ -985,105 +985,49 @@ export default function DashboardPage() {
 
                     {/* Completed Tasks Section - Stuck to bottom */}
                     <div className="mt-auto">
-                    {tasks.some(task => task.status === 'Complete') && (
-                      <div className="mt-4">
-                        <button
-                          onClick={() => setShowCompletedTasks(!showCompletedTasks)}
-                          className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors mb-2"
-                        >
-                          <span>Completed ({tasks.filter(task => task.status === 'Complete').length})</span>
-                          <svg
-                            className={`w-4 h-4 transition-transform duration-200 ${showCompletedTasks ? 'rotate-180' : ''}`}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                      {tasks.some(task => task.status === 'Complete') && (
+                        <div className="mt-4">
+                          <button
+                            onClick={() => setShowCompletedTasks(!showCompletedTasks)}
+                            className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors mb-2"
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                        
-                        {showCompletedTasks && (
-                          <div className="space-y-2 pl-4 border-l-2 border-gray-200">
-                            {tasks
-                              .filter(task => task.status === 'Complete')
-                              .map((task) => (
-                                <TaskItem
-                                  key={`completed-${task.task_id}-${task.status}`}
-                                  task={task}
-                                  handleDeleteTask={() => handleDeleteTask(task.task_id)}
-                                  handleUpdateTask={() => {
-                                    setSelectedTaskData(task);
-                                    setIsTaskModalOpen(true);
-                                    setIsUpdateTask(true);
-                                  }}
-                                  handleDeleteRecurringTasks={(taskTemplate_id: string, taskId: string) => 
-                                    handleDeleteRecurringTasks(taskTemplate_id, taskId)
-                                  }
-                                  taskUpdateStatus={(message: string, type?: 'info' | 'success' | 'error' | 'warning') => {
-                                    // For backward compatibility, we'll use the message to determine the new status
-                                    // since the type parameter is used for the toast style
-                                    const newStatus = message.toLowerCase().includes('completed') ? 'Complete' : 'Pending';
-                                    
-                                    // Optimistically update the task status in the local state
-                                    setTasks(currentTasks => 
-                                      currentTasks.map(t => 
-                                        t.task_id === task.task_id 
-                                          ? { ...t, status: newStatus } 
-                                          : t
-                                      )
-                                    );
-                                    
-                                    // Update dashboard data optimistically
-                                    if (dashboardData) {
-                                      setDashboardData(prev => {
-                                        if (!prev) return prev;
-                                        const newData = { ...prev };
-                                        
-                                        // Decrease the count of the old status
-                                        if (task.status === 'Complete') {
-                                          newData.complete_tasks = Math.max(0, newData.complete_tasks - 1);
-                                        } else {
-                                          newData.pending_tasks = Math.max(0, newData.pending_tasks - 1);
-                                        }
-                                        
-                                        // Increase the count of the new status
-                                        if (newStatus === 'Complete') {
-                                          newData.complete_tasks += 1;
-                                        } else {
-                                          newData.pending_tasks += 1;
-                                        }
-                                        
-                                        return newData;
-                                      });
+                            <span>Completed ({tasks.filter(task => task.status === 'Complete').length})</span>
+                            <svg
+                              className={`w-4 h-4 transition-transform duration-200 ${showCompletedTasks ? 'rotate-180' : ''}`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          
+                          {showCompletedTasks && (
+                            <div className="space-y-2 pl-4 border-l-2 border-gray-200">
+                              {tasks
+                                .filter(task => task.status === 'Complete')
+                                .map((task) => (
+                                  <TaskItem
+                                    key={`completed-${task.task_id}-${task.status}`}
+                                    task={task}
+                                    handleDeleteTask={() => handleDeleteTask(task.task_id)}
+                                    handleUpdateTask={() => {
+                                      setSelectedTaskData(task);
+                                      setIsTaskModalOpen(true);
+                                      setIsUpdateTask(true);
+                                    }}
+                                    handleDeleteRecurringTasks={(taskTemplate_id: string, taskId: string) => 
+                                      handleDeleteRecurringTasks(taskTemplate_id, taskId)
                                     }
-
-                                    // Show toast notification with the provided type
-                                    setToastMessage({
-                                      title: `Task ${newStatus.toLowerCase()}`,
-                                      description: message,
-                                      className: type === 'success' 
-                                        ? 'text-success-default' 
-                                        : type === 'error' 
-                                          ? 'text-error-default'
-                                          : type === 'warning'
-                                            ? 'text-warning-default'
-                                            : 'text-accent-default',
-                                    });
-                                    setShowToast(true);
-                                    setIsExitingToast(false);
-                                    
-                                    // Auto-hide toast after delay
-                                    setTimeout(() => {
-                                      setIsExitingToast(true);
-                                      setTimeout(() => setShowToast(false), 400);
-                                    }, 3000);
-                                  }}
-                                />
-                              ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                                    taskUpdateStatus={(message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
+                                      handleTaskUpdateStatus(message, type, task);
+                                    }}
+                                  />
+                                ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

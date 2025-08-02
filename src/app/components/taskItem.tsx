@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
-import { updateTaskStatus } from "../api/taskRequests";
+import { updateTaskStatus, updateSubTaskStatus } from "@/app/api/taskRequests";
 import { useFormState } from "../context/FormProvider";
 import { ITask } from "../interface/ITask";
 import { format } from 'date-fns';
@@ -79,9 +79,8 @@ export function TaskItem({
     }
   }, [handleDeleteTask, isDeleting, taskUpdateStatus, task]);
 
-  const handleCheckToggle = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCheckToggle = useCallback(async (e: React.ChangeEvent<HTMLInputElement>, type: 'task' | 'subtask', subtaskId?: string) => {
     e.stopPropagation();
-    
     // Debounce rapid clicks
     if (isUpdating) {
       console.log('Update already in progress, ignoring click');
@@ -97,15 +96,16 @@ export function TaskItem({
         controller
       });
       
-      const newStatus = task.status === "Complete" ? "Pending" : "Complete";
+      const newStatus = type === 'task' ? (task.status === "Complete" ? "Pending" : "Complete") : (subTasks?.find(subtask => subtask.taskSubInstance_id === subtaskId)?.status === "Complete" ? "Pending" : "Complete");
       const statusText = newStatus === "Complete" ? "completed" : "marked as pending";
+      const itemType = type === 'task' ? 'Task' : 'Subtask';
       
       // Play sound effect
       const audio = new Audio('/soundfx/3.mp3');
       audio.play().catch(error => console.warn('Audio playback failed:', error));
       
       // Show updating message
-      taskUpdateStatus?.("Updating task status...", 'info', task);
+      taskUpdateStatus?.(`Updating ${itemType.toLowerCase()} status...`, 'info', task);
       
       // Optimistic UI update
       setUpdateState(prev => ({
@@ -122,19 +122,33 @@ export function TaskItem({
           throw new Error('Update was cancelled');
         }
 
-        const response = await Promise.race([
-          updateTaskStatus(task.task_id, newStatus),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000)
-          )
-        ]) as { status: string; message?: string };
+        let response;
+        if (type === 'task') {
+          response = await Promise.race([
+            updateTaskStatus(task.task_id, newStatus),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000)
+            )
+          ]) as { status: string; message?: string };
+        } else {
+          // Handle subtask update
+          if (!subtaskId) {
+            throw new Error('Subtask ID is missing');
+          }
+          response = await Promise.race([
+            updateSubTaskStatus(subtaskId, newStatus),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000)
+            )
+          ]) as { status: string; message?: string };
+        }
         
         if (response.status !== "success") {
-          throw new Error(response.message || 'Failed to update task status');
+          throw new Error(response.message || `Failed to update ${itemType.toLowerCase()} status`);
         }
         
         // Show success message
-        taskUpdateStatus?.(`Task ${statusText} successfully!`, 'success', task);
+        taskUpdateStatus?.(`${itemType} ${statusText} successfully!`, 'success', task);
         
       } catch (error) {
         // Check if error was due to abort
@@ -156,8 +170,8 @@ export function TaskItem({
       }
       
     } catch (error) {
-      console.error("Error updating task status:", error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update task status';
+      console.error(`Error updating ${type} status:`, error);
+      const errorMessage = error instanceof Error ? error.message : `Failed to update ${type} status`;
       taskUpdateStatus?.(errorMessage, 'error', task);
     } finally {
       // Reset update state
@@ -230,7 +244,7 @@ export function TaskItem({
             <input
               id={`checkTask-${task.task_id}`}
               type="checkbox"
-              onChange={handleCheckToggle}
+              onChange={(e) => handleCheckToggle(e, 'task')}
               onClick={e => e.stopPropagation()}
               checked={isComplete}
               disabled={isUpdating}
@@ -323,18 +337,33 @@ export function TaskItem({
       {/* Subtasks Section */}
       {hasSubtasks && showSubtasks && (
         <div className="ml-8 pl-2 border-l-2 border-gray-200">
-          {subTasks.map((subtask) => (
+          {subTasks.map((subtask: ISubTask) => (
             <div 
               key={subtask.id} 
               className="flex items-center py-2 px-3 text-sm text-gray-600 hover:bg-gray-50 rounded gap-2"
             >
               <div className="group w-6 h-6 relative flex-shrink-0">
-                <input
-                  type="checkbox"
-                  className="peer appearance-none w-full h-full cursor-pointer"
-                  checked={subtask.status === 'Complete'}
-                  readOnly
-                />
+                <div className="group w-6 h-6 relative">
+                  <input
+                    id={`checkSubtask-${subtask.taskSubInstance_id}`}
+                    type="checkbox"
+                    onChange={(e) => handleCheckToggle(e, 'subtask', subtask.taskSubInstance_id)}
+                    onClick={e => e.stopPropagation()}
+                    checked={subtask.status === 'Complete'}
+                    disabled={isUpdating}
+                    aria-label={subtask.status === 'Complete' ? 'Mark subtask as pending' : 'Mark subtask as complete'}
+                    className="peer appearance-none w-full h-full cursor-pointer"
+                  />
+                  <div className="absolute inset-0 rounded-full border-[2px] border-solid border-gray-300 peer-checked:border-0 group-hover:border-0 pointer-events-none" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
+                    <Image
+                      src="/svgs/checkmark-circle-green.svg"
+                      alt="Check"
+                      width={26}
+                      height={26}
+                    />
+                  </div>
+                </div>
                 <div className="absolute inset-0 rounded-full border-[2px] border-solid border-gray-300 peer-checked:border-0 group-hover:border-0 pointer-events-none" />
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
                   <Image
