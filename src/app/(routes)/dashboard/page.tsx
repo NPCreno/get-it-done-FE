@@ -3,7 +3,7 @@ import MainLayout from "@/app/components/MainLayout";
 import ChartCard from "../../components/chartCard";
 import StatsCard from "../../components/statsCard";
 import TaskModal from "@/app/components/modals/taskModal";
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import PomodoroButton from '@/app/components/PomodoroButton';
 import { useFormState } from "@/app/context/FormProvider";
 import { FormikErrors, useFormik } from "formik";
@@ -80,12 +80,25 @@ export default function DashboardPage() {
   const [taskTemplateIdToDelete, setTaskTemplateIdToDelete] = useState<string>("");
   const [taskIdToDelete, setTaskIdToDelete] = useState<string>("");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [expandedTaskIds, setExpandedTaskIds] = useState<Set<string>>(new Set());
   const handleToastClose = () => {
     setIsExitingToast(true);
     setTimeout(() => {
       setShowToast(false);
     }, 400);
   };
+
+  const handleToggleSubtasks = useCallback((taskId: string) => {
+    setExpandedTaskIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId);
+      } else {
+        newSet.add(taskId);
+      }
+      return newSet;
+    });
+  }, []);
 
   const initialValues = useMemo(
     () => ({
@@ -964,6 +977,8 @@ export default function DashboardPage() {
                             (taskTemplate_id: string, taskId: string) => 
                             handleDeleteRecurringTasks(taskTemplate_id, taskId)
                           }
+                          showSubtasks={expandedTaskIds.has(task.task_id)}
+                          onToggleSubtasks={handleToggleSubtasks}
                           taskUpdateStatus={(message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
                             handleTaskUpdateStatus(message, type, task);
                           }}
@@ -1019,6 +1034,8 @@ export default function DashboardPage() {
                                     handleDeleteRecurringTasks={(taskTemplate_id: string, taskId: string) => 
                                       handleDeleteRecurringTasks(taskTemplate_id, taskId)
                                     }
+                                    showSubtasks={expandedTaskIds.has(task.task_id)}
+                                    onToggleSubtasks={handleToggleSubtasks}
                                     taskUpdateStatus={(message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
                                       handleTaskUpdateStatus(message, type, task);
                                     }}

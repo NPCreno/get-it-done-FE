@@ -13,6 +13,8 @@ interface TaskItemProps {
   handleDeleteRecurringTasks: (taskTemplate_id: string, taskId: string) => void;
   taskUpdateStatus?: (message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => void;
   subTasks?: ISubTask[] | null;
+  showSubtasks?: boolean;
+  onToggleSubtasks?: (taskId: string) => void;
 }
 
 export function TaskItem({ 
@@ -21,7 +23,9 @@ export function TaskItem({
   handleDeleteTask,
   taskUpdateStatus,
   handleDeleteRecurringTasks,
-  subTasks
+  subTasks,
+  showSubtasks = false,
+  onToggleSubtasks
 }: TaskItemProps) {
   const { setSelectedTaskData } = useFormState();
   const [updateState, setUpdateState] = useState<{ 
@@ -31,7 +35,6 @@ export function TaskItem({
   }>({ status: null, isUpdating: false, controller: null });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState<{[key: string]: boolean}>({});
-  const [showSubtasks, setShowSubtasks] = useState(false);
   const currentStatus = updateState.status || task.status;
   const isComplete = currentStatus === "Complete";
   const isUpdating = updateState.isUpdating;
@@ -87,16 +90,22 @@ export function TaskItem({
       return;
     }
 
+    let controller: AbortController | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+
     try {
       // Set updating state with controller
-      const controller = new AbortController();
-      setUpdateState({
-        status: null,
+      controller = new AbortController();
+      setUpdateState(prev => ({
+        ...prev,
         isUpdating: true,
         controller
-      });
+      }));
       
-      const newStatus = type === 'task' ? (task.status === "Complete" ? "Pending" : "Complete") : (subTasks?.find(subtask => subtask.taskSubInstance_id === subtaskId)?.status === "Complete" ? "Pending" : "Complete");
+      const newStatus = type === 'task' 
+        ? (task.status === "Complete" ? "Pending" : "Complete") 
+        : (subTasks?.find(subtask => subtask.taskSubInstance_id === subtaskId)?.status === "Complete" ? "Pending" : "Complete");
+      
       const statusText = newStatus === "Complete" ? "completed" : "marked as pending";
       const itemType = type === 'task' ? 'Task' : 'Subtask';
       
@@ -107,73 +116,91 @@ export function TaskItem({
       // Show updating message
       taskUpdateStatus?.(`Updating ${itemType.toLowerCase()} status...`, 'info', task);
       
-      // Optimistic UI update
+      // Optimistic UI update - only update the specific item's status
       setUpdateState(prev => ({
         ...prev,
-        status: newStatus
+        status: type === 'task' ? newStatus : prev.status
       }));
       
       // Make API call with timeout
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      timeoutId = setTimeout(() => {
+        if (controller) {
+          controller.abort();
+        }
+      }, 10000);
       
-      try {
-        // Check if update was aborted before making API call
-        if (controller.signal.aborted) {
-          throw new Error('Update was cancelled');
-        }
-
-        let response;
-        if (type === 'task') {
-          response = await Promise.race([
-            updateTaskStatus(task.task_id, newStatus),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000)
-            )
-          ]) as { status: string; message?: string };
-        } else {
-          // Handle subtask update
-          if (!subtaskId) {
-            throw new Error('Subtask ID is missing');
-          }
-          response = await Promise.race([
-            updateSubTaskStatus(subtaskId, newStatus),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000)
-            )
-          ]) as { status: string; message?: string };
-        }
-        
-        if (response.status !== "success") {
-          throw new Error(response.message || `Failed to update ${itemType.toLowerCase()} status`);
-        }
-        
-        // Show success message
-        taskUpdateStatus?.(`${itemType} ${statusText} successfully!`, 'success', task);
-        
-      } catch (error) {
-        // Check if error was due to abort
-        if (error instanceof Error && error.name === 'AbortError') {
-          console.log('Update was cancelled');
-          return;
-        }
-        
-        // Revert optimistic update on error
-        setUpdateState(prev => ({
-          ...prev,
-          status: null
-        }));
-        throw error;
-      } finally {
-        clearTimeout(timeoutId);
-        // Clean up controller
-        controller.abort();
+      // Check if update was aborted before making API call
+      if (controller?.signal.aborted) {
+        throw new Error('Update was cancelled');
       }
+
+      let response;
+      if (type === 'task') {
+        // For task updates, just update the task status
+        response = await Promise.race([
+          updateTaskStatus(task.task_id, newStatus),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000)
+          )
+        ]) as { status: string; message?: string };
+      } else {
+        // Handle subtask update
+        if (!subtaskId) {
+          throw new Error('Subtask ID is missing');
+        }
+        
+        // First, update the subtask status
+        response = await Promise.race([
+          updateSubTaskStatus(subtaskId, newStatus),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000)
+          )
+        ]) as { status: string; message?: string };
+        
+        // After successful subtask update, check if we need to update the parent task status
+        if (subTasks) {
+          const updatedSubtasks = subTasks.map(st => 
+            st.taskSubInstance_id === subtaskId 
+              ? { ...st, status: newStatus }
+              : st
+          );
+          
+          // Check if all subtasks are now complete
+          const allSubtasksComplete = updatedSubtasks.every(st => st.status === 'Complete');
+          
+          // Only update parent task if all subtasks are complete or if parent is complete but shouldn't be
+          if (allSubtasksComplete || task.status === 'Complete') {
+            const parentStatus = allSubtasksComplete ? 'Complete' : 'Pending';
+            await updateTaskStatus(task.task_id, parentStatus);
+          }
+        }
+      }
+      
+      if (response?.status !== "success") {
+        throw new Error(response?.message || `Failed to update ${itemType.toLowerCase()} status`);
+      }
+      
+      // Show success message
+      taskUpdateStatus?.(`${itemType} ${statusText} successfully!`, 'success', task);
       
     } catch (error) {
       console.error(`Error updating ${type} status:`, error);
       const errorMessage = error instanceof Error ? error.message : `Failed to update ${type} status`;
       taskUpdateStatus?.(errorMessage, 'error', task);
+      
+      // Re-throw the error to be caught by the outer catch block if needed
+      throw error;
     } finally {
+      // Clear the timeout if it exists
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      
+      // Clean up controller if it exists
+      if (controller) {
+        controller.abort();
+      }
+      
       // Reset update state
       setUpdateState({
         status: null,
@@ -181,7 +208,7 @@ export function TaskItem({
         controller: null
       });
     }
-  }, [task.status, task.task_id, taskUpdateStatus, isUpdating, task]);
+  }, [isUpdating, task, subTasks, taskUpdateStatus]);
 
   // Clean up on unmount
   useEffect(() => {
@@ -304,7 +331,7 @@ export function TaskItem({
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      setShowSubtasks(!showSubtasks);
+                      onToggleSubtasks?.(task.task_id);
                     }}
                     className="p-1 -mr-2 text-gray-400 hover:text-gray-600"
                     aria-label={showSubtasks ? 'Hide subtasks' : 'Show subtasks'}
