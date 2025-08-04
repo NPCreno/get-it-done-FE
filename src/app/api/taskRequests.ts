@@ -1,3 +1,4 @@
+import { CreateSubTaskDto } from "../interface/dto/create-subTask-dto";
 import { CreateTaskDto } from "../interface/dto/create-task-dto";
 import { UpdateTaskDto } from "../interface/dto/update-task-dto";
 import { getAccessToken } from "../utils/utils";
@@ -355,6 +356,32 @@ export const updateSubTaskStatus= async (taskSubInstance_id: string, status: str
     return data;
   } catch (err) {
     console.error('Error updating task status:', err);
+    throw err;
+  }
+};
+
+export const createSubTaskApi = async (payload: CreateSubTaskDto) => {
+  try {
+    const token = getAccessToken();
+    const response = await fetch(`${apiUrl}/tasks/createSubTask`, 
+        { 
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create user');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error('Error creating task:', err);
     throw err;
   }
 };

@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import Image from 'next/image';
-import { updateTaskStatus, updateSubTaskStatus } from "@/app/api/taskRequests";
+import { updateTaskStatus, updateSubTaskStatus, createSubTaskApi } from "@/app/api/taskRequests";
 import { useFormState } from "../context/FormProvider";
 import { ITask } from "../interface/ITask";
-import { format } from 'date-fns';
 import { ISubTask } from '../interface/ISubTask';
+import { CreateSubTaskDto } from '../interface/dto/create-subTask-dto';
+import { FormikErrors, useFormik } from 'formik';
+import { IUser } from '../interface/IUser';
+import { createSubTaskSchema } from '../schemas/createSubTaskSchema';
+import { getAccessTokenFromCookies, parseJwt } from '../utils/utils';
+import { getUser } from '../api/userRequests';
+import { ISubTaskFormValues } from '../interface/forms/ISubTaskFormValues';
 
 interface TaskItemProps {
   task: ITask;
@@ -35,10 +41,115 @@ export function TaskItem({
   }>({ status: null, isUpdating: false, controller: null });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState<{[key: string]: boolean}>({});
+  const [isAddingSubtask, setIsAddingSubtask] = useState(false);
+  const subtaskInputRef = useRef<HTMLInputElement>(null);
   const currentStatus = updateState.status || task.status;
   const isComplete = currentStatus === "Complete";
   const isUpdating = updateState.isUpdating;
   const hasSubtasks = subTasks && subTasks.length > 0;
+  const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
+  const [user, setUser] = useState<IUser | null>(null);
+
+  const initialValues = useMemo<ISubTaskFormValues>(
+    () => ({
+      user_id: user?.user_id ?? "",
+      title: "",
+      task_id: task.task_id,
+      due_date: null,
+      status: "Pending",
+    }),
+    [user?.user_id, task.task_id]
+  );
+  
+  const {
+    setFieldValue,
+    validateForm,
+    values,
+    setSubmitting,
+  } = useFormik({
+    initialValues,
+    enableReinitialize: true,
+    validationSchema: createSubTaskSchema,
+    validateOnChange: false, // Disable real-time validation
+    validateOnBlur: false,
+    onSubmit: async (values: ISubTaskFormValues) => {
+      handleSubmitForm(values);
+    },
+  });
+
+  const handleSubmitForm = async (formValues: ISubTaskFormValues) => {
+    const validationErrors: FormikErrors<ISubTaskFormValues> = await validateForm(formValues);
+    if (Object.keys(validationErrors).length === 0) {
+      try {
+        // Create a new subtask with proper typing
+        const subTaskData: CreateSubTaskDto = {
+          title: formValues.title,
+          task_id: formValues.task_id,
+          user_id: formValues.user_id,
+          due_date: formValues.due_date || undefined,
+          status: formValues.status,
+        };
+
+        const response = await createSubTaskApi(subTaskData);
+        
+        if (response && response.status === 'success') {
+          // Refresh the task to show the new subtask
+          taskUpdateStatus?.('Subtask added successfully', 'success', task);
+          // Clear the input for the next subtask
+          setFieldValue('title', '');
+          // Keep the input focused for rapid entry
+          subtaskInputRef.current?.focus();
+        }
+      } catch (error) {
+        console.error('Error creating subtask:', error);
+        taskUpdateStatus?.('Failed to create subtask', 'error', task);
+      }
+    }
+    setSubmitting(false);
+  };
+  
+    
+  // Focus the input when adding a new subtask
+  useEffect(() => {
+    if (isAddingSubtask && subtaskInputRef.current) {
+      subtaskInputRef.current.focus();
+    }
+  }, [isAddingSubtask]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (isDoneFetchingUser) return;
+      else {
+        try {
+          if (!user) {
+            // If no user, try getting one from cookies
+            const token = getAccessTokenFromCookies();
+            if (!token) {
+              console.error("No access_token found in cookies");
+              return;
+            }
+            const parsedUser = parseJwt(token).user;
+            if (!parsedUser || !parsedUser.user_id) {
+              console.error("Failed to parse user or missing user_id in token");
+              return;
+            }
+            setIsDoneFetchingUser(true);
+            setUser(parsedUser);
+            return;
+          }
+          // Only fetch updated user info if we have a user
+          const response = await getUser(user.user_id);
+          if (response) {
+            setIsDoneFetchingUser(true);
+            setUser(response);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user:", error);
+        }
+      }
+    };
+    fetchUser();
+  }, [user, setUser, isDoneFetchingUser]);
 
   const handleDelete = useCallback(async (taskId: string) => {
     // Prevent multiple delete attempts for the same task
@@ -226,33 +337,8 @@ export function TaskItem({
     'High': 'border-l-2 border-red-400',
   };
 
-  // Check if task is overdue
-  const isOverdue = (dueDate: string): boolean => {
-    try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const taskDate = new Date(dueDate);
-      return taskDate < today;
-    } catch (error) {
-      console.error("Error checking if task is overdue:", error);
-      return false;
-    }
-  };
-
-  // Format due date
-  const formatDueDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return format(date, 'MMM d');
-    } catch (error) {
-      console.error("Error formatting due date:", error);
-      return '';
-    }
-  };
-
   // Get priority color class
   const priorityColor = priorityColors[task.priority as keyof typeof priorityColors] || '';
-
   return (
     <div className="w-full">
       <div 
@@ -327,70 +413,48 @@ export function TaskItem({
                 </div>
               )}
               <div className="flex items-center space-x-2 ml-2">
-                {hasSubtasks && (
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleSubtasks?.(task.task_id);
-                    }}
-                    className="p-1 -mr-2 text-gray-400 hover:text-gray-600"
-                    aria-label={showSubtasks ? 'Hide subtasks' : 'Show subtasks'}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleSubtasks?.(task.task_id);
+                    if (!showSubtasks) {
+                      setIsAddingSubtask(true);
+                    }
+                  }}
+                  className={`p-1 -mr-2 ${hasSubtasks ? 'text-gray-600' : 'text-gray-300 hover:text-gray-600'}`}
+                  aria-label={showSubtasks ? 'Hide subtasks' : 'Show subtasks'}
+                >
+                  <svg 
+                    className={`w-4 h-4 transform transition-transform ${showSubtasks ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
                   >
-                    <svg 
-                      className={`w-4 h-4 transition-transform duration-200 ${showSubtasks ? 'rotate-180' : ''}`}
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                )}
-                {task.due_date && (
-                  <span className={`text-xs whitespace-nowrap ${
-                    isOverdue(task.due_date.toString()) && !isComplete 
-                      ? 'text-red-500 font-medium' 
-                      : 'text-gray-400'
-                  }`}>
-                    {formatDueDate(task.due_date.toString())}
-                  </span>
-                )}
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
+
       {/* Subtasks Section */}
-      {hasSubtasks && showSubtasks && (
+      {showSubtasks && (
         <div className="ml-8 pl-2 border-l-2 border-gray-200">
-          {subTasks.map((subtask: ISubTask) => (
-            <div 
-              key={subtask.id} 
-              className="flex items-center py-2 px-3 text-sm text-gray-600 hover:bg-gray-50 rounded gap-2"
-            >
-              <div className="group w-6 h-6 relative flex-shrink-0">
-                <div className="group w-6 h-6 relative">
-                  <input
-                    id={`checkSubtask-${subtask.taskSubInstance_id}`}
-                    type="checkbox"
-                    onChange={(e) => handleCheckToggle(e, 'subtask', subtask.taskSubInstance_id)}
-                    onClick={e => e.stopPropagation()}
-                    checked={subtask.status === 'Complete'}
-                    disabled={isUpdating}
-                    aria-label={subtask.status === 'Complete' ? 'Mark subtask as pending' : 'Mark subtask as complete'}
-                    className="peer appearance-none w-full h-full cursor-pointer"
-                  />
-                  <div className="absolute inset-0 rounded-full border-[2px] border-solid border-gray-300 peer-checked:border-0 group-hover:border-0 pointer-events-none" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
-                    <Image
-                      src="/svgs/checkmark-circle-green.svg"
-                      alt="Check"
-                      width={26}
-                      height={26}
-                    />
-                  </div>
-                </div>
+          {/* Subtasks List */}
+          {hasSubtasks && subTasks.map((subtask) => (
+            <div key={subtask.taskSubInstance_id} className="flex items-center py-1 px-3">
+              <div className="group w-6 h-6 relative">
+                <input
+                  type="checkbox"
+                  id={`subtask-${subtask.taskSubInstance_id}`}
+                  checked={subtask.status === 'Complete'}
+                  onChange={(e) => handleCheckToggle(e, 'subtask', subtask.taskSubInstance_id)}
+                  onClick={e => e.stopPropagation()}
+                  className="peer appearance-none w-full h-full cursor-pointer"
+                  aria-label={subtask.status === 'Complete' ? 'Mark subtask as pending' : 'Mark subtask as complete'}
+                />
                 <div className="absolute inset-0 rounded-full border-[2px] border-solid border-gray-300 peer-checked:border-0 group-hover:border-0 pointer-events-none" />
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
                   <Image
@@ -401,16 +465,83 @@ export function TaskItem({
                   />
                 </div>
               </div>
-              <span className={`${subtask.status === 'Complete' ? 'line-through text-gray-400' : ''}`}>
+              <span className={`text-sm ml-2 flex-1 ${subtask.status === 'Complete' ? 'line-through text-start text-gray-400' : 'text-start text-gray-700'}`}>
                 {subtask.title}
               </span>
-              {subtask.due_date && (
-                <span className="ml-auto text-xs text-gray-400">
-                  {formatDueDate(subtask.due_date.toString())}
-                </span>
-              )}
+              <button 
+                className="text-gray-400 hover:text-gray-600 p-1 -mr-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // TODO: Add delete subtask functionality when endpoint is available
+                  console.log('Delete subtask:', subtask.taskSubInstance_id);
+                }}
+                title="Delete subtask"
+              >
+                <svg 
+                  className="w-4 h-4" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+                  />
+                </svg>
+              </button>
             </div>
           ))}
+          
+          {/* Add Subtask Input */}
+          <div className="px-3 py-2">
+            <div className="flex items-center gap-2">
+              <input
+                ref={subtaskInputRef}
+                type="text"
+                className="flex-1 text-sm border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-default focus:border-primary-default"
+                placeholder="Add a subtask"
+                value={values.title}
+                onChange={(e) => setFieldValue('title', e.target.value)}
+                onKeyDown={(e) => {
+                  e.stopPropagation(); // Prevent event from bubbling up
+                  if (e.key === 'Enter' && values.title.trim()) {
+                    e.preventDefault(); // Prevent form submission if inside a form
+                    handleSubmitForm({
+                      ...values,
+                      title: values.title.trim()
+                    });
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    setFieldValue('title', '');
+                    setIsAddingSubtask(false);
+                  }
+                }}
+                onBlur={() => {
+                  if (!values.title.trim()) {
+                    setIsAddingSubtask(false);
+                  }
+                }}
+                autoFocus={isAddingSubtask}
+              />
+              {isAddingSubtask && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsAddingSubtask(false);
+                    setFieldValue('title', '');
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                  aria-label="Cancel adding subtask"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
