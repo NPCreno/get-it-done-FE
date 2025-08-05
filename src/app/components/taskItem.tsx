@@ -16,6 +16,7 @@ interface TaskItemProps {
   task: ITask;
   handleUpdateTask: () => void;
   handleDeleteTask: (taskId: string) => void;
+  handleDeleteSubTask: (taskSubInstance_id: string) => void;
   handleDeleteRecurringTasks: (taskTemplate_id: string, taskId: string) => void;
   taskUpdateStatus?: (message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => void;
   subTasks?: ISubTask[] | null;
@@ -27,6 +28,7 @@ export function TaskItem({
   task, 
   handleUpdateTask, 
   handleDeleteTask,
+  handleDeleteSubTask,
   taskUpdateStatus,
   handleDeleteRecurringTasks,
   subTasks,
@@ -193,6 +195,47 @@ export function TaskItem({
     }
   }, [handleDeleteTask, isDeleting, taskUpdateStatus, task]);
 
+  const handleDeleteSub = useCallback(async (taskSubInstance_id: string) => {
+    // Prevent multiple delete attempts for the same task
+    if (isDeleting[taskSubInstance_id]) {
+      console.log('Delete already in progress for subtask:', taskSubInstance_id);
+      return;
+    }
+    
+    try {
+      setIsDeleting(prev => ({ ...prev, [taskSubInstance_id]: true }));  // Mark this task as being deleted
+      
+      // Create a promise with a timeout
+      const deletePromise = handleDeleteSubTask(taskSubInstance_id);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Delete operation timed out')), 10000)
+      );
+      
+      // Race between the delete operation and timeout
+      await Promise.race([deletePromise, timeoutPromise]);
+      
+      // If we get here, the delete was successful
+      taskUpdateStatus?.('SubTask deleted successfully', 'success', task);
+      return true;
+      
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete subtask';
+      taskUpdateStatus?.(`Delete failed: ${errorMessage}`, 'error', task);
+      
+      // Re-throw to allow parent component to handle the error if needed
+      throw error;
+      
+    } finally {
+      // Clean up the loading state
+      setIsDeleting(prev => {
+        const newState = { ...prev };
+        delete newState[taskSubInstance_id];
+        return newState;
+      });
+    }
+  }, [handleDeleteTask, isDeleting, taskUpdateStatus, task]);
+
   const handleCheckToggle = useCallback(async (e: React.ChangeEvent<HTMLInputElement>, type: 'task' | 'subtask', subtaskId?: string) => {
     e.stopPropagation();
     // Debounce rapid clicks
@@ -339,6 +382,7 @@ export function TaskItem({
 
   // Get priority color class
   const priorityColor = priorityColors[task.priority as keyof typeof priorityColors] || '';
+
   return (
     <div className="w-full">
       <div 
@@ -472,8 +516,7 @@ export function TaskItem({
                 className="text-gray-400 hover:text-gray-600 p-1 -mr-2"
                 onClick={(e) => {
                   e.stopPropagation();
-                  // TODO: Add delete subtask functionality when endpoint is available
-                  console.log('Delete subtask:', subtask.taskSubInstance_id);
+                  handleDeleteSub(subtask.taskSubInstance_id)
                 }}
                 title="Delete subtask"
               >

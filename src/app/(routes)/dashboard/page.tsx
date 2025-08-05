@@ -19,6 +19,7 @@ import {
   getStreakCount,
   deleteTaskApi,
   deleteRecurringTasksApi,
+  deleteSubTaskApi,
 } from "@/app/api/taskRequests";
 import { getProjectsForUser } from "@/app/api/projectsRequests";
 import { getUser } from "@/app/api/userRequests";
@@ -517,6 +518,10 @@ export default function DashboardPage() {
     await deleteTask(taskId);
   };
 
+  const handleDeleteSubTask = async (taskId: string) => {
+    await deleteSubTask(taskId);
+  };
+
   const handleDeleteRecurringTasks = (taskTemplate_id: string, taskId: string) => {
     setTaskTemplateIdToDelete(taskTemplate_id);
     setTaskIdToDelete(taskId);
@@ -633,6 +638,72 @@ export default function DashboardPage() {
     }
   };
 
+  const deleteSubTask = async (taskSubInstance_id: string) => {
+    try {
+      const response: ITaskResponse = await deleteSubTaskApi(taskSubInstance_id);
+      if (response.status === "success") {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: "Subtask Deleted",
+          description:
+            response.message || "Your subtask has been deleted successfully",
+          className: "text-green-600",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      } else {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: response.message,
+          description: response?.error || "Something Went Wrong",
+          className: "text-error-default",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: error.message,
+          className: "text-error-default",
+        });
+      } else {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: "An unknown error occurred",
+          className: "text-error-default",
+        });
+      }
+      setShowToast(true);
+      setIsExitingToast(false);
+      setTimeout(() => {
+        setIsExitingToast(true); // Start exit animation
+        setTimeout(() => {
+          setShowToast(false); // Remove after animation completes
+        }, 400); // Must match the toastOut animation duration
+      }, 10000); // Toast display duration
+    }
+  };
+
   const handleTaskUpdateStatus = (message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
     // For backward compatibility, we'll use the message to determine the new status
     // since the type parameter is used for the toast style
@@ -692,6 +763,7 @@ export default function DashboardPage() {
       setTimeout(() => setShowToast(false), 400);
     }, 3000);
   };
+
   return (
     <MainLayout>
       {showToast && (
@@ -973,6 +1045,7 @@ export default function DashboardPage() {
                             setIsUpdateTask(true);
                           }}
                           handleDeleteTask={(taskId: string) => handleDeleteTask(taskId)}
+                          handleDeleteSubTask={(taskSubInstance_id: string) => handleDeleteSubTask(taskSubInstance_id)}
                           handleDeleteRecurringTasks={
                             (taskTemplate_id: string, taskId: string) => 
                             handleDeleteRecurringTasks(taskTemplate_id, taskId)
@@ -1026,6 +1099,7 @@ export default function DashboardPage() {
                                     key={`completed-${task.task_id}-${task.status}`}
                                     task={task}
                                     handleDeleteTask={() => handleDeleteTask(task.task_id)}
+                                    handleDeleteSubTask={(taskSubInstance_id: string) => handleDeleteSubTask(taskSubInstance_id)}
                                     handleUpdateTask={() => {
                                       setSelectedTaskData(task);
                                       setIsTaskModalOpen(true);

@@ -82,6 +82,31 @@ export const deleteTaskApi = async (taskId: string) => {
   }
 };
 
+export const deleteSubTaskApi = async (taskSubInstance_id: string) => {
+  try {
+    const token = getAccessToken();
+    const response = await fetch(`${apiUrl}/tasks/subTask/${taskSubInstance_id}`, 
+        { 
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create user');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error('Error deleting task:', err);
+    throw err;
+  }
+};
+
 export const deleteRecurringTasksApi = async (taskTemplate_id: string) => {
   try {
     const token = getAccessToken();
