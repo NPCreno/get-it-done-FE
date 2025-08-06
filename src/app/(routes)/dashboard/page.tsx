@@ -1098,13 +1098,13 @@ export default function DashboardPage() {
                                   <TaskItem
                                     key={`completed-${task.task_id}-${task.status}`}
                                     task={task}
-                                    handleDeleteTask={() => handleDeleteTask(task.task_id)}
-                                    handleDeleteSubTask={(taskSubInstance_id: string) => handleDeleteSubTask(taskSubInstance_id)}
                                     handleUpdateTask={() => {
                                       setSelectedTaskData(task);
                                       setIsTaskModalOpen(true);
                                       setIsUpdateTask(true);
                                     }}
+                                    handleDeleteTask={() => handleDeleteTask(task.task_id)}
+                                    handleDeleteSubTask={(taskSubInstance_id: string) => handleDeleteSubTask(taskSubInstance_id)}
                                     handleDeleteRecurringTasks={(taskTemplate_id: string, taskId: string) => 
                                       handleDeleteRecurringTasks(taskTemplate_id, taskId)
                                     }
@@ -1113,6 +1113,7 @@ export default function DashboardPage() {
                                     taskUpdateStatus={(message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
                                       handleTaskUpdateStatus(message, type, task);
                                     }}
+                                    subTasks={task.subInstances}
                                   />
                                 ))}
                             </div>
