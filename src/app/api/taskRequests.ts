@@ -1,3 +1,4 @@
+import { CreateSubTaskDto } from "../interface/dto/create-subTask-dto";
 import { CreateTaskDto } from "../interface/dto/create-task-dto";
 import { UpdateTaskDto } from "../interface/dto/update-task-dto";
 import { getAccessToken } from "../utils/utils";
@@ -77,6 +78,31 @@ export const deleteTaskApi = async (taskId: string) => {
     return data;
   } catch (err) {
     console.error('Error deleting task:', err);
+    throw err;
+  }
+};
+
+export const deleteSubTaskApi = async (taskSubInstance_id: string) => {
+  try {
+    const token = getAccessToken();
+    const response = await fetch(`${apiUrl}/tasks/subTask/${taskSubInstance_id}`, 
+        { 
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to delete subtask');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error('Error deleting subtask:', err);
     throw err;
   }
 };
@@ -328,6 +354,59 @@ export const updateTaskStatus= async (taskId: string, status: string) => {
     return data;
   } catch (err) {
     console.error('Error updating task status:', err);
+    throw err;
+  }
+};
+
+export const updateSubTaskStatus= async (taskSubInstance_id: string, status: string) => {
+  try {
+    const token = getAccessToken();
+    let data;
+    const response = await fetch(`${apiUrl}/tasks/update-subtask-status/${taskSubInstance_id}/status/${status}`, 
+        { 
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (response.ok) {
+      data = await response.json();
+    }
+    else {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText || 'Unknown error'}`);
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Error updating task status:', err);
+    throw err;
+  }
+};
+
+export const createSubTaskApi = async (payload: CreateSubTaskDto) => {
+  try {
+    const token = getAccessToken();
+    const response = await fetch(`${apiUrl}/tasks/createSubTask`, 
+        { 
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create subtask');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error('Error creating subtask:', err);
     throw err;
   }
 };

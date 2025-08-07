@@ -303,7 +303,7 @@ export default function TaskModal({
               isLabelVisible={true}
               placeholder="Select due date (optional)"
               error={formik.errors.due_date}
-              customClass="translate-x-[150px] translate-y-[-170px]"
+              customClass="translate-x-[-230px] translate-y-[-400px]"
             />
           </div>
 

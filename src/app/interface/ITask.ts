@@ -1,3 +1,5 @@
+import { ISubTask } from "./ISubTask";
+
 export interface ITask {
     project_id: string;
     task_id: string;
@@ -8,4 +10,5 @@ export interface ITask {
     priority: string;
     project_title?: string;
     template_id?: string;
+    subInstances?: ISubTask[] | null;
 }

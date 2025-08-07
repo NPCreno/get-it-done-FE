@@ -4,12 +4,13 @@ import MainLayout from "@/app/components/MainLayout";
 import ToggleSwitch from "@/app/components/toggleSwitch";
 import { updateUserSchema } from "@/app/schemas/updateUserSchema";
 import { useFormik, FormikErrors } from "formik";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Toast } from "@/app/components/toast";
 import { getAccessTokenFromCookies, parseJwt } from "@/app/utils/utils";
 import { IUser } from "@/app/interface/IUser";
 import ConfirmationModal from "@/app/components/modals/confirmation";
 import Cookies from 'js-cookie';
+import LoadingPage from "@/app/components/loader";
 interface profileSettingsFormValues {
   fullname: string;
   username: string;
@@ -31,6 +32,9 @@ export default function ProfileSettingsPage() {
   const [isExitingToast, setIsExitingToast] = useState(false);
   const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [showLoader, setShowLoader] = useState(true);
+  const isFirstLoad = useRef(true);
   const {
     validateForm,
     setFieldValue,
@@ -45,9 +49,9 @@ export default function ProfileSettingsPage() {
       fullname: user ? user.fullname : "",
       username: user ? user.username : "",
       password: "",
-      theme: "",
-      enableNotifications: false,
-      soundFx: false,
+      theme: user?.theme ?? "light",
+      enableNotifications: user ? user.enableNotifications === "true" : false,
+      soundFx: user ? user.soundFx === "true" : false,
     },
     enableReinitialize: true,
     validationSchema: updateUserSchema,
@@ -58,6 +62,12 @@ export default function ProfileSettingsPage() {
       handleSubmitForm(values);
     },
   });
+
+  useEffect(() => {
+    if (!pageLoading) {
+      setTimeout(() => setShowLoader(false), 500); // Match transition duration
+    }
+  }, [pageLoading]);
 
   const handleSubmitForm = async (values: profileSettingsFormValues) => {
     const validationErrors: FormikErrors<typeof values> = await validateForm();
@@ -142,6 +152,11 @@ export default function ProfileSettingsPage() {
 
   useEffect(() => {
     const fetchUser = async () => {
+      // Set loading state
+      if (isFirstLoad.current) {
+        setPageLoading(true);
+      }
+            
       if (isDoneFetchingUser) return;
       else {
         try {
@@ -159,6 +174,11 @@ export default function ProfileSettingsPage() {
             }
             setIsDoneFetchingUser(true);
             setUser(parsedUser);
+            const response = await getUser(parsedUser.user_id);
+            if (response) {
+              setIsDoneFetchingUser(true);
+              setUser(response);
+            }
             return;
           }
           // Only fetch updated user info if we have a user
@@ -169,6 +189,12 @@ export default function ProfileSettingsPage() {
           }
         } catch (error) {
           console.error("Failed to fetch user:", error);
+        }
+        finally{
+          if (isFirstLoad.current) {
+            setPageLoading(false);
+            isFirstLoad.current = false;
+          }
         }
       }
     };
@@ -189,6 +215,15 @@ export default function ProfileSettingsPage() {
       <div className="main flex justify-center w-full">
         {/* Main Page */}
         <div className="inside max-w-[1440px] w-full mx-auto gap-5 flex flex-col">
+          {showLoader && (
+            <div
+              className={`transition-opacity duration-500 ${
+                !pageLoading ? "opacity-0 pointer-events-none" : "opacity-100"
+              }`}
+            >
+              <LoadingPage />
+            </div>
+          )}
           <div className="flex justify-between">
             {/* Left header */}
             <div className="flex flex-col">
