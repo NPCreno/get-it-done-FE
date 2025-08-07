@@ -96,13 +96,13 @@ export const deleteSubTaskApi = async (taskSubInstance_id: string) => {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Failed to create user');
+      throw new Error(error.message || 'Failed to delete subtask');
     }
 
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error deleting task:', err);
+    console.error('Error deleting subtask:', err);
     throw err;
   }
 };
@@ -400,13 +400,13 @@ export const createSubTaskApi = async (payload: CreateSubTaskDto) => {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Failed to create user');
+      throw new Error(error.message || 'Failed to create subtask');
     }
 
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error('Error creating task:', err);
+    console.error('Error creating subtask:', err);
     throw err;
   }
 };

@@ -234,7 +234,7 @@ export function TaskItem({
         return newState;
       });
     }
-  }, [handleDeleteTask, isDeleting, taskUpdateStatus, task]);
+  }, [handleDeleteSubTask, isDeleting, taskUpdateStatus, task]);
 
   const handleCheckToggle = useCallback(async (e: React.ChangeEvent<HTMLInputElement>, type: 'task' | 'subtask', subtaskId?: string) => {
     e.stopPropagation();

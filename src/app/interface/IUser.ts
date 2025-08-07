@@ -4,7 +4,7 @@ export interface IUser {
     username: string;
     email: string;
     tier: string;
-    enableNotifications: string;
-    theme: string;
-    soundFx: string;
+    enableNotifications?: string;
+    theme?: string;
+    soundFx?: string;
 }

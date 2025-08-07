@@ -49,7 +49,7 @@ export default function ProfileSettingsPage() {
       fullname: user ? user.fullname : "",
       username: user ? user.username : "",
       password: "",
-      theme: user ? user.theme : "light",
+      theme: user?.theme ?? "light",
       enableNotifications: user ? user.enableNotifications === "true" : false,
       soundFx: user ? user.soundFx === "true" : false,
     },
