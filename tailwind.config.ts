@@ -88,10 +88,16 @@ const config: Config = {
 			}, 
   			warning: '#FEC242',
   			info: '#2196F3',
-  			background: '#EEEEEE',
+  			background: {
+			 'light': '#EEEEEE',
+			 'dark': '#0d0e12'
+			},
   			text: '#333',
   			border: 'hsl(var(--border))',
-  			foreground: 'hsl(var(--foreground))',
+  			foreground: {
+				'light': '#ffffff',
+				'dark': '#111317'
+			},
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'

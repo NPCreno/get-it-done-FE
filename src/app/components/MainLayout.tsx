@@ -1,17 +1,27 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Sidebar from "./Sidebar";
 import MobileSidebar from "./MobileSidebar";
 import HamburgerButton from "./HamburgerButton";
 import { useFormState } from "@/app/context/FormProvider";
+import { getAccessToken, parseJwt } from "../utils/utils";
+import { getUser } from "../api/userRequests";
 
 export default function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { sidebarWidth, setSidebarWidth, isMobileSidebarOpen, closeMobileSidebar } = useFormState();
+  const { 
+    sidebarWidth, 
+    setSidebarWidth, 
+    isMobileSidebarOpen, 
+    closeMobileSidebar, 
+    setUserData, 
+    userData
+  } = useFormState();
   const [isMobile, setIsMobile] = useState(false);
+  const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
 
   // Check if the screen is mobile size on mount and on resize with debounce
   useEffect(() => {
@@ -49,8 +59,49 @@ export default function MainLayout({
     }
   };
 
+    useEffect(() => {
+      const fetchUser = async () => {
+        if (isDoneFetchingUser) return;
+        else {
+          try {
+            if (!userData) {
+              // If no user, try getting one from cookies
+              const token = getAccessToken();
+              if (!token) {
+                console.error("No access_token found in cookies");
+                return;
+              }
+              const parsedUser = parseJwt(token).user;
+              if (!parsedUser || !parsedUser.user_id) {
+                console.error("Failed to parse user or missing user_id in token");
+                return;
+              }
+              setIsDoneFetchingUser(true);
+              setUserData(parsedUser);
+              const response = await getUser(parsedUser.user_id);
+
+              if (response) {
+                setIsDoneFetchingUser(true);
+                setUserData(response);
+              }
+              return;
+            }
+            // Only fetch updated user info if we have a user
+            const response = await getUser(userData.user_id);
+            if (response) {
+              setIsDoneFetchingUser(true);
+              setUserData(response);
+            }
+          } catch (error) {
+            console.error("Failed to fetch user:", error);
+          }
+        }
+      };
+      fetchUser();
+    }, [userData, setUserData, isDoneFetchingUser]);
+
   return (
-    <div className="flex bg-background h-screen overflow-hidden">
+    <div className={`flex ${userData?.theme === "dark" ? "bg-background-dark" : "bg-background-light"} h-screen overflow-hidden`}>
       {/* Desktop Sidebar - Hidden on mobile */}
       <div 
         className={`hidden md:block hover:w-[146px] w-[80px] p-5 h-screen transition-all duration-300`}

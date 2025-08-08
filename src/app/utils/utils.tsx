@@ -16,11 +16,6 @@ export function parseJwt(token: string) {
   }
 }
 
-export function getAccessTokenFromCookies(): string | null {
-  const match = document.cookie.match(new RegExp('(^| )access_token=([^;]+)'));
-  return match ? match[2] : null;
-}
-
 export function base64UrlDecode(str: string) {
   return atob(str.replace(/-/g, "+").replace(/_/g, "/").padEnd(str.length + (4 - (str.length % 4)) % 4, "="));
 }

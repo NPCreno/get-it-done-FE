@@ -24,7 +24,7 @@ import {
 import { getProjectsForUser } from "@/app/api/projectsRequests";
 import { getUser } from "@/app/api/userRequests";
 import {
-  getAccessTokenFromCookies,
+  getAccessToken,
   getWeekRange,
   parseJwt,
 } from "@/app/utils/utils";
@@ -47,7 +47,14 @@ import PomodoroModal from "@/app/components/modals/pomodoro";
 import ConfirmationModal from "@/app/components/modals/confirmation";
 
 export default function DashboardPage() {
-  const { selectedTaskData, setSelectedTaskData, selectedMonth, selectedYear, calendarMonthYear } = useFormState();
+  const { 
+    selectedTaskData, 
+    setSelectedTaskData, 
+    selectedMonth, 
+    selectedYear, 
+    calendarMonthYear, 
+    userData 
+  } = useFormState();
   const [user, setUser] = useState<IUser | null>(null);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [projectOptions, setProjectOptions] = useState<IProject[]>([]);
@@ -234,7 +241,7 @@ export default function DashboardPage() {
         try {
           if (!user) {
             // If no user, try getting one from cookies
-            const token = getAccessTokenFromCookies();
+            const token = getAccessToken();
             if (!token) {
               console.error("No access_token found in cookies");
               return;
@@ -969,7 +976,10 @@ export default function DashboardPage() {
 
               <div className="w-full h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5 items-center justify-center text-center">
                 {/* Task board */}
-                <div className="w-full h-full p-6 flex flex-col bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 fade-in-delay-2 flex-grow border border-gray-100">
+                <div className={`w-full h-full p-6 flex flex-col rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 fade-in-delay-2 flex-grow border
+                  ${userData?.theme === "dark" ? "bg-foreground-dark" : "bg-white"}
+                  ${userData?.theme === "dark" ? "border-gray-800" : ""}
+                   `}>
                   {/* Header - Fixed */}
                   <div className="flex flex-col sm:flex-row justify-between gap-4 border-gray-100">
                     <div>

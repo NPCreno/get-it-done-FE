@@ -1,7 +1,7 @@
 "use client";
 import MainLayout from "@/app/components/MainLayout";
 import ProjectCard from "../../components/projectCard";
-import { getAccessTokenFromCookies, parseJwt } from "@/app/utils/utils";
+import { getAccessToken, parseJwt } from "@/app/utils/utils";
 import { useFormState } from "@/app/context/FormProvider";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getUser } from "@/app/api/userRequests";
@@ -269,7 +269,7 @@ export default function ProjectsPage() {
         try {
           if (!user) {
             // If no user, try getting one from cookies
-            const token = getAccessTokenFromCookies();
+            const token = getAccessToken();
             if (!token) {
               console.error("No access_token found in cookies");
               return;

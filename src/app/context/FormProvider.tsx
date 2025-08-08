@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 import { ITask } from "../interface/ITask";
+import { IUser } from "../interface/IUser";
 
 // Define the types for form state and additional universal states
 type FormStateType = {
@@ -31,6 +32,8 @@ type UniversalStateType = {
   setSelectedYear: React.Dispatch<React.SetStateAction<string>>;
   calendarMonthYear: {month: string, year: string};
   setCalendarMonthYear: React.Dispatch<React.SetStateAction<{month: string, year: string}>>;
+  userData: IUser | null;
+  setUserData: React.Dispatch<React.SetStateAction<IUser | null>>;
 };
 
 // Create the context
@@ -50,6 +53,7 @@ export const FormProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(60);
   const [selectedTaskData, setSelectedTaskData] = useState<ITask | null>(null);
+  const [userData, setUserData] = useState<IUser | null>(null);
   // Initialize with current month (1-12) and year (e.g., 2025)
   const [selectedMonth, setSelectedMonth] = useState<string>((new Date().getMonth() + 1).toString());
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
@@ -86,6 +90,8 @@ export const FormProvider = ({ children }: { children: ReactNode }) => {
         setSelectedYear,
         calendarMonthYear,
         setCalendarMonthYear,
+        userData,
+        setUserData,
       }}
     >
       {children}
