@@ -48,41 +48,43 @@ export default function ChartCard({
           return renderNoDataState();
         }
         return (
-          <div className={`w-full h-full ${userData?.theme === "dark" ? "bg-background-dark" : "bg-background-light"}`}>
+          <div className={`w-full h-full ${userData?.theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"}`}>
             <ChartAreaGradient 
               data={taskCompletionData}
               colors={{
                 completed: "#53D86A",
               }}
+              className={userData?.theme === "dark" ? "bg-foreground-dark border-gray-800 border text-white" : "bg-foreground-light"}
               aria-label={`Task completion trend chart showing ${taskCompletionData.length} days of data`}
             />
           </div>
         );
       case "Task Distribution by project":
         return (
-          <div className="w-full h-full">
+          <div className={`${userData?.theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"} w-full h-full`}>
             <ChartPieInteractive 
               data={taskDistributionData}
               title="Task Distribution"
               description="Completed tasks by project"
               noData={!taskDistributionData || taskDistributionData.length === 0 || taskDistributionData.every(task => task.value === 0)}
+              theme={userData?.theme}
             />
           </div>
         );
       case "Productivity Streak":
-        return <StreakCounter streakCount={streakCount} header={header} />;
+        return <StreakCounter streakCount={streakCount} header={header} theme={userData?.theme}/>
       case "Calendar Heat map":
         return (
           <div className={`w-full h-full p-4  rounded-[10px] shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] 
           hover:shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] transition-all duration-300 fade-in-left 
-          ${userData?.theme === "dark" ? "bg-background-dark" : "bg-background-light"}`}>
-            <CardTitle>{header}</CardTitle>
+          ${userData?.theme === "dark" ? "bg-foreground-dark border-gray-800 border" : "bg-foreground-light"}`}>
+            <CardTitle className={`${userData?.theme === "dark" ? "text-white" : "text-black"}`}>{header}</CardTitle>
             <MonthlyHeatmap 
               values={calendarHeatmapData.map(item => ({
                 date: item.date,
                 count: item.value
               }))}
-              className="h-full"
+              theme={userData?.theme}
             />
           </div>
         );

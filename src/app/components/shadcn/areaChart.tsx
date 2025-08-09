@@ -30,9 +30,10 @@ interface AreaChartProps {
   colors?: {
     completed?: string;
   };
+  className?: string;
 }
 
-export function ChartAreaGradient({ data, colors }: AreaChartProps) {
+export function ChartAreaGradient({ data, colors, className }: AreaChartProps) {
   const chartConfig = {
     completed: {
       label: "Completed",
@@ -40,7 +41,7 @@ export function ChartAreaGradient({ data, colors }: AreaChartProps) {
     },
   } satisfies ChartConfig
   return (
-    <Card className="flex flex-col h-full min-h-[280px]">
+    <Card className={`flex flex-col h-full min-h-[280px] ${className}`}>
       <CardHeader className="p-4 pb-2">
         <CardTitle>Task Completion Trend</CardTitle>
         <CardDescription>
