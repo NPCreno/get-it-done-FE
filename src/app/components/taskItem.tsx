@@ -6,10 +6,7 @@ import { ITask } from "../interface/ITask";
 import { ISubTask } from '../interface/ISubTask';
 import { CreateSubTaskDto } from '../interface/dto/create-subTask-dto';
 import { FormikErrors, useFormik } from 'formik';
-import { IUser } from '../interface/IUser';
 import { createSubTaskSchema } from '../schemas/createSubTaskSchema';
-import { getAccessTokenFromCookies, parseJwt } from '../utils/utils';
-import { getUser } from '../api/userRequests';
 import { ISubTaskFormValues } from '../interface/forms/ISubTaskFormValues';
 
 interface TaskItemProps {
@@ -35,7 +32,7 @@ export function TaskItem({
   showSubtasks = false,
   onToggleSubtasks
 }: TaskItemProps) {
-  const { setSelectedTaskData } = useFormState();
+  const { setSelectedTaskData, userData, setUserData } = useFormState();
   const [updateState, setUpdateState] = useState<{ 
     status: string | null;
     isUpdating: boolean;
@@ -49,18 +46,16 @@ export function TaskItem({
   const isComplete = currentStatus === "Complete";
   const isUpdating = updateState.isUpdating;
   const hasSubtasks = subTasks && subTasks.length > 0;
-  const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
-  const [user, setUser] = useState<IUser | null>(null);
 
   const initialValues = useMemo<ISubTaskFormValues>(
     () => ({
-      user_id: user?.user_id ?? "",
+      user_id: userData?.user_id ?? "",
       title: "",
       task_id: task.task_id,
       due_date: null,
       status: "Pending",
     }),
-    [user?.user_id, task.task_id]
+    [userData?.user_id, task.task_id]
   );
   
   const {
@@ -117,41 +112,6 @@ export function TaskItem({
       subtaskInputRef.current.focus();
     }
   }, [isAddingSubtask]);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (isDoneFetchingUser) return;
-      else {
-        try {
-          if (!user) {
-            // If no user, try getting one from cookies
-            const token = getAccessTokenFromCookies();
-            if (!token) {
-              console.error("No access_token found in cookies");
-              return;
-            }
-            const parsedUser = parseJwt(token).user;
-            if (!parsedUser || !parsedUser.user_id) {
-              console.error("Failed to parse user or missing user_id in token");
-              return;
-            }
-            setIsDoneFetchingUser(true);
-            setUser(parsedUser);
-            return;
-          }
-          // Only fetch updated user info if we have a user
-          const response = await getUser(user.user_id);
-          if (response) {
-            setIsDoneFetchingUser(true);
-            setUser(response);
-          }
-        } catch (error) {
-          console.error("Failed to fetch user:", error);
-        }
-      }
-    };
-    fetchUser();
-  }, [user, setUser, isDoneFetchingUser]);
 
   const handleDelete = useCallback(async (taskId: string) => {
     // Prevent multiple delete attempts for the same task
@@ -386,7 +346,7 @@ export function TaskItem({
   return (
     <div className="w-full">
       <div 
-        className={`flex flex-row w-full h-[46px] items-center rounded-[10px] hover:bg-[#FAFAFA] cursor-pointer gap-3 pr-4 pl-3 mb-1 ${
+        className={`flex flex-row w-full h-[46px] items-center rounded-[10px] ${userData?.theme === "dark" ? "hover:bg-gray-900" : "hover:bg-[#FAFAFA] "} cursor-pointer gap-3 pr-4 pl-3 mb-1 ${
           isComplete ? 'opacity-70' : ''
         } ${priorityColor}`}
         onClick={() => {

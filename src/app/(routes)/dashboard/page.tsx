@@ -804,9 +804,13 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-1 h-8 bg-gradient-to-b from-primary-default to-primary-200 rounded-full transform transition-transform duration-300 group-hover:scale-y-110"></div>
                     <div className="space-y-0.5">
-                      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 fade-in select-none bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                        Dashboard
-                      </h1>
+                      <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
+  user?.theme === "dark" 
+    ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
+    : "bg-gradient-to-r from-gray-800 to-gray-600"
+}`}>
+  Dashboard
+</h1>
                       <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none transition-all duration-300 group-hover:text-gray-600">
                         Track your tasks and monitor your progress
                       </p>
@@ -820,29 +824,39 @@ export default function DashboardPage() {
                   {/* Enhanced Expandable Search */}
                   <div className="relative flex justify-end">
                     <div
-                      className={`relative flex items-center bg-white rounded-xl overflow-hidden h-[44px] transition-all duration-300 ease-out ${
+                      className={`relative flex items-center ${
+                        userData?.theme === 'dark' 
+                          ? 'bg-foreground-dark border border-gray-800' 
+                          : 'bg-white'
+                      } rounded-xl overflow-hidden h-[44px] transition-all duration-300 ease-out ${
                         isSearchExpanded
-                          ? "shadow-md ring-1 ring-gray-200"
-                          : "w-[44px] hover:bg-gray-50 transition-colors duration-200"
+                          ? userData?.theme === 'dark'
+                            ? "shadow-lg ring-1 ring-gray-800"
+                            : "shadow-md ring-1 ring-gray-200"
+                          : userData?.theme === 'dark'
+                            ? "w-[44px] hover:bg-gray-900/80"
+                            : "w-[44px] hover:bg-gray-50"
                       }`}
                       style={{
                         width: isSearchExpanded ? "280px" : "44px",
-                        transitionProperty: "width, box-shadow, border-color",
+                        transitionProperty: "width, box-shadow, border-color, background-color",
                         transitionDuration: "300ms",
-                        transitionTimingFunction:
-                          "cubic-bezier(0.16, 1, 0.3, 1)",
+                        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
                       }}
                     >
                       <input
                         type="text"
                         placeholder={isSearchExpanded ? "Search tasks..." : ""}
-                        className={`bg-transparent border-0 focus:ring-0 focus:outline-none h-full pl-4 pr-10 text-gray-700 placeholder-gray-400 transition-all duration-200 ${
+                        className={`bg-transparent border-0 focus:ring-0 focus:outline-none h-full pl-4 pr-10 ${
+                          userData?.theme === 'dark' 
+                            ? 'text-white placeholder-gray-500' 
+                            : 'text-gray-700 placeholder-gray-400'
+                        } transition-all duration-200 ${
                           isSearchExpanded
                             ? "w-full opacity-100"
                             : "w-0 opacity-0"
                         }`}
                         onBlur={(e) => {
-                          // Only collapse if clicking outside the search container
                           if (
                             !e.currentTarget.parentElement?.contains(
                               e.relatedTarget as Node
@@ -867,18 +881,18 @@ export default function DashboardPage() {
                       <button
                         className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all duration-200 ${
                           isSearchExpanded && searchQuery
-                            ? "text-gray-500 hover:bg-gray-100"
-                            : "text-gray-400 hover:text-gray-600 right-[4px]"
+                            ? userData?.theme === 'dark'
+                              ? "text-gray-400 hover:bg-gray-800"
+                              : "text-gray-500 hover:bg-gray-100"
+                            : userData?.theme === 'dark'
+                              ? "text-gray-500 hover:text-gray-300 right-[4px]"
+                              : "text-gray-400 hover:text-gray-600 right-[4px]"
                         }`}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (isSearchExpanded && searchQuery) {
                             setSearchQuery("");
-                            // Keep focus on input after clearing
-                            const input =
-                              e.currentTarget.parentElement?.querySelector(
-                                "input"
-                              );
+                            const input = e.currentTarget.parentElement?.querySelector("input");
                             input?.focus();
                           } else {
                             setIsSearchExpanded(!isSearchExpanded);
@@ -937,6 +951,7 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-1"
                     className="h-full hover:bg-gradient-to-br from-white to-gray-50 transition-all duration-300"
+                    theme={user?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-100/30">
@@ -948,6 +963,7 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-2"
                     className="h-full hover:bg-gradient-to-br from-white to-amber-50/30 transition-all duration-300"
+                    theme={user?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-100/30">
@@ -959,6 +975,7 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-3"
                     className="h-full hover:bg-gradient-to-br from-white to-blue-50/30 transition-all duration-300"
+                    theme={user?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-green-100/30">
@@ -970,6 +987,7 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-4"
                     className="h-full hover:bg-gradient-to-br from-white to-green-50/30 transition-all duration-300"
+                    theme={user?.theme}
                   />
                 </div>
               </div> 
@@ -981,21 +999,33 @@ export default function DashboardPage() {
                   ${userData?.theme === "dark" ? "border-gray-800" : ""}
                    `}>
                   {/* Header - Fixed */}
-                  <div className="flex flex-col sm:flex-row justify-between gap-4 border-gray-100">
+                  <div className={`flex flex-col sm:flex-row justify-between gap-4 
+                  ${userData?.theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}
+                  `}>
                     <div>
-                      <h1 className="text-xl font-lato font-bold text-gray-800 text-start">
+                      <h1 className={`text-xl font-lato font-bold text-start ${
+                        userData?.theme === 'dark' ? 'text-white' : 'text-gray-800'
+                      }`}>
                         Recent Tasks
                       </h1>
-                      <p className="text-sm text-gray-500 mt-1 text-start">
+                      <p className={`text-sm mt-1 text-start ${
+                        userData?.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
                         Your most recent activities and tasks
                       </p>
                     </div>
                     <button
-                      className="relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
-                    bg-gradient-to-r from-primary-default to-primary-200 shadow-md hover:shadow-lg
-                    transform transition-all duration-300 hover:translate-y-[-1px] active:translate-y-0 active:scale-95 overflow-hidden group
-                    before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary-200 before:to-primary-default
-                    before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
+                      className={`relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
+                      shadow-md hover:shadow-lg transform transition-all duration-300 hover:translate-y-[-1px] 
+                      active:translate-y-0 active:scale-95 overflow-hidden group
+                      ${userData?.theme === 'dark' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:shadow-amber-500/20' : 'bg-gradient-to-r from-primary-default to-primary-200 hover:shadow-primary-default/20'}
+                      before:absolute before:inset-0 
+                      ${
+                        userData?.theme === 'dark'
+                          ? 'before:bg-gradient-to-r before:from-amber-600 before:to-yellow-400'
+                          : 'before:bg-gradient-to-r before:from-primary-200 before:to-primary-default'
+                      }
+                      before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300`}
                       onClick={() => {
                         setIsTaskModalOpen(true);
                         clearValueAndErrors();
@@ -1034,7 +1064,9 @@ export default function DashboardPage() {
                       </span>
 
                       {/* Subtle shine effect on hover */}
-                      <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
+                      <span className={`absolute inset-0 ${
+                        userData?.theme === 'dark' ? 'bg-amber-400/5' : 'bg-white/5'
+                      } opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></span>
                     </button>
                   </div>
 
@@ -1075,7 +1107,7 @@ export default function DashboardPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </div>
-                          <h3 className="text-xl font-semibold text-gray-800 mb-2">All caught up!</h3>
+                          <h3 className={`text-xl font-semibold text-gray-800 mb-2 ${userData?.theme === "dark" ? "text-white" : "text-gray-800"}`}>All caught up!</h3>
                           <p className="text-gray-500 mb-6 max-w-md">You&apos;ve completed all your tasks. Time to celebrate or add a new challenge!</p>
                         </div>
                       )}

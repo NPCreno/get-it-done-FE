@@ -115,12 +115,20 @@ export default function StreakCounter({ streakCount, header, theme="light"}: Str
         <p className="text-gray-600 mb-4">{progressMessage}</p>
         {!isInactive && (
           <>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className={`w-full rounded-full h-2.5 ${
+              theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
+              }`}>
               <div 
-                className={`h-2.5 rounded-full ${isOnFire || isOnFirePlus ? 'bg-red-500' : 'bg-orange-400'}`} 
+                className={`h-2.5 rounded-full ${
+                  isOnFire || isOnFirePlus 
+                    ? 'bg-red-500' 
+                    : theme === 'dark' 
+                      ? 'bg-orange-400' 
+                      : 'bg-orange-400'
+                }`} 
                 style={{ width: `${progressWidth}%` }}
               ></div>
-            </div>
+              </div>
             <p className="text-xs text-gray-500 mt-2">
               {isOnFire 
                 ? 'Amazing! Keep the streak going!' 

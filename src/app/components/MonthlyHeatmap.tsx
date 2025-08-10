@@ -93,7 +93,7 @@ export default function MonthlyHeatmap({
     }
     
     if (isToday(day)) {
-      classes += ' ring-1 ring-blue-500';
+      classes += ' ring-1 ring-gray-200';
     }
     
     if (count > 0) {
