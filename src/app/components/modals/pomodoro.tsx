@@ -2,6 +2,7 @@ import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { useTimer } from '@/hooks/useTimer';
 import type { TimerType } from '@/lib/timerService';
 import ConfirmationModal from './confirmation';
+import { useFormState } from '@/app/context/FormProvider';
 
 interface PomodoroModalProps {
   onClose: () => void;
@@ -48,6 +49,9 @@ export default function PomodoroModal({
 }: PomodoroModalProps) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingTimerType, setPendingTimerType] = useState<TimerType | null>(null);
+  const { 
+    userData
+  } = useFormState();
 
   const { 
     timeLeft, 
@@ -171,7 +175,7 @@ export default function PomodoroModal({
         onClick={onClose}
       >
         <div
-          className={`relative bg-white dark:bg-gray-900 w-[500px] max-w-[95vw] rounded-2xl shadow-xl dark:shadow-2xl flex flex-col items-center justify-center p-8 transition-all duration-300 ease-out overflow-hidden border border-gray-200 dark:border-gray-700`}
+          className={`relative ${userData?.theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'} dark:bg-gray-900 w-[500px] max-w-[95vw] rounded-2xl shadow-xl dark:shadow-2xl flex flex-col items-center justify-center p-8 transition-all duration-300 ease-out overflow-hidden border border-gray-200 dark:border-gray-700`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Subtle gradient accent */}
@@ -179,7 +183,7 @@ export default function PomodoroModal({
           
           {/* Timer type selector */}
           <div className='w-full max-w-xs mb-8 mx-auto'>
-            <div className={`relative flex flex-row justify-between items-center rounded-full border ${currentTimer.borderColor} h-12 p-1 transition-colors duration-300 overflow-hidden bg-gray-100 dark:bg-gray-800/50`}>
+            <div className={`relative flex flex-row justify-between items-center rounded-full border ${currentTimer.borderColor} h-12 p-1 transition-colors duration-300 overflow-hidden ${userData?.theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-gray-100 dark:bg-gray-800/50'}`}>
               {/* Animated background */}
               <div 
                 className={`absolute top-1 h-[calc(100%-8px)] rounded-full transition-all duration-300 ease-out ${currentTimer.buttonColor} ${

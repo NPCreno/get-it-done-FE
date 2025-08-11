@@ -3,6 +3,7 @@ import { DatePicker } from "./datePicker";
 import { CustomDropdownMenu } from "./dropdown";
 import { DatePickerWithTime } from "./datePickerWithTime";
 import WeekdaySelector from "./weekdaySelector";
+import { useFormState } from "../context/FormProvider";
 interface InputBoxProps {
   label: string;
   placeholder: string;
@@ -51,15 +52,15 @@ export default function InputBox({
   labelCustomClass,
   isLanding,
 }: InputBoxProps) {
+  const { userData } = useFormState();
   return (
     <div className="w-full">
       <div className={`${error ? "shake" : ""} ${labelCustomClass}`}>
         {isLabelVisible && (
           <label
             htmlFor={label}
-            className={`text-base font-normal font-lato 
-              ${error ? "text-error-default" : (isLanding ? "text-primary-default" : "text-text")}`
-            }
+            className={`${userData?.theme === 'dark' ? 'text-white' : 'text-text'} text-base font-normal font-lato 
+              ${error ? "text-error-default" : (isLanding ? "text-primary-default" : "text-text")}`}
           >
             {label}
           </label>
@@ -76,7 +77,8 @@ export default function InputBox({
           className={`rounded-md border w-full h-[40px] py-2 px-2
             outline-none transition-all duration-200 ${isLanding ? "text-primary-default" : "text-text"}
             ${error ? "focus:ring-error border-error" : "focus:ring-primary-default focus:ring-2 border-[#E0E0E0]"}
-            disabled:opacity-50 disabled:cursor-not-allowed ${customClass}`}
+            disabled:opacity-50 disabled:cursor-not-allowed ${customClass} 
+            ${userData?.theme === 'dark' ? 'bg-foreground-dark text-white border-gray-800 border' : 'bg-white text-text'}`}
           placeholder={placeholder}
           disabled={disabled}
         />
@@ -89,7 +91,8 @@ export default function InputBox({
           className={`resize-y rounded-md border w-full min-h-[70px] max-h-[200px] py-2 px-2
             outline-none transition-all duration-200 text-text
             ${error ? "focus:ring-error border-error" : "focus:ring-text focus:ring-2 border-[#E0E0E0]"}
-            disabled:opacity-50 disabled:cursor-not-allowed ${customClass}`}
+            disabled:opacity-50 disabled:cursor-not-allowed ${customClass} 
+            ${userData?.theme === 'dark' ? 'bg-foreground-dark text-white border-gray-800 border' : 'bg-white text-text'}`}
           placeholder={placeholder}
           disabled={disabled}
         />
@@ -104,7 +107,6 @@ export default function InputBox({
           }}
           placeholder={placeholder}
           customClass={customClass}
-          
         />
       ) : type === "datewithtime" ? (
         <DatePickerWithTime

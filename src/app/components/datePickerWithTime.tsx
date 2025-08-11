@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from "@/app/components/shadcn/popover";
 import { ScrollArea, ScrollBar } from "@/app/components/shadcn/scroll-area";
+import { useFormState } from "../context/FormProvider";
 
 interface DatePickerProps {
   date?: Date
@@ -22,7 +23,7 @@ interface DatePickerProps {
 
 export function DatePickerWithTime({ date, setDate, customClass, placeholder }: DatePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
- 
+  const { userData } = useFormState();
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -52,7 +53,8 @@ export function DatePickerWithTime({ date, setDate, customClass, placeholder }: 
           variant={"outline"}
           className={cn(
             "w-full justify-between text-left font-normal h-[40px] rounded-[10px]",
-            !date && "text-muted-foreground"
+            !date && "text-muted-foreground",
+            userData?.theme === 'dark' ? 'text-white border border-gray-800' : 'text-text border border-gray-200'
           )}
         >
           {date ? format(date, "PPP • HH:mm") : <span className="text-border text-text">{placeholder}</span>}
@@ -73,16 +75,17 @@ export function DatePickerWithTime({ date, setDate, customClass, placeholder }: 
         </Button>
       </PopoverTrigger>
       <PopoverContent className={`w-auto p-0 absolute ${customClass}`}>
-        <div className="sm:flex">
+        <div className={`sm:flex ${userData?.theme === 'dark' ? 'bg-foreground-dark text-white  border border-gray-800' : 'bg-white text-text'}`}>
           <Calendar
             mode="single"
             selected={date}
             onSelect={handleDateSelect}
             initialFocus
             disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+            className={userData?.theme === 'dark' ? 'bg-foreground-dark text-white  border border-gray-800' : 'bg-white text-text'}
           />
-          <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
-            <ScrollArea className="w-64 sm:w-auto">
+          <div className="flex flex-col sm:flex-row sm:h-[330px] divide-y sm:divide-y-0 sm:divide-x">
+            <ScrollArea className="w-64  sm:w-auto">
               <div className="flex sm:flex-col p-2">
                 {hours.reverse().map((hour) => (
                   <Button
