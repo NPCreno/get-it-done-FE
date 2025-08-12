@@ -57,7 +57,7 @@ export function DatePickerWithTime({ date, setDate, customClass, placeholder }: 
             userData?.theme === 'dark' ? 'text-white border border-gray-800' : 'text-text border border-gray-200'
           )}
         >
-          {date ? format(date, "PPP • HH:mm") : <span className="text-border text-text">{placeholder}</span>}
+          {date ? format(date, "PPP • HH:mm") : <span className={`text-border ${userData?.theme === 'dark' ? 'text-white' : 'text-text'}`}>{placeholder}</span>}
           <svg width="20" height="20" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M16.25 4.02466H3.75C2.71447 4.02466 1.875 4.86412 1.875 5.89966V17.1497C1.875 18.1852 2.71447 19.0247 3.75 19.0247H16.25C17.2855 19.0247 18.125 18.1852 18.125 17.1497V5.89966C18.125 4.86412 17.2855 4.02466 16.25 4.02466Z" stroke="#333333" stroke-width="1.5" stroke-linejoin="round"/>
           <path d="M11.5625 10.8989C12.0803 10.8989 12.5 10.4792 12.5 9.96143C12.5 9.44366 12.0803 9.02393 11.5625 9.02393C11.0447 9.02393 10.625 9.44366 10.625 9.96143C10.625 10.4792 11.0447 10.8989 11.5625 10.8989Z" fill="#333333"/>

@@ -1205,7 +1205,11 @@ export default function DashboardPage() {
           {tasks.length === 0 && !pageLoading && (
             <>
               <div className="w-full h-full flex items-center justify-center py-16 px-4">
-                <div className="flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 bg-white rounded-2xl shadow-sm border border-gray-100 transform transition-all hover:shadow-md">
+                <div className={`flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 ${
+                  user?.theme === "dark" 
+                    ? "bg-foreground-dark border border-gray-800" 
+                    : "bg-white border border-gray-100"
+                } rounded-2xl shadow-sm transform transition-all hover:shadow-md`}>
                   <svg
                     width="100"
                     height="100"
@@ -1272,18 +1276,29 @@ export default function DashboardPage() {
                     </defs>
                   </svg>
                   <div className="space-y-2">
-                    <h1 className="font-lato text-2xl md:text-3xl text-gray-800 font-bold fade-in-delay-1 bg-gradient-to-r from-primary-default to-yellow-400 bg-clip-text text-transparent">
+                    <h1 className={`font-lato text-2xl md:text-3xl font-bold fade-in-delay-1 bg-gradient-to-r ${
+                      user?.theme === 'dark' 
+                        ? 'from-amber-400 to-yellow-500' 
+                        : 'from-primary-default to-yellow-400'
+                    } bg-clip-text text-transparent`}>
                       Welcome to Your Dashboard ✨
                     </h1>
-                    <p className="font-lato text-gray-600 fade-in-delay-2 max-w-md leading-relaxed">
+                    <p className={`font-lato fade-in-delay-2 max-w-md leading-relaxed ${
+                      user?.theme === "dark" ? "text-gray-300" : "text-gray-600"
+                    }`}>
                       Start organizing your life by creating your first task.
                       <br />
                       Every great journey begins with a single step!
                     </p>
                   </div>
                   <button
-                    className="px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato bg-gradient-to-r from-primary-default to-yellow-400 rounded-xl 
-                    hover:shadow-lg hover:shadow-primary-default/20 transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5"
+                    className={`px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato rounded-xl 
+                    hover:shadow-lg transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5
+                    ${
+                      user?.theme === 'dark'
+                        ? 'bg-gradient-to-r from-amber-600 to-yellow-500 hover:shadow-amber-500/20'
+                        : 'bg-gradient-to-r from-primary-default to-yellow-400 hover:shadow-primary-default/20'
+                    }`}
                     onClick={() => {
                       setIsTaskModalOpen(true);
                       clearValueAndErrors();
