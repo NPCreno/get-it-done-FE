@@ -6,7 +6,7 @@ import { updateUserSchema } from "@/app/schemas/updateUserSchema";
 import { useFormik, FormikErrors } from "formik";
 import { useEffect, useRef, useState } from "react";
 import { Toast } from "@/app/components/toast";
-import { getAccessTokenFromCookies, parseJwt } from "@/app/utils/utils";
+import { getAccessToken, parseJwt } from "@/app/utils/utils";
 import { IUser } from "@/app/interface/IUser";
 import ConfirmationModal from "@/app/components/modals/confirmation";
 import Cookies from 'js-cookie';
@@ -162,7 +162,7 @@ export default function ProfileSettingsPage() {
         try {
           if (!user) {
             // If no user, try getting one from cookies
-            const token = getAccessTokenFromCookies();
+            const token = getAccessToken();
             if (!token) {
               console.error("No access_token found in cookies");
               return;

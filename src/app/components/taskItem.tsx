@@ -32,7 +32,7 @@ export function TaskItem({
   showSubtasks = false,
   onToggleSubtasks
 }: TaskItemProps) {
-  const { setSelectedTaskData, userData, setUserData } = useFormState();
+  const { setSelectedTaskData, userData } = useFormState();
   const [updateState, setUpdateState] = useState<{ 
     status: string | null;
     isUpdating: boolean;
