@@ -818,8 +818,12 @@ export default function ProjectsPage() {
               <div className="flex items-center gap-3">
                 <div className="w-1 h-8 bg-primary-default rounded-full"></div>
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 fade-in select-none">
-                  Projects
+                  <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
+                        user?.theme === "dark" 
+                          ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
+                          : "bg-gradient-to-r from-gray-800 to-gray-600"
+                  }`}>
+                    Projects
                   </h1>
                   <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none mt-1">
                   Organize your tasks into projects
