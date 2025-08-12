@@ -5,7 +5,7 @@ import MainLayout from "@/app/components/MainLayout";
 import NotificationCard from "@/app/components/notificationCard";
 import { INotificationProps } from "@/app/interface/INotification";
 import { IUser } from "@/app/interface/IUser";
-import { getAccessTokenFromCookies, parseJwt } from "@/app/utils/utils";
+import { getAccessToken, parseJwt } from "@/app/utils/utils";
 import { useEffect, useState } from "react";
 
 export default function NotificationsPage() {
@@ -100,7 +100,7 @@ useEffect(() => {
     else{
       try {
         if (!user) { // If no user, try getting one from cookies
-          const token = getAccessTokenFromCookies();
+          const token = getAccessToken();
           if (!token) {
             console.error("No access_token found in cookies");
             return;
