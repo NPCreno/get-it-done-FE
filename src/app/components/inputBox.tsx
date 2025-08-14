@@ -5,7 +5,7 @@ import { DatePickerWithTime } from "./datePickerWithTime";
 import WeekdaySelector from "./weekdaySelector";
 import { useFormState } from "../context/FormProvider";
 interface InputBoxProps {
-  label: string;
+  label?: string;
   placeholder: string;
   value: {
     name: string;
@@ -27,6 +27,9 @@ interface InputBoxProps {
   customClass?: string;
   labelCustomClass?: string;
   isLanding?: boolean;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  autoFocus?: boolean;
+  ref?: React.RefObject<HTMLInputElement>;
 }
 
 interface CustomDropdownChangeEvent extends React.ChangeEvent<HTMLInputElement>{
@@ -51,6 +54,9 @@ export default function InputBox({
   customClass,
   labelCustomClass,
   isLanding,
+  onKeyDown,
+  autoFocus,
+  ref
 }: InputBoxProps) {
   const { userData } = useFormState();
   return (
@@ -81,6 +87,9 @@ export default function InputBox({
             ${userData?.theme === 'dark' ? 'bg-foreground-dark text-white border-gray-800 border' : 'bg-white text-text'}`}
           placeholder={placeholder}
           disabled={disabled}
+          onKeyDown={onKeyDown}
+          autoFocus={autoFocus}
+          ref={ref}
         />
       ) : type === "textarea" ? (
         <textarea

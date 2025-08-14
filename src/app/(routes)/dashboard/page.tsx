@@ -805,12 +805,12 @@ export default function DashboardPage() {
                     <div className="w-1 h-8 bg-gradient-to-b from-primary-default to-primary-200 rounded-full transform transition-transform duration-300 group-hover:scale-y-110"></div>
                     <div className="space-y-0.5">
                       <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
-  user?.theme === "dark" 
-    ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
-    : "bg-gradient-to-r from-gray-800 to-gray-600"
-}`}>
-  Dashboard
-</h1>
+                        user?.theme === "dark" 
+                          ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
+                          : "bg-gradient-to-r from-gray-800 to-gray-600"
+                      }`}>
+                        Dashboard
+                      </h1>
                       <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none transition-all duration-300 group-hover:text-gray-600">
                         Track your tasks and monitor your progress
                       </p>

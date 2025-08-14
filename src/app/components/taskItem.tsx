@@ -8,6 +8,7 @@ import { CreateSubTaskDto } from '../interface/dto/create-subTask-dto';
 import { FormikErrors, useFormik } from 'formik';
 import { createSubTaskSchema } from '../schemas/createSubTaskSchema';
 import { ISubTaskFormValues } from '../interface/forms/ISubTaskFormValues';
+import InputBox from './inputBox';
 
 interface TaskItemProps {
   task: ITask;
@@ -61,6 +62,7 @@ export function TaskItem({
   const {
     setFieldValue,
     validateForm,
+    errors,
     values,
     setSubmitting,
   } = useFormik({
@@ -346,9 +348,8 @@ export function TaskItem({
   return (
     <div className="w-full">
       <div 
-        className={`flex flex-row w-full h-[46px] items-center rounded-[10px] ${userData?.theme === "dark" ? "hover:bg-gray-900" : "hover:bg-[#FAFAFA] "} cursor-pointer gap-3 pr-4 pl-3 mb-1 ${
-          isComplete ? 'opacity-70' : ''
-        } ${priorityColor}`}
+        className={`flex flex-row w-full h-[46px] items-center rounded-[10px] ${userData?.theme === "dark" ? "hover:bg-gray-900" : "hover:bg-[#FAFAFA] "} 
+          cursor-pointer gap-3 pr-4 pl-3 mb-1 ${isComplete ? 'opacity-70' : ''} ${priorityColor}`}
         onClick={() => {
           setSelectedTaskData(task);
           handleUpdateTask();
@@ -383,7 +384,9 @@ export function TaskItem({
         <div className="flex flex-col flex-1 min-w-0">
           <div className="flex items-center justify-between w-full">
             <div className="flex flex-col items-start">
-              <span className={`font-lato text-4 text-text ${isComplete ? 'line-through' : ''} truncate`}>
+              <span className={`ml-2 flex-1 font-lato text-4 ${task.status === 'Complete' 
+                ? 'line-through text-start text-gray-400' 
+                : `text-start ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}`}>
                 {task.title}
               </span>
               {task.description && (
@@ -469,7 +472,9 @@ export function TaskItem({
                   />
                 </div>
               </div>
-              <span className={`text-sm ml-2 flex-1 ${subtask.status === 'Complete' ? 'line-through text-start text-gray-400' : 'text-start text-gray-700'}`}>
+              <span className={`text-sm ml-2 flex-1 ${subtask.status === 'Complete' 
+                ? 'line-through text-start text-gray-400' 
+                : `text-start ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}`}>
                 {subtask.title}
               </span>
               <button 
@@ -500,13 +505,15 @@ export function TaskItem({
           {/* Add Subtask Input */}
           <div className="px-3 py-2">
             <div className="flex items-center gap-2">
-              <input
+              <InputBox
                 ref={subtaskInputRef}
                 type="text"
-                className="flex-1 text-sm border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-default focus:border-primary-default"
-                placeholder="Add a subtask"
-                value={values.title}
-                onChange={(e) => setFieldValue('title', e.target.value)}
+                placeholder="Enter subtask title"
+                value={{ name: values.title }}
+                onChange={(e) => setFieldValue("title", e.target.value)}
+                isLabelVisible={false}
+                error={errors.title}
+                customClass="fade-in-delay-1"
                 onKeyDown={(e) => {
                   e.stopPropagation(); // Prevent event from bubbling up
                   if (e.key === 'Enter' && values.title.trim()) {
