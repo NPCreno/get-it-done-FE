@@ -42,7 +42,7 @@ export default function SignupForm({
         username: values.username,
         email: values.email,
         password: values.password,
-        full_name: values.fullname
+        fullname: values.fullname
       };
 
       // Create user
