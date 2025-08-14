@@ -22,11 +22,8 @@ import {
   deleteSubTaskApi,
 } from "@/app/api/taskRequests";
 import { getProjectsForUser } from "@/app/api/projectsRequests";
-import { getUser } from "@/app/api/userRequests";
 import {
-  getAccessToken,
   getWeekRange,
-  parseJwt,
 } from "@/app/utils/utils";
 import { IProject } from "@/app/interface/IProject";
 import { CreateTaskDto } from "@/app/interface/dto/create-task-dto";
@@ -34,7 +31,6 @@ import { Toast } from "@/app/components/toast";
 import { ITask } from "@/app/interface/ITask";
 import { UpdateTaskDto } from "@/app/interface/dto/update-task-dto";
 import { ITaskResponse } from "@/app/interface/responses/ITaskResponse";
-import { IUser } from "@/app/interface/IUser";
 import LoadingPage from "@/app/components/loader";
 import { IDashboardData } from "@/app/interface/IDashboardData";
 import { ITaskCompletionTrendData } from "@/app/interface/ITaskCompletionTrendData";
@@ -53,9 +49,9 @@ export default function DashboardPage() {
     selectedMonth, 
     selectedYear, 
     calendarMonthYear, 
-    userData 
+    userData
   } = useFormState();
-  const [user, setUser] = useState<IUser | null>(null);
+
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [projectOptions, setProjectOptions] = useState<IProject[]>([]);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -68,7 +64,6 @@ export default function DashboardPage() {
     className: "",
   });
   const [isExitingToast, setIsExitingToast] = useState(false);
-  const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
   const [tasks, setTasks] = useState<ITask[]>([]);
   const [dashboardData, setDashboardData] = useState<
     IDashboardData | undefined
@@ -113,7 +108,7 @@ export default function DashboardPage() {
       title: "",
       description: "",
       due_date: null,
-      user_id: user?.user_id ?? "",
+      user_id: userData?.user_id ?? "",
       project_id: "",
       project_title: "",
       project_color: "",
@@ -126,7 +121,7 @@ export default function DashboardPage() {
       end_date: null,
       project: "",
     }),
-    [user?.user_id]
+    [userData?.user_id]
   );
 
   const {
@@ -146,10 +141,10 @@ export default function DashboardPage() {
     validateOnChange: false, // Disable real-time validation
     validateOnBlur: false,
     onSubmit: async (values) => {
-      if (!user) return;
+      if (!userData) return;
       const withUser = {
         ...values,
-        user_id: user.user_id,
+        user_id: userData.user_id,
         due_date: values.due_date || undefined,
       };
       handleSubmitForm(withUser);
@@ -168,7 +163,7 @@ export default function DashboardPage() {
   const createTask = async (values: ITaskFormValues) => {
     try {
       setIsLoading(true);
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -176,7 +171,7 @@ export default function DashboardPage() {
         title: values.title,
         description: values.description,
         due_date: values.due_date || undefined,
-        user_id: user.user_id,
+        user_id: userData.user_id,
         project_id: values.project_id || undefined,
         priority: values.priority || undefined,
         isRecurring: values.isRecurring || false,
@@ -235,44 +230,9 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    const fetchUser = async () => {
-      if (isDoneFetchingUser) return;
-      else {
-        try {
-          if (!user) {
-            // If no user, try getting one from cookies
-            const token = getAccessToken();
-            if (!token) {
-              console.error("No access_token found in cookies");
-              return;
-            }
-            const parsedUser = parseJwt(token).user;
-            if (!parsedUser || !parsedUser.user_id) {
-              console.error("Failed to parse user or missing user_id in token");
-              return;
-            }
-            setIsDoneFetchingUser(true);
-            setUser(parsedUser);
-            return;
-          }
-          // Only fetch updated user info if we have a user
-          const response = await getUser(user.user_id);
-          if (response) {
-            setIsDoneFetchingUser(true);
-            setUser(response);
-          }
-        } catch (error) {
-          console.error("Failed to fetch user:", error);
-        }
-      }
-    };
-    fetchUser();
-  }, [user, setUser, isDoneFetchingUser]);
-
-  useEffect(() => {
-    if (user) {
+    if (userData) {
       const fetchProjects = async () => {
-        const projects = await getProjectsForUser(user.user_id);
+        const projects = await getProjectsForUser(userData.user_id);
         if (projects?.status === "success") {
           setProjectOptions(projects.data);
           return;
@@ -282,11 +242,11 @@ export default function DashboardPage() {
       };
       fetchProjects();
     }
-  }, [user, isTaskModalOpen]);
+  }, [userData, isTaskModalOpen]);
 
   useEffect(() => {
     const fetchTasks = async () => {
-      if (!user) return;
+      if (!userData) return;
 
       // Set loading state
       if (isFirstLoad.current) {
@@ -307,12 +267,12 @@ export default function DashboardPage() {
           heatmapResponse,
           streakResponse
         ] = await Promise.allSettled([
-          getTasksByUser(user.user_id, startDate, endDate),
-          getDashboardData(user.user_id, startDate, endDate),
-          getTaskCompletionTrend(user.user_id, range.start, range.end),
-          getTaskDistributionData(user.user_id, selectedMonth, selectedYear),
-          getCalendarHeatmap(user.user_id, calendarMonthYear.month, calendarMonthYear.year),
-          getStreakCount(user.user_id)
+          getTasksByUser(userData.user_id, startDate, endDate),
+          getDashboardData(userData.user_id, startDate, endDate),
+          getTaskCompletionTrend(userData.user_id, range.start, range.end),
+          getTaskDistributionData(userData.user_id, selectedMonth, selectedYear),
+          getCalendarHeatmap(userData.user_id, calendarMonthYear.month, calendarMonthYear.year),
+          getStreakCount(userData.user_id)
         ]);
 
         // Process each response with error handling
@@ -382,7 +342,7 @@ export default function DashboardPage() {
     };
 
     fetchTasks();
-  }, [user, updateTaskDashboard, showToast, selectedMonth, selectedYear, calendarMonthYear]);
+  }, [userData, updateTaskDashboard, showToast, selectedMonth, selectedYear, calendarMonthYear]);
 
   useEffect(() => {
     if (isTaskModalOpen && !isUpdateTask) {
@@ -406,7 +366,7 @@ export default function DashboardPage() {
   const updateTask = async (values: ITaskFormValues) => {
     try {
       setIsLoading(true);
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -804,11 +764,11 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-1 h-8 bg-gradient-to-b from-primary-default to-primary-200 rounded-full transform transition-transform duration-300 group-hover:scale-y-110"></div>
                     <div className="space-y-0.5">
-                      <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
-                        user?.theme === "dark" 
-                          ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
-                          : "bg-gradient-to-r from-gray-800 to-gray-600"
-                      }`}>
+                    <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
+                          userData  ?.theme === "dark" 
+                            ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
+                            : "bg-gradient-to-r from-gray-800 to-gray-600"
+                    }`}>
                         Dashboard
                       </h1>
                       <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none transition-all duration-300 group-hover:text-gray-600">
@@ -951,7 +911,7 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-1"
                     className="h-full hover:bg-gradient-to-br from-white to-gray-50 transition-all duration-300"
-                    theme={user?.theme}
+                    theme={userData?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-100/30">
@@ -963,7 +923,7 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-2"
                     className="h-full hover:bg-gradient-to-br from-white to-amber-50/30 transition-all duration-300"
-                    theme={user?.theme}
+                    theme={userData?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-100/30">
@@ -975,7 +935,7 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-3"
                     className="h-full hover:bg-gradient-to-br from-white to-blue-50/30 transition-all duration-300"
-                    theme={user?.theme}
+                    theme={userData?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-green-100/30">
@@ -987,7 +947,7 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-4"
                     className="h-full hover:bg-gradient-to-br from-white to-green-50/30 transition-all duration-300"
-                    theme={user?.theme}
+                    theme={userData?.theme}
                   />
                 </div>
               </div> 
@@ -1206,7 +1166,7 @@ export default function DashboardPage() {
             <>
               <div className="w-full h-full flex items-center justify-center py-16 px-4">
                 <div className={`flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 ${
-                  user?.theme === "dark" 
+                  userData?.theme === "dark" 
                     ? "bg-foreground-dark border border-gray-800" 
                     : "bg-white border border-gray-100"
                 } rounded-2xl shadow-sm transform transition-all hover:shadow-md`}>
@@ -1277,14 +1237,14 @@ export default function DashboardPage() {
                   </svg>
                   <div className="space-y-2">
                     <h1 className={`font-lato text-2xl md:text-3xl font-bold fade-in-delay-1 bg-gradient-to-r ${
-                      user?.theme === 'dark' 
+                      userData?.theme === 'dark' 
                         ? 'from-amber-400 to-yellow-500' 
                         : 'from-primary-default to-yellow-400'
                     } bg-clip-text text-transparent`}>
                       Welcome to Your Dashboard ✨
                     </h1>
                     <p className={`font-lato fade-in-delay-2 max-w-md leading-relaxed ${
-                      user?.theme === "dark" ? "text-gray-300" : "text-gray-600"
+                      userData?.theme === "dark" ? "text-gray-300" : "text-gray-600"
                     }`}>
                       Start organizing your life by creating your first task.
                       <br />
@@ -1295,7 +1255,7 @@ export default function DashboardPage() {
                     className={`px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato rounded-xl 
                     hover:shadow-lg transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5
                     ${
-                      user?.theme === 'dark'
+                      userData?.theme === 'dark'
                         ? 'bg-gradient-to-r from-amber-600 to-yellow-500 hover:shadow-amber-500/20'
                         : 'bg-gradient-to-r from-primary-default to-yellow-400 hover:shadow-primary-default/20'
                     }`}

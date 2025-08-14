@@ -58,26 +58,7 @@ const getGradientClass = (color: string = 'gray') => {
   return gradientMap[color.toLowerCase()] || (isDarkMode ? 'from-gray-800/30 to-gray-700/30' : 'from-gray-50 to-gray-100');
   };
 
-  const getTextColor = (color: string = 'gray') => {
-    const textMap: Record<string, string> = {
-      'lavender': 'text-violet-700',
-      'mint': 'text-emerald-700',
-      'peach': 'text-orange-700',
-      'sky': 'text-sky-700',
-      'lemon': 'text-yellow-700',
-      'rose': 'text-pink-700',
-      'mauve': 'text-fuchsia-700',
-      'baby blue': 'text-blue-700',
-      'coral': 'text-rose-700',
-      'seafoam': 'text-teal-700',
-      'indigo': 'text-indigo-700',
-      'gray': 'text-gray-700',
-    };
-    return textMap[color.toLowerCase()] || 'text-gray-700';
-  };
-
   const gradientClass = getGradientClass(projectColor);
-  const textColor = getTextColor(projectColor);
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Prevent card click when clicking on action buttons

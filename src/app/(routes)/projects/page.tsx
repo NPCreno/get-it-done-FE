@@ -1,10 +1,8 @@
 "use client";
 import MainLayout from "@/app/components/MainLayout";
 import ProjectCard from "../../components/projectCard";
-import { getAccessToken, parseJwt } from "@/app/utils/utils";
 import { useFormState } from "@/app/context/FormProvider";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getUser } from "@/app/api/userRequests";
 import {
   getTasksByProject,
   createTaskApi,
@@ -31,7 +29,6 @@ import { createTaskSchema } from "@/app/schemas/createTaskSchema";
 import TaskModal from "@/app/components/modals/taskModal";
 import { UpdateTaskDto } from "@/app/interface/dto/update-task-dto";
 import { ITaskResponse } from "@/app/interface/responses/ITaskResponse";
-import { IUser } from "@/app/interface/IUser";
 import LoadingPage from "@/app/components/loader";
 import { IProjectOrTaskFormValues } from "@/app/interface/forms/IProjectorTaskFormValues";
 import { IProjectFormErrors } from "@/app/interface/forms/IProjectFormErrors";
@@ -47,9 +44,7 @@ interface ProjectModalState {
 }
 
 export default function ProjectsPage() {
-  const [user, setUser] = useState<IUser | null>(null);
-  const { selectedTaskData } = useFormState();
-  const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
+  const { selectedTaskData, userData } = useFormState();
   const [projectData, setProjectData] = useState<IProject[]>([]);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState<ProjectModalState>({
     isOpen: false,
@@ -89,7 +84,7 @@ export default function ProjectsPage() {
       due_date: null,
       colorLabel: "",
       color: "",
-      user_id: user?.user_id ?? "",
+      user_id: userData?.user_id ?? "",
       project_id: "",
       project_title: "",
       project_color: "",
@@ -102,7 +97,7 @@ export default function ProjectsPage() {
       end_date: null,
       project: "",
     }),
-    [user?.user_id]
+    [userData?.user_id]
   );
 
   const {
@@ -122,10 +117,10 @@ export default function ProjectsPage() {
     validateOnChange: false, // Disable real-time validation
     validateOnBlur: false,
     onSubmit: async (values) => {
-      if (!user) return;
+      if (!userData) return;
       const withUser = {
         ...values,
-        user_id: user.user_id,
+        user_id: userData.user_id,
         due_date: values.due_date || null,
       };
       handleSubmitForm(withUser as IProjectOrTaskFormValues);
@@ -146,7 +141,7 @@ export default function ProjectsPage() {
   const createProj = async (values: IProjectOrTaskFormValues) => {
     try {
       setIsLoading(true);
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -206,7 +201,7 @@ export default function ProjectsPage() {
   const updateProj = async (values: IProjectOrTaskFormValues) => {
     try {
       setIsLoading(true);
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -262,45 +257,11 @@ export default function ProjectsPage() {
       }, 10000); // Toast display duration
     }
   };
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (isDoneFetchingUser) return;
-      else {
-        try {
-          if (!user) {
-            // If no user, try getting one from cookies
-            const token = getAccessToken();
-            if (!token) {
-              console.error("No access_token found in cookies");
-              return;
-            }
-            const parsedUser = parseJwt(token).user;
-            if (!parsedUser || !parsedUser.user_id) {
-              console.error("Failed to parse user or missing user_id in token");
-              return;
-            }
-            setIsDoneFetchingUser(true);
-            setUser(parsedUser);
-            return;
-          }
-          // Only fetch updated user info if we have a user
-          const response = await getUser(user.user_id);
-          if (response) {
-            setIsDoneFetchingUser(true);
-            setUser(response);
-          }
-        } catch (error) {
-          console.error("Failed to fetch user:", error);
-        }
-      }
-    };
-    fetchUser();
-  }, [user, setUser, isDoneFetchingUser]);
 
   useEffect(() => {
-    if (user) {
+    if (userData) {
       const fetchProjects = async () => {
-        const projects = await getProjectsForUser(user.user_id);
+        const projects = await getProjectsForUser(userData.user_id);
         if (projects?.status === "success") {
           setProjectData(projects.data);
           return;
@@ -310,7 +271,7 @@ export default function ProjectsPage() {
       };
       fetchProjects();
     }
-  }, [user, isProjectModalOpen, isTaskModalOpen, refreshPage]);
+  }, [userData, isProjectModalOpen, isTaskModalOpen, refreshPage]);
 
   const clearValueAndErrors = () => {
     setErrors({});
@@ -373,7 +334,7 @@ export default function ProjectsPage() {
 
   const createTask = async (values: IProjectOrTaskFormValues) => {
     try {
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -381,7 +342,7 @@ export default function ProjectsPage() {
         title: values.title,
         description: values.description,
         due_date: values.due_date || undefined,
-        user_id: user.user_id,
+        user_id: userData.user_id,
         project_id: selectedProject
           ? selectedProject.project_id
           : values.project_id,
@@ -461,7 +422,7 @@ export default function ProjectsPage() {
   const updateTask = async (values: IProjectOrTaskFormValues) => {
     try {
       setIsLoading(true);
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -628,7 +589,7 @@ export default function ProjectsPage() {
       due_date: task.due_date ?? null,
       colorLabel: "",
       color: "",
-      user_id: user?.user_id ?? "",
+      user_id: userData?.user_id ?? "",
       project_id: task.project_id,
       project_title: task.project_title ?? "",
       project_color: "",
@@ -665,13 +626,13 @@ export default function ProjectsPage() {
 
   useEffect(() => {
       const fetchProjects = async () => {
-        if (!user) return;
+        if (!userData) return;
         // Only show loading spinner for first load
         if (isFirstLoad.current) {
           setIsPageLoading(true);
         }
         
-        const projects = await getProjectsForUser(user.user_id);
+        const projects = await getProjectsForUser(userData.user_id);
         if (projects?.status === "success") {
           if (isFirstLoad.current) {
             setIsPageLoading(false);
@@ -689,7 +650,7 @@ export default function ProjectsPage() {
 
       };
       fetchProjects();
-  }, [user, isTaskModalOpen, refreshPage]);
+  }, [userData, isTaskModalOpen, refreshPage]);
 
   useEffect(() => {
     if (!pageLoading) {
@@ -700,7 +661,7 @@ export default function ProjectsPage() {
   useEffect(() => {
     const fetchProjectById = async () => {
       try {
-        if (!user) return;
+        if (!userData) return;
         if (!isProjectModalOpen.projectId) return;
         const project: IProjectResponse = await getProjectById(isProjectModalOpen.projectId);
         if (project?.status === "success") {
@@ -719,7 +680,7 @@ export default function ProjectsPage() {
       
     };
     fetchProjectById();
-  }, [isProjectModalOpen.projectId, setFieldValue, user]);
+  }, [isProjectModalOpen.projectId, setFieldValue, userData]);
 
   const deleteProject = async (projectId: string) => {
     try {
@@ -819,7 +780,7 @@ export default function ProjectsPage() {
                 <div className="w-1 h-8 bg-primary-default rounded-full"></div>
                 <div>
                   <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
-                        user?.theme === "dark" 
+                        userData?.theme === "dark" 
                           ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
                           : "bg-gradient-to-r from-gray-800 to-gray-600"
                   }`}>
@@ -922,7 +883,7 @@ export default function ProjectsPage() {
           <>
             <div className="w-full h-full flex items-center justify-center py-16 px-4">
               <div className={`flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 ${
-                user?.theme === "dark" 
+                userData?.theme === "dark" 
                   ? "bg-foreground-dark border border-gray-800" 
                   : "bg-white border border-gray-100"
               } rounded-2xl shadow-sm transform transition-all hover:shadow-md`}>
@@ -934,14 +895,14 @@ export default function ProjectsPage() {
                 </svg>
                 <div className="space-y-2">
                   <h1 className={`font-lato text-2xl md:text-3xl font-bold fade-in-delay-1 bg-gradient-to-r ${
-                    user?.theme === 'dark' 
+                    userData?.theme === 'dark' 
                       ? 'from-amber-400 to-yellow-500' 
                       : 'from-primary-default to-yellow-400'
                   } bg-clip-text text-transparent`}>
                     No Projects Yet ✨
                   </h1>
                   <p className={`font-lato fade-in-delay-2 max-w-md leading-relaxed ${
-                    user?.theme === "dark" ? "text-gray-300" : "text-gray-600"
+                    userData?.theme === "dark" ? "text-gray-300" : "text-gray-600"
                   }`}>
                     Start organizing your work by creating your first project.
                     <br />
@@ -952,7 +913,7 @@ export default function ProjectsPage() {
                   className={`px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato rounded-xl 
                     hover:shadow-lg transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5
                     ${
-                      user?.theme === 'dark'
+                      userData?.theme === 'dark'
                         ? 'bg-gradient-to-r from-amber-600 to-yellow-500 hover:shadow-amber-500/20'
                         : 'bg-gradient-to-r from-primary-default to-yellow-400 hover:shadow-primary-default/20'
                     }`}

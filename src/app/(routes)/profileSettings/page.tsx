@@ -7,10 +7,11 @@ import { useFormik, FormikErrors } from "formik";
 import { useEffect, useRef, useState } from "react";
 import { Toast } from "@/app/components/toast";
 import { getAccessToken, parseJwt } from "@/app/utils/utils";
-import { IUser } from "@/app/interface/IUser";
 import ConfirmationModal from "@/app/components/modals/confirmation";
 import Cookies from 'js-cookie';
 import LoadingPage from "@/app/components/loader";
+import InputBox from "@/app/components/inputBox";
+import { useFormState } from "@/app/context/FormProvider";
 interface profileSettingsFormValues {
   fullname: string;
   username: string;
@@ -21,7 +22,7 @@ interface profileSettingsFormValues {
 }
 
 export default function ProfileSettingsPage() {
-  const [user, setUser] = useState<IUser | null>(null);
+  const { userData, setUserData } = useFormState();
   const [isEditEnabled, setIsEditEnabled] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState({
@@ -46,12 +47,12 @@ export default function ProfileSettingsPage() {
     handleBlur,
   } = useFormik({
     initialValues: {
-      fullname: user ? user.fullname : "",
-      username: user ? user.username : "",
+      fullname: userData ? userData.fullname : "",
+      username: userData ? userData.username : "",
       password: "",
-      theme: user?.theme ?? "light",
-      enableNotifications: user ? user.enableNotifications === "true" : false,
-      soundFx: user ? user.soundFx === "true" : false,
+      theme: userData?.theme ?? "light",
+      enableNotifications: userData ? userData.enableNotifications === "true" : false,
+      soundFx: userData ? userData.soundFx === "true" : false,
     },
     enableReinitialize: true,
     validationSchema: updateUserSchema,
@@ -80,7 +81,7 @@ export default function ProfileSettingsPage() {
 
   const update = async (values: profileSettingsFormValues) => {
     try {
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -91,7 +92,7 @@ export default function ProfileSettingsPage() {
         soundFx: values.soundFx.toString(),
       };
 
-      const response = await updateUser(user.user_id, updateData);
+      const response = await updateUser(userData.user_id, updateData);
 
       if (response) {
         setToastMessage({
@@ -100,15 +101,11 @@ export default function ProfileSettingsPage() {
           className: "text-green-600",
         });
 
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
         setShowToast(true);
         setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -160,7 +157,7 @@ export default function ProfileSettingsPage() {
       if (isDoneFetchingUser) return;
       else {
         try {
-          if (!user) {
+          if (!userData) {
             // If no user, try getting one from cookies
             const token = getAccessToken();
             if (!token) {
@@ -173,19 +170,19 @@ export default function ProfileSettingsPage() {
               return;
             }
             setIsDoneFetchingUser(true);
-            setUser(parsedUser);
+            setUserData(parsedUser);
             const response = await getUser(parsedUser.user_id);
             if (response) {
               setIsDoneFetchingUser(true);
-              setUser(response);
+              setUserData(response);
             }
             return;
           }
           // Only fetch updated user info if we have a user
-          const response = await getUser(user.user_id);
+          const response = await getUser(userData.user_id);
           if (response) {
             setIsDoneFetchingUser(true);
-            setUser(response);
+            setUserData(response);
           }
         } catch (error) {
           console.error("Failed to fetch user:", error);
@@ -199,7 +196,7 @@ export default function ProfileSettingsPage() {
       }
     };
     fetchUser();
-  }, [user, setUser, isDoneFetchingUser]);
+  }, [userData, setUserData, isDoneFetchingUser]);
 
   return (
     <MainLayout>
@@ -231,7 +228,7 @@ export default function ProfileSettingsPage() {
                 <div className="w-1 h-8 bg-primary-default rounded-full"></div>
                 <div>
                   <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
-                        user?.theme === "dark" 
+                        userData?.theme === "dark" 
                           ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
                           : "bg-gradient-to-r from-gray-800 to-gray-600"
                   }`}>
@@ -254,7 +251,7 @@ export default function ProfileSettingsPage() {
             {/* left side */}
             <div className="flex flex-col gap-5 w-full md:min-w-[400px] lg:min-w-[700px] h-full">
               {/* Profile Information */}
-              <div className="flex flex-col rounded-[10px] bg-white p-5">
+              <div className={`flex flex-col rounded-[10px] ${userData?.theme === "dark" ? "bg-foreground-dark  border border-gray-800" : "bg-white"} p-5`}>
                 {/* profile information header */}
                 <div className="flex flex-row justify-between">
                   <div className="flex flex-col">
@@ -279,7 +276,7 @@ export default function ProfileSettingsPage() {
                         Profile Information
                       </p>
                     </div>
-                    <p className="font-lato text-[13px] text-text fade-in-delay-1 select-none">
+                    <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
                       Update your personal information
                     </p>
                   </div>
@@ -315,135 +312,48 @@ export default function ProfileSettingsPage() {
 
                 <div className="mt-5 fade-in-delay-1">
                   {/* fullname input */}
-                  <div className="min-h-[95px]">
-                    <div className={` ${errors.fullname ? "shake" : ""}`}>
-                      <label
-                        htmlFor="fullname"
-                        className={`text-base font-normal font-lato ${
-                          errors.fullname ? "text-error-default" : "text-text"
-                        }`}
-                      >
-                        Full name
-                      </label>
-                    </div>
-                    <input
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                        }
-                      }}
-                      value={values.fullname ?? ""}
-                      onChange={handleChange}
-                      type="text"
-                      id="fullname"
-                      onBlur={handleBlur}
-                      className={`rounded-xl border  w-full h-[46px] py-2 px-5 ${
-                        isEditEnabled ? " bg-white" : "bg-background"
-                      }
-                                outline-none transition-all duration-200 
-                                text-text ${
-                                  errors.fullname
-                                    ? "focus:ring-error border-error"
-                                    : "focus:ring-text focus:ring-2  border-[#E0E0E0]"
-                                }`}
-                      placeholder="Enter your Full name"
-                      disabled={!isEditEnabled}
-                    />
-                    {errors.fullname && (
-                      <span className="text-error-default font-lato text-xs top-0">
-                        {errors.fullname as string}
-                      </span>
-                    )}
-                  </div>
+                  <InputBox
+                    label="Full name"
+                    placeholder="Enter your full name"
+                    value={{ name: values.fullname }}
+                    onChange={handleChange}
+                    type="text"
+                    onBlur={handleBlur}
+                    error={errors.fullname}
+                    disabled={!isEditEnabled}
+                    isLabelVisible={true}
+                  />
 
                   {/* username input */}
-                  <div className="min-h-[95px]">
-                    <div className={` ${errors.username ? "shake" : ""}`}>
-                      <label
-                        htmlFor="username"
-                        className={`text-base font-normal font-lato ${
-                          errors.username ? "text-error-default " : "text-text"
-                        }`}
-                      >
-                        Username
-                      </label>
-                    </div>
-                    <input
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                        }
-                      }}
-                      value={values.username ?? ""}
-                      onChange={handleChange}
-                      type="text"
-                      id="username"
-                      onBlur={handleBlur}
-                      className={`rounded-xl border  w-full h-[46px] py-2 px-5 ${
-                        isEditEnabled ? " bg-white" : "bg-background"
-                      }
-                                outline-none transition-all duration-200 
-                                text-text ${
-                                  errors.username
-                                    ? "focus:ring-error border-error"
-                                    : "focus:ring-text focus:ring-2  border-[#E0E0E0]"
-                                }`}
-                      placeholder="Enter your email address"
-                      disabled={!isEditEnabled}
-                    />
-                    {errors.username && (
-                      <span className="text-error-default font-lato text-xs top-0">
-                        {errors.username as string}
-                      </span>
-                    )}
-                  </div>
+                  <InputBox
+                    label="Username"
+                    placeholder="Enter your username"
+                    value={{ name: values.username }}
+                    onChange={handleChange}
+                    type="text"
+                    onBlur={handleBlur}
+                    error={errors.fullname}
+                    disabled={!isEditEnabled}
+                    isLabelVisible={true}
+                  />
 
                   {/* password input */}
-                  <div className="min-h-[95px]">
-                    <div className={` ${errors.password ? "shake" : ""}`}>
-                      <label
-                        htmlFor="password"
-                        className={`text-base font-normal font-lato ${
-                          errors.password ? "text-error-default " : "text-text"
-                        }`}
-                      >
-                        Password
-                      </label>
-                    </div>
-                    <input
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                        }
-                      }}
-                      value={values.password ?? ""}
-                      onChange={handleChange}
-                      type="password"
-                      id="password"
-                      onBlur={handleBlur}
-                      className={`rounded-xl border  w-full h-[46px] py-2 px-5 ${
-                        isEditEnabled ? " bg-white" : "bg-background"
-                      }
-                                outline-none transition-all duration-200 
-                                text-text ${
-                                  errors.password
-                                    ? "focus:ring-error border-error"
-                                    : "focus:ring-text focus:ring-2  border-[#E0E0E0]"
-                                }`}
-                      placeholder="Enter your password"
-                      disabled={!isEditEnabled}
-                    />
-                    {errors.password && (
-                      <span className="text-error-default font-lato text-xs top-0">
-                        {errors.password as string}
-                      </span>
-                    )}
-                  </div>
+                  <InputBox
+                    label="Username"
+                    placeholder="Enter your password"
+                    value={{ name: values.password }}
+                    onChange={handleChange}
+                    type="text"
+                    onBlur={handleBlur}
+                    error={errors.fullname}
+                    disabled={!isEditEnabled}
+                    isLabelVisible={true}
+                  />
                 </div>
               </div>
 
               {/* General Settings*/}
-              <div className="flex flex-col rounded-[10px] bg-white p-5 gap-[10px]">
+              <div className={`flex flex-col rounded-[10px] ${userData?.theme === "dark" ? "bg-foreground-dark  border border-gray-800" : "bg-white"} p-5 gap-[10px]`}>
                 {/* profile information header */}
                 <div className="flex flex-row justify-between">
                   <div className="flex flex-col">
@@ -468,7 +378,7 @@ export default function ProfileSettingsPage() {
                         Notifications
                       </p>
                     </div>
-                    <p className="font-lato text-[13px] text-text fade-in-delay-1 select-none">
+                    <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
                       Configure notification preferences
                     </p>
                   </div>
@@ -481,7 +391,7 @@ export default function ProfileSettingsPage() {
                       <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                         Enable notifications
                       </p>
-                      <p className="font-lato text-[13px] text-text fade-in-delay-1 select-none">
+                      <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
                         Recieve notifications for tasks and reminders
                       </p>
                     </div>
@@ -493,7 +403,8 @@ export default function ProfileSettingsPage() {
                         onChange={setFieldValue}
                         onLabel="Enabled"
                         offLabel="Disabled"
-                        className="fade-in-delay-1"
+                        className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
+                        theme={userData?.theme}
                       />
                     </div>
                   </div>
@@ -504,7 +415,7 @@ export default function ProfileSettingsPage() {
                       <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                         Sound Effects
                       </p>
-                      <p className="font-lato text-[13px] text-text fade-in-delay-1 select-none">
+                      <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
                         Play sound when completing tasks
                       </p>
                     </div>
@@ -516,7 +427,8 @@ export default function ProfileSettingsPage() {
                         onChange={setFieldValue}
                         onLabel="Enabled"
                         offLabel="Disabled"
-                        className="fade-in-delay-1"
+                        className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
+                        theme={userData?.theme}
                       />
                     </div>
                   </div>
@@ -526,13 +438,13 @@ export default function ProfileSettingsPage() {
 
             {/* right side */}
             <div className="flex flex-col gap-5 w-full md:w-[350px] lg:w-[350px] fade-in-delay-1-2">
-              <div className="flex flex-col gap-5 p-5 bg-white rounded-[10px]">
+              <div className={`flex flex-col gap-5 p-5 rounded-[10px] ${userData?.theme === "dark" ? "bg-foreground-dark border border-gray-800" : "bg-white"}`}>
                 {/* Appearance header */}
                 <div className="flex-flex-col">
                   <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                     Appearance
                   </p>
-                  <p className="font-lato text-[13px] text-text fade-in-delay-1 select-none">
+                  <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
                     Customize how Task Tracker looks
                   </p>
                 </div>
@@ -547,14 +459,14 @@ export default function ProfileSettingsPage() {
                     >
                       <path
                         d="M12 2V4M12 20V22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M2 12H4M20 12H22M6.34 17.66L4.93 19.07M19.07 4.93L17.66 6.34M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z"
-                        stroke="black"
+                        stroke={`${userData?.theme === "dark" ? "white" : "black"}`}
                         stroke-width="2"
                         stroke-linecap="round"
                         stroke-linejoin="round"
                       />
                     </svg>
 
-                    <p className="font-lato text-base font-bold text-text fade-in-delay-1 select-none">
+                    <p className={`font-lato text-base font-bold fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
                       Dark Mode
                     </p>
                   </div>
@@ -566,7 +478,8 @@ export default function ProfileSettingsPage() {
                     }
                     onLabel="Dark"
                     offLabel="Light"
-                    className="fade-in-delay-1"
+                    className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
+                    theme={userData?.theme}
                   />
                 </div>
               </div>
