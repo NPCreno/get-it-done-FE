@@ -1,35 +1,9 @@
 import { IProject } from "../interface/IProject";
 import { useState } from "react";
+import { useFormState } from "@/app/context/FormProvider";
 import ConfirmationModal from "./modals/confirmation";
 import { Pencil2Icon } from "@radix-ui/react-icons"
-// Helper functions for colors and gradients
-const getGradientClass = (color: string = 'gray') => {
-  const gradientMap: Record<string, string> = {
-    'red': 'from-red-50 to-red-100',
-    'blue': 'from-blue-50 to-blue-100',
-    'green': 'from-green-50 to-green-100',
-    'yellow': 'from-yellow-50 to-yellow-100',
-    'purple': 'from-purple-50 to-purple-100',
-    'pink': 'from-pink-50 to-pink-100',
-    'indigo': 'from-indigo-50 to-indigo-100',
-    'gray': 'from-gray-50 to-gray-100',
-  };
-  return gradientMap[color.toLowerCase()] || 'from-gray-50 to-gray-100';
-};
 
-const getTextColor = (color: string = 'gray') => {
-  const textMap: Record<string, string> = {
-    'red': 'text-red-700',
-    'blue': 'text-blue-700',
-    'green': 'text-green-700',
-    'yellow': 'text-yellow-700',
-    'purple': 'text-purple-700',
-    'pink': 'text-pink-700',
-    'indigo': 'text-indigo-700',
-    'gray': 'text-gray-700',
-  };
-  return textMap[color.toLowerCase()] || 'text-gray-700';
-};
 
 export default function ProjectCard({
   project,
@@ -44,10 +18,47 @@ export default function ProjectCard({
   onEditClick?: (e: React.MouseEvent) => void;
   onDeleteClick?: (project: IProject) => void;
 }) {
-  const projectColor = project.color?.toLowerCase() || 'gray';
-  const gradientClass = getGradientClass(projectColor);
-  const textColor = getTextColor(projectColor);
+  const { userData } = useFormState();
+  const projectColor = project.colorLabel?.toLowerCase() || 'gray';
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Helper functions for colors and gradients
+const getGradientClass = (color: string = 'gray') => {
+  
+  const isDarkMode = userData?.theme === 'dark';
+
+  const lightGradients: Record<string, string> = {
+    'lavender': 'from-violet-50 to-violet-100',
+    'mint': 'from-emerald-50 to-emerald-100',
+    'peach': 'from-orange-50 to-orange-100',
+    'sky': 'from-sky-50 to-sky-100',
+    'lemon': 'from-yellow-50 to-yellow-100',
+    'rose': 'from-pink-50 to-pink-100',
+    'mauve': 'from-fuchsia-50 to-fuchsia-100',
+    'baby blue': 'from-blue-50 to-blue-100',
+    'coral': 'from-rose-50 to-rose-100',
+    'seafoam': 'from-teal-50 to-teal-100',
+  };
+
+  const darkGradients: Record<string, string> = {
+    'lavender': 'from-violet-900/30 to-violet-800/30',
+    'mint': 'from-emerald-900/30 to-emerald-800/30',
+    'peach': 'from-orange-900/30 to-orange-800/30',
+    'sky': 'from-sky-900/30 to-sky-800/30',
+    'lemon': 'from-yellow-900/30 to-yellow-800/30',
+    'rose': 'from-pink-900/30 to-pink-800/30',
+    'mauve': 'from-fuchsia-900/30 to-fuchsia-800/30',
+    'baby blue': 'from-blue-900/30 to-blue-800/30',
+    'coral': 'from-rose-900/30 to-rose-800/30',
+    'seafoam': 'from-teal-900/30 to-teal-800/30',
+  };
+
+  const gradientMap = isDarkMode ? darkGradients : lightGradients;
+  return gradientMap[color.toLowerCase()] || (isDarkMode ? 'from-gray-800/30 to-gray-700/30' : 'from-gray-50 to-gray-100');
+  };
+
+  const gradientClass = getGradientClass(projectColor);
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Prevent card click when clicking on action buttons
@@ -85,7 +96,7 @@ export default function ProjectCard({
     <div
       onClick={handleCardClick}
       className={`group relative p-5 rounded-2xl bg-gradient-to-br ${gradientClass} 
-        border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 
+         shadow-lg hover:shadow-xl transition-all duration-300 
         cursor-pointer overflow-hidden w-full h-full flex flex-col ${
           progress >= 100 
             ? 'shadow-[0_0_20px_5px_rgba(52,211,153,0.3)]' 
@@ -115,23 +126,26 @@ export default function ProjectCard({
       <div className="flex justify-between items-start gap-3 mb-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-lg font-semibold text-gray-900 truncate">
+            <h2 className={`text-lg font-semibold ${userData?.theme === 'dark' ? 'text-white' : 'text-gray-900'} truncate`}>
               {project.title}
             </h2>
             {priority !== 'none' && (
-              <span className={`text-xs px-2 py-0.5 rounded-full ${textColor} bg-opacity-20`}>
+              <span 
+                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                  priority === 'high' 
+                    ? userData?.theme === 'dark' ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-800' 
+                    : priority === 'medium' 
+                      ? userData?.theme === 'dark' ? 'bg-yellow-900/30 text-yellow-300' : 'bg-yellow-100 text-yellow-800'
+                      : userData?.theme === 'dark' ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
+                }`}
+              >
                 {priority.charAt(0).toUpperCase() + priority.slice(1)}
               </span>
             )}
           </div>
-          
-          <div className="min-h-[40px]">
-            {project.description ? (
-              <p className="text-sm text-gray-600 line-clamp-2">
-                {project.description}
-              </p>
-            ) : <div className="h-5"></div>}
-          </div>
+          <p className={`text-sm ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} truncate`}>
+            {project.description || 'No description'}
+          </p>
         </div>
 
         
@@ -141,7 +155,7 @@ export default function ProjectCard({
               e.stopPropagation();
               onEditClick?.(e);
             }}
-            className="action-button bg-white/10 hover:bg-white/20 transition-colors duration-200 text-blue-400 hover:text-blue-300 z-10"
+            className={`text-xs font-medium ${userData?.theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors duration-200 text-blue-400 hover:text-blue-300 z-10`}
             aria-label="Delete project"
           >
             <Pencil2Icon width="18" height="18"/>
@@ -162,15 +176,19 @@ export default function ProjectCard({
       {/* Completion Status */}
       <div className="mb-4">
         <div className="flex justify-between items-center">
-          <span className="text-sm font-medium text-gray-600">
+          <span className={`text-sm font-medium ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
             {project.task_completed ?? 0} of {project.task_count || 0} tasks completed
             {progress >= 100 && (
-              <span className="ml-2 px-2 py-0.5 text-xs font-semibold text-green-800 bg-green-100 rounded-full">
+              <span className={`ml-2 px-2 py-0.5 text-xs font-semibold ${
+                userData?.theme === 'dark' 
+                  ? 'text-green-300 bg-green-900/30' 
+                  : 'text-green-800 bg-green-100'
+              } rounded-full`}>
                 Completed!
               </span>
             )}
           </span>
-          <span className="text-xs text-gray-500">
+          <span className={`text-xs ${userData?.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
             {project.due_date ? new Date(project.due_date).toLocaleDateString() : ''}
           </span>
         </div>

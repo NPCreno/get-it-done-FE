@@ -22,11 +22,8 @@ import {
   deleteSubTaskApi,
 } from "@/app/api/taskRequests";
 import { getProjectsForUser } from "@/app/api/projectsRequests";
-import { getUser } from "@/app/api/userRequests";
 import {
-  getAccessTokenFromCookies,
   getWeekRange,
-  parseJwt,
 } from "@/app/utils/utils";
 import { IProject } from "@/app/interface/IProject";
 import { CreateTaskDto } from "@/app/interface/dto/create-task-dto";
@@ -34,7 +31,6 @@ import { Toast } from "@/app/components/toast";
 import { ITask } from "@/app/interface/ITask";
 import { UpdateTaskDto } from "@/app/interface/dto/update-task-dto";
 import { ITaskResponse } from "@/app/interface/responses/ITaskResponse";
-import { IUser } from "@/app/interface/IUser";
 import LoadingPage from "@/app/components/loader";
 import { IDashboardData } from "@/app/interface/IDashboardData";
 import { ITaskCompletionTrendData } from "@/app/interface/ITaskCompletionTrendData";
@@ -47,8 +43,15 @@ import PomodoroModal from "@/app/components/modals/pomodoro";
 import ConfirmationModal from "@/app/components/modals/confirmation";
 
 export default function DashboardPage() {
-  const { selectedTaskData, setSelectedTaskData, selectedMonth, selectedYear, calendarMonthYear } = useFormState();
-  const [user, setUser] = useState<IUser | null>(null);
+  const { 
+    selectedTaskData, 
+    setSelectedTaskData, 
+    selectedMonth, 
+    selectedYear, 
+    calendarMonthYear, 
+    userData
+  } = useFormState();
+
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [projectOptions, setProjectOptions] = useState<IProject[]>([]);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -61,7 +64,6 @@ export default function DashboardPage() {
     className: "",
   });
   const [isExitingToast, setIsExitingToast] = useState(false);
-  const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
   const [tasks, setTasks] = useState<ITask[]>([]);
   const [dashboardData, setDashboardData] = useState<
     IDashboardData | undefined
@@ -106,7 +108,7 @@ export default function DashboardPage() {
       title: "",
       description: "",
       due_date: null,
-      user_id: user?.user_id ?? "",
+      user_id: userData?.user_id ?? "",
       project_id: "",
       project_title: "",
       project_color: "",
@@ -119,7 +121,7 @@ export default function DashboardPage() {
       end_date: null,
       project: "",
     }),
-    [user?.user_id]
+    [userData?.user_id]
   );
 
   const {
@@ -139,10 +141,10 @@ export default function DashboardPage() {
     validateOnChange: false, // Disable real-time validation
     validateOnBlur: false,
     onSubmit: async (values) => {
-      if (!user) return;
+      if (!userData) return;
       const withUser = {
         ...values,
-        user_id: user.user_id,
+        user_id: userData.user_id,
         due_date: values.due_date || undefined,
       };
       handleSubmitForm(withUser);
@@ -161,7 +163,7 @@ export default function DashboardPage() {
   const createTask = async (values: ITaskFormValues) => {
     try {
       setIsLoading(true);
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -169,7 +171,7 @@ export default function DashboardPage() {
         title: values.title,
         description: values.description,
         due_date: values.due_date || undefined,
-        user_id: user.user_id,
+        user_id: userData.user_id,
         project_id: values.project_id || undefined,
         priority: values.priority || undefined,
         isRecurring: values.isRecurring || false,
@@ -228,44 +230,9 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    const fetchUser = async () => {
-      if (isDoneFetchingUser) return;
-      else {
-        try {
-          if (!user) {
-            // If no user, try getting one from cookies
-            const token = getAccessTokenFromCookies();
-            if (!token) {
-              console.error("No access_token found in cookies");
-              return;
-            }
-            const parsedUser = parseJwt(token).user;
-            if (!parsedUser || !parsedUser.user_id) {
-              console.error("Failed to parse user or missing user_id in token");
-              return;
-            }
-            setIsDoneFetchingUser(true);
-            setUser(parsedUser);
-            return;
-          }
-          // Only fetch updated user info if we have a user
-          const response = await getUser(user.user_id);
-          if (response) {
-            setIsDoneFetchingUser(true);
-            setUser(response);
-          }
-        } catch (error) {
-          console.error("Failed to fetch user:", error);
-        }
-      }
-    };
-    fetchUser();
-  }, [user, setUser, isDoneFetchingUser]);
-
-  useEffect(() => {
-    if (user) {
+    if (userData) {
       const fetchProjects = async () => {
-        const projects = await getProjectsForUser(user.user_id);
+        const projects = await getProjectsForUser(userData.user_id);
         if (projects?.status === "success") {
           setProjectOptions(projects.data);
           return;
@@ -275,11 +242,11 @@ export default function DashboardPage() {
       };
       fetchProjects();
     }
-  }, [user, isTaskModalOpen]);
+  }, [userData, isTaskModalOpen]);
 
   useEffect(() => {
     const fetchTasks = async () => {
-      if (!user) return;
+      if (!userData) return;
 
       // Set loading state
       if (isFirstLoad.current) {
@@ -300,12 +267,12 @@ export default function DashboardPage() {
           heatmapResponse,
           streakResponse
         ] = await Promise.allSettled([
-          getTasksByUser(user.user_id, startDate, endDate),
-          getDashboardData(user.user_id, startDate, endDate),
-          getTaskCompletionTrend(user.user_id, range.start, range.end),
-          getTaskDistributionData(user.user_id, selectedMonth, selectedYear),
-          getCalendarHeatmap(user.user_id, calendarMonthYear.month, calendarMonthYear.year),
-          getStreakCount(user.user_id)
+          getTasksByUser(userData.user_id, startDate, endDate),
+          getDashboardData(userData.user_id, startDate, endDate),
+          getTaskCompletionTrend(userData.user_id, range.start, range.end),
+          getTaskDistributionData(userData.user_id, selectedMonth, selectedYear),
+          getCalendarHeatmap(userData.user_id, calendarMonthYear.month, calendarMonthYear.year),
+          getStreakCount(userData.user_id)
         ]);
 
         // Process each response with error handling
@@ -375,7 +342,7 @@ export default function DashboardPage() {
     };
 
     fetchTasks();
-  }, [user, updateTaskDashboard, showToast, selectedMonth, selectedYear, calendarMonthYear]);
+  }, [userData, updateTaskDashboard, showToast, selectedMonth, selectedYear, calendarMonthYear]);
 
   useEffect(() => {
     if (isTaskModalOpen && !isUpdateTask) {
@@ -399,7 +366,7 @@ export default function DashboardPage() {
   const updateTask = async (values: ITaskFormValues) => {
     try {
       setIsLoading(true);
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -797,7 +764,11 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-1 h-8 bg-gradient-to-b from-primary-default to-primary-200 rounded-full transform transition-transform duration-300 group-hover:scale-y-110"></div>
                     <div className="space-y-0.5">
-                      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 fade-in select-none bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                    <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
+                          userData  ?.theme === "dark" 
+                            ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
+                            : "bg-gradient-to-r from-gray-800 to-gray-600"
+                    }`}>
                         Dashboard
                       </h1>
                       <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none transition-all duration-300 group-hover:text-gray-600">
@@ -813,29 +784,39 @@ export default function DashboardPage() {
                   {/* Enhanced Expandable Search */}
                   <div className="relative flex justify-end">
                     <div
-                      className={`relative flex items-center bg-white rounded-xl overflow-hidden h-[44px] transition-all duration-300 ease-out ${
+                      className={`relative flex items-center ${
+                        userData?.theme === 'dark' 
+                          ? 'bg-foreground-dark border border-gray-800' 
+                          : 'bg-white'
+                      } rounded-xl overflow-hidden h-[44px] transition-all duration-300 ease-out ${
                         isSearchExpanded
-                          ? "shadow-md ring-1 ring-gray-200"
-                          : "w-[44px] hover:bg-gray-50 transition-colors duration-200"
+                          ? userData?.theme === 'dark'
+                            ? "shadow-lg ring-1 ring-gray-800"
+                            : "shadow-md ring-1 ring-gray-200"
+                          : userData?.theme === 'dark'
+                            ? "w-[44px] hover:bg-gray-900/80"
+                            : "w-[44px] hover:bg-gray-50"
                       }`}
                       style={{
                         width: isSearchExpanded ? "280px" : "44px",
-                        transitionProperty: "width, box-shadow, border-color",
+                        transitionProperty: "width, box-shadow, border-color, background-color",
                         transitionDuration: "300ms",
-                        transitionTimingFunction:
-                          "cubic-bezier(0.16, 1, 0.3, 1)",
+                        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
                       }}
                     >
                       <input
                         type="text"
                         placeholder={isSearchExpanded ? "Search tasks..." : ""}
-                        className={`bg-transparent border-0 focus:ring-0 focus:outline-none h-full pl-4 pr-10 text-gray-700 placeholder-gray-400 transition-all duration-200 ${
+                        className={`bg-transparent border-0 focus:ring-0 focus:outline-none h-full pl-4 pr-10 ${
+                          userData?.theme === 'dark' 
+                            ? 'text-white placeholder-gray-500' 
+                            : 'text-gray-700 placeholder-gray-400'
+                        } transition-all duration-200 ${
                           isSearchExpanded
                             ? "w-full opacity-100"
                             : "w-0 opacity-0"
                         }`}
                         onBlur={(e) => {
-                          // Only collapse if clicking outside the search container
                           if (
                             !e.currentTarget.parentElement?.contains(
                               e.relatedTarget as Node
@@ -860,18 +841,18 @@ export default function DashboardPage() {
                       <button
                         className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all duration-200 ${
                           isSearchExpanded && searchQuery
-                            ? "text-gray-500 hover:bg-gray-100"
-                            : "text-gray-400 hover:text-gray-600 right-[4px]"
+                            ? userData?.theme === 'dark'
+                              ? "text-gray-400 hover:bg-gray-800"
+                              : "text-gray-500 hover:bg-gray-100"
+                            : userData?.theme === 'dark'
+                              ? "text-gray-500 hover:text-gray-300 right-[4px]"
+                              : "text-gray-400 hover:text-gray-600 right-[4px]"
                         }`}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (isSearchExpanded && searchQuery) {
                             setSearchQuery("");
-                            // Keep focus on input after clearing
-                            const input =
-                              e.currentTarget.parentElement?.querySelector(
-                                "input"
-                              );
+                            const input = e.currentTarget.parentElement?.querySelector("input");
                             input?.focus();
                           } else {
                             setIsSearchExpanded(!isSearchExpanded);
@@ -930,6 +911,7 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-1"
                     className="h-full hover:bg-gradient-to-br from-white to-gray-50 transition-all duration-300"
+                    theme={userData?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-100/30">
@@ -941,6 +923,7 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-2"
                     className="h-full hover:bg-gradient-to-br from-white to-amber-50/30 transition-all duration-300"
+                    theme={userData?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-100/30">
@@ -952,6 +935,7 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-3"
                     className="h-full hover:bg-gradient-to-br from-white to-blue-50/30 transition-all duration-300"
+                    theme={userData?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-green-100/30">
@@ -963,29 +947,45 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-4"
                     className="h-full hover:bg-gradient-to-br from-white to-green-50/30 transition-all duration-300"
+                    theme={userData?.theme}
                   />
                 </div>
               </div> 
 
               <div className="w-full h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5 items-center justify-center text-center">
                 {/* Task board */}
-                <div className="w-full h-full p-6 flex flex-col bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 fade-in-delay-2 flex-grow border border-gray-100">
+                <div className={`w-full h-full p-6 flex flex-col rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 fade-in-delay-2 flex-grow border
+                  ${userData?.theme === "dark" ? "bg-foreground-dark" : "bg-white"}
+                  ${userData?.theme === "dark" ? "border-gray-800" : ""}
+                   `}>
                   {/* Header - Fixed */}
-                  <div className="flex flex-col sm:flex-row justify-between gap-4 border-gray-100">
+                  <div className={`flex flex-col sm:flex-row justify-between gap-4 
+                  ${userData?.theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}
+                  `}>
                     <div>
-                      <h1 className="text-xl font-lato font-bold text-gray-800 text-start">
+                      <h1 className={`text-xl font-lato font-bold text-start ${
+                        userData?.theme === 'dark' ? 'text-white' : 'text-gray-800'
+                      }`}>
                         Recent Tasks
                       </h1>
-                      <p className="text-sm text-gray-500 mt-1 text-start">
+                      <p className={`text-sm mt-1 text-start ${
+                        userData?.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
                         Your most recent activities and tasks
                       </p>
                     </div>
                     <button
-                      className="relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
-                    bg-gradient-to-r from-primary-default to-primary-200 shadow-md hover:shadow-lg
-                    transform transition-all duration-300 hover:translate-y-[-1px] active:translate-y-0 active:scale-95 overflow-hidden group
-                    before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary-200 before:to-primary-default
-                    before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
+                      className={`relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
+                      shadow-md hover:shadow-lg transform transition-all duration-300 hover:translate-y-[-1px] 
+                      active:translate-y-0 active:scale-95 overflow-hidden group
+                      ${userData?.theme === 'dark' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:shadow-amber-500/20' : 'bg-gradient-to-r from-primary-default to-primary-200 hover:shadow-primary-default/20'}
+                      before:absolute before:inset-0 
+                      ${
+                        userData?.theme === 'dark'
+                          ? 'before:bg-gradient-to-r before:from-amber-600 before:to-yellow-400'
+                          : 'before:bg-gradient-to-r before:from-primary-200 before:to-primary-default'
+                      }
+                      before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300`}
                       onClick={() => {
                         setIsTaskModalOpen(true);
                         clearValueAndErrors();
@@ -1024,7 +1024,9 @@ export default function DashboardPage() {
                       </span>
 
                       {/* Subtle shine effect on hover */}
-                      <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
+                      <span className={`absolute inset-0 ${
+                        userData?.theme === 'dark' ? 'bg-amber-400/5' : 'bg-white/5'
+                      } opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></span>
                     </button>
                   </div>
 
@@ -1065,7 +1067,7 @@ export default function DashboardPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </div>
-                          <h3 className="text-xl font-semibold text-gray-800 mb-2">All caught up!</h3>
+                          <h3 className={`text-xl font-semibold text-gray-800 mb-2 ${userData?.theme === "dark" ? "text-white" : "text-gray-800"}`}>All caught up!</h3>
                           <p className="text-gray-500 mb-6 max-w-md">You&apos;ve completed all your tasks. Time to celebrate or add a new challenge!</p>
                         </div>
                       )}
@@ -1163,7 +1165,11 @@ export default function DashboardPage() {
           {tasks.length === 0 && !pageLoading && (
             <>
               <div className="w-full h-full flex items-center justify-center py-16 px-4">
-                <div className="flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 bg-white rounded-2xl shadow-sm border border-gray-100 transform transition-all hover:shadow-md">
+                <div className={`flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 ${
+                  userData?.theme === "dark" 
+                    ? "bg-foreground-dark border border-gray-800" 
+                    : "bg-white border border-gray-100"
+                } rounded-2xl shadow-sm transform transition-all hover:shadow-md`}>
                   <svg
                     width="100"
                     height="100"
@@ -1230,18 +1236,29 @@ export default function DashboardPage() {
                     </defs>
                   </svg>
                   <div className="space-y-2">
-                    <h1 className="font-lato text-2xl md:text-3xl text-gray-800 font-bold fade-in-delay-1 bg-gradient-to-r from-primary-default to-yellow-400 bg-clip-text text-transparent">
+                    <h1 className={`font-lato text-2xl md:text-3xl font-bold fade-in-delay-1 bg-gradient-to-r ${
+                      userData?.theme === 'dark' 
+                        ? 'from-amber-400 to-yellow-500' 
+                        : 'from-primary-default to-yellow-400'
+                    } bg-clip-text text-transparent`}>
                       Welcome to Your Dashboard ✨
                     </h1>
-                    <p className="font-lato text-gray-600 fade-in-delay-2 max-w-md leading-relaxed">
+                    <p className={`font-lato fade-in-delay-2 max-w-md leading-relaxed ${
+                      userData?.theme === "dark" ? "text-gray-300" : "text-gray-600"
+                    }`}>
                       Start organizing your life by creating your first task.
                       <br />
                       Every great journey begins with a single step!
                     </p>
                   </div>
                   <button
-                    className="px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato bg-gradient-to-r from-primary-default to-yellow-400 rounded-xl 
-                    hover:shadow-lg hover:shadow-primary-default/20 transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5"
+                    className={`px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato rounded-xl 
+                    hover:shadow-lg transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5
+                    ${
+                      userData?.theme === 'dark'
+                        ? 'bg-gradient-to-r from-amber-600 to-yellow-500 hover:shadow-amber-500/20'
+                        : 'bg-gradient-to-r from-primary-default to-yellow-400 hover:shadow-primary-default/20'
+                    }`}
                     onClick={() => {
                       setIsTaskModalOpen(true);
                       clearValueAndErrors();
@@ -1319,7 +1336,6 @@ export default function DashboardPage() {
             {
               label: 'Cancel',
               onClick: () => setShowConfirmation(false),
-              className: 'ml-auto'
             }
           ]}
         />

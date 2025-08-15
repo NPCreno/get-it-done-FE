@@ -73,6 +73,7 @@ interface ChartPieInteractiveProps {
   onMonthChange?: (month: string) => void;
   months?: {value: string; label: string}[];
   noData?: boolean;
+  theme?: string;
 }
 
 const getMonthsUntilCurrent = () => {
@@ -108,6 +109,7 @@ export function ChartPieInteractive({
   onMonthChange,
   months = defaultMonths,
   noData,
+  theme = "light",
 }: ChartPieInteractiveProps) {
   const id = "pie-interactive";
   const { selectedMonth: contextMonth, setSelectedMonth } = useFormState();
@@ -129,16 +131,16 @@ export function ChartPieInteractive({
   };
 
   return (
-    <Card data-chart={id} className="flex flex-col h-full min-h-[280px]">
+    <Card data-chart={id} className={`flex flex-col h-full min-h-[280px] ${theme === "dark" ? "bg-foreground-dark border-gray-800 border" : "bg-foreground-light"}`}>
       <ChartStyle id={id} config={chartConfig} />
       <CardHeader className="flex-row items-start space-y-0 p-4 pb-2">
         <div className="grid gap-0.5">
-          <CardTitle>{title}</CardTitle>
+          <CardTitle className={`${theme === "dark" ? "text-white" : "text-gray-800"}`}>{title}</CardTitle>
           {description && <CardDescription>{description}</CardDescription>}
         </div>
         <Select value={selectedMonth} onValueChange={handleMonthChange}>
           <SelectTrigger
-            className="ml-auto h-7 w-[130px] rounded-lg pl-2.5"
+            className={`ml-auto h-7 w-[130px] rounded-lg pl-2.5 ${theme === "dark" ? "text-white border-gray-800 border" : "text-black"}`}
             aria-label="Select month"
           >
             <SelectValue placeholder="Select month" />
@@ -165,7 +167,7 @@ export function ChartPieInteractive({
         </Select>
       </CardHeader>
       {noData && (
-        <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-white">
+        <div className={`w-full h-full flex flex-col items-center justify-center p-4 text-center ${theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"}`}>
           <Database className="h-16 w-16 text-gray-400 mb-2" />
           <p className="text-gray-500 text-sm">No data available</p>
         </div>

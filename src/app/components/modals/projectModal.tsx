@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import InputBox from '../inputBox';
+import { useFormState } from '@/app/context/FormProvider';
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -42,6 +43,23 @@ export default function ProjectModal({
   submitForm,
   isEdit,
 }: ProjectModalProps) {
+  const { userData } = useFormState();
+  
+  const handleEscapeKey = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      onClose();  
+    } 
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    window.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      window.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [handleEscapeKey, isOpen]);
+  
   if (!isOpen) return null;
   const dropdownOptions = [
     { name: "Lavender", color: "#E6E6FA" },  
@@ -56,33 +74,35 @@ export default function ProjectModal({
     { name: "Seafoam", color: "#C3FBD8" },   
   ];
   
-  const handleEscapeKey = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-  };
-
-  window.addEventListener('keydown', handleEscapeKey);
-  
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
+      className={`fixed inset-0 bg-black ${userData?.theme === 'dark' ? 'bg-opacity-60' : 'bg-opacity-40'} flex justify-center items-center z-50`}
       onClick={onClose}
     >
       <div
-        className="modal-popup bg-white w-[500px] h-auto rounded-[10px] p-5 shadow-lg flex flex-col gap-5"
+        className={`modal-popup w-[500px] h-auto rounded-[10px] p-5 shadow-lg flex flex-col gap-5 ${
+          userData?.theme === 'dark' 
+            ? 'bg-foreground-dark border border-gray-700' 
+            : 'bg-white border border-gray-100'
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col">
             <div className="flex flex-row justify-between items-center">
-                <h1 className="text-text text-[20px] font-bold font-lato">{isEdit ? "Edit Project" : "Create New Project"}</h1>
+                <h1 className={`text-[20px] font-bold font-lato ${
+                  userData?.theme === 'dark' ? 'text-white' : 'text-text'
+                }`}>{isEdit ? "Edit Project" : "Create New Project"}</h1>
                 <button className="cursor-pointer" onClick={onClose}>
                   <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M11.5 4.50098L4.5 11.501M11.5 11.501L4.5 4.50098L11.5 11.501Z" stroke="#666666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M11.5 4.50098L4.5 11.501M11.5 11.501L4.5 4.50098L11.5 11.501Z" className={`${
+                    userData?.theme === 'dark' ? 'stroke-gray-400' : 'stroke-[#666666]'
+                  }`} stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                 </button>
             </div>
-            <h2 className="text-[#676767] text-sm font-lato">{isEdit ? "Edit your project" : "Add a new project to organize your tasks."}</h2>
+            <h2 className={`text-sm font-lato ${
+              userData?.theme === 'dark' ? 'text-gray-300' : 'text-[#676767]'
+            }`}>{isEdit ? "Edit your project" : "Add a new project to organize your tasks."}</h2>
         </div>
 
         <InputBox 
@@ -121,7 +141,7 @@ export default function ProjectModal({
                 customClass="translate-x-[150px] translate-y-[-228px]"
             />
             <InputBox 
-                type="datewithtime"
+                type="date"
                 label="Due Date" 
                 value={{ 
                   name: formik.values.due_date 
@@ -132,20 +152,25 @@ export default function ProjectModal({
                 isLabelVisible={true}
                 placeholder="Select due date (optional)"
                 error={errors.due_date}
-                customClass="translate-x-[150px] translate-y-[-228px]"
             />
         </div>
         <div className="flex flex-row justify-end gap-4 w-full">
             <div className="w-full"></div>
             <div className="flex flex-row gap-[10px]">
-                <button className="border border-primary-200 rounded-[5px] flex justify-center items-center text-primary-default 
-                font-lato text-xs p-[10px]" 
+                <button className={`border rounded-[5px] flex justify-center items-center font-lato text-xs p-[10px] ${
+                  userData?.theme === 'dark'
+                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                    : 'border-primary-200 text-primary-default hover:bg-gray-50'
+                }`} 
                 onClick={onClose}>
                   Cancel
                 </button>
                 
-                <button className="bg-primary-default rounded-[5px] flex justify-center items-center text-white font-lato 
-                text-xs p-[10px]" 
+                <button className={`rounded-[5px] flex justify-center items-center font-lato text-xs p-[10px] ${
+                  userData?.theme === 'dark'
+                    ? 'bg-gradient-to-r from-amber-600 to-yellow-500 hover:shadow-amber-500/20 text-white'
+                    : 'bg-gradient-to-r from-primary-default to-yellow-400 hover:shadow-primary-default/20 text-white'
+                }`} 
                 onClick={() => submitForm()}>
                   {isEdit ? "Update" : "Create"}
                 </button>

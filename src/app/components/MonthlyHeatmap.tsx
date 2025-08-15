@@ -22,11 +22,13 @@ interface HeatmapValue {
 interface MonthlyHeatmapProps {
   values: HeatmapValue[];
   className?: string;
+  theme?: string;
 }
 
 export default function MonthlyHeatmap({ 
   values = [], 
-  className = '' 
+  className = '',
+  theme = "light" 
 }: MonthlyHeatmapProps) {
   const { calendarMonthYear, setCalendarMonthYear } = useFormState();
   // Initialize currentMonth from calendarMonthYear if available, otherwise use current date
@@ -87,21 +89,21 @@ export default function MonthlyHeatmap({
     let classes = 'w-6 h-6 rounded-sm flex items-center justify-center text-xs';
     
     if (!isSameMonth(day, monthStart)) {
-      return classes + ' bg-gray-50 text-gray-300';
+      return classes + ` ${theme === "dark" ? "bg-foreground-dark" : "bg-gray-50"} text-gray-600`;
     }
     
     if (isToday(day)) {
-      classes += ' ring-1 ring-blue-500';
+      classes += ' ring-1 ring-gray-200';
     }
     
     if (count > 0) {
-      if (count <= 1) classes += ' bg-success-100 text-gray-800';
-      else if (count <= 2) classes += ' bg-success-200 text-gray-800';
-      else if (count <= 4) classes += ' bg-success-default text-white';
-      else if (count <= 6) classes += ' bg-success-600 text-white';
-      else classes += ' bg-success-700 text-white';
+      if (count <= 1) classes += ` ${theme === "dark" ? "bg-success-dark-100 text-white" : "bg-success-100 text-black"}`;
+      else if (count <= 2) classes += ` ${theme === "dark" ? "bg-success-dark-200 text-white" : "bg-success-200 text-black"}`;
+      else if (count <= 4) classes += ` ${theme === "dark" ? "bg-success-dark-300 text-white" : "bg-success-300 text-black"}`;
+      else if (count <= 6) classes += ` ${theme === "dark" ? "bg-success-dark-600 text-white" : "bg-success-600 text-black"}`;
+      else classes += ` ${theme === "dark" ? "bg-success-dark-700 text-white" : "bg-success-700 text-black"}`;
     } else {
-      classes += ' bg-gray-50 text-gray-800';
+      classes += ` ${theme === "dark" ? "bg-gray-dark-50" : "bg-gray-50"} text-gray-200`;
     }
     
     return classes;
@@ -154,17 +156,17 @@ export default function MonthlyHeatmap({
         <div className="flex w-full items-center justify-center">
           <button 
             onClick={handlePrevMonth}
-            className="p-1 hover:bg-gray-100 rounded"
+            className={`p-1 hover:bg-gray-100 rounded ${theme === "dark" ? "text-white hover:text-black" : "text-black hover:text-white"}`}
             aria-label="Previous month"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className={`w-4 h-4 `} />
           </button>
-          <span className="text-sm mx-2 w-32 text-center">
+          <span className={`text-sm mx-2 w-32 text-center ${theme === "dark" ? "text-white" : "text-black"}`}>
             {format(currentMonth, 'MMM yyyy')}
           </span>
           <button 
             onClick={handleNextMonth}
-            className="p-1 hover:bg-gray-100 rounded"
+            className={`p-1 hover:bg-gray-100 rounded ${theme === "dark" ? "text-white hover:text-black" : "text-black hover:text-white"}`}
             aria-label="Next month"
           >
             <ChevronRight className="w-4 h-4" />
@@ -186,11 +188,11 @@ export default function MonthlyHeatmap({
         <div className="flex items-center">
           <span className="mr-2">Less</span>
           <div className="flex space-x-1">
-            <div className="w-3 h-3 bg-gray-100 rounded-sm"></div>
-            <div className="w-3 h-3 bg-success-100 rounded-sm"></div>
-            <div className="w-3 h-3 bg-success-300 rounded-sm"></div>
-            <div className="w-3 h-3 bg-success-600 rounded-sm"></div>
-            <div className="w-3 h-3 bg-success-800 rounded-sm"></div>
+            <div className={`w-3 h-3 ${theme === "dark" ? "bg-success-dark-100" : "bg-success-100"} rounded-sm`}></div>
+            <div className={`w-3 h-3 ${theme === "dark" ? "bg-success-dark-200" : "bg-success-200"} rounded-sm`}></div>
+            <div className={`w-3 h-3 ${theme === "dark" ? "bg-success-dark-300" : "bg-success-300"} rounded-sm`}></div>
+            <div className={`w-3 h-3 ${theme === "dark" ? "bg-success-dark-600" : "bg-success-600"} rounded-sm`}></div>
+            <div className={`w-3 h-3 ${theme === "dark" ? "bg-success-dark-800" : "bg-success-800"} rounded-sm`}></div>
           </div>
           <span className="ml-2">More</span>
         </div>

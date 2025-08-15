@@ -118,12 +118,19 @@ DropdownMenuCheckboxItem.displayName =
 
 const DropdownMenuRadioItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem> & {
+    theme?: 'dark' | 'light'
+  }
+>(({ className, children, theme, ...props }, ref) => (
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "focus:bg-accent focus:text-accent-foreground",
+      {
+        'bg-foreground-dark hover:!bg-gray-800': theme === 'dark',
+        'bg-white hover:!bg-gray-100': theme !== 'dark'
+      },
       className
     )}
     {...props}
@@ -131,7 +138,7 @@ const DropdownMenuRadioItem = React.forwardRef<
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
         <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M2.83228 9.25L6.61068 12.25L14.1675 4.75" stroke="black"/>
+        <path d="M2.83228 9.25L6.61068 12.25L14.1675 4.75" stroke={theme === 'dark' ? 'white' : 'black'}/>
         </svg>
 
       </DropdownMenuPrimitive.ItemIndicator>

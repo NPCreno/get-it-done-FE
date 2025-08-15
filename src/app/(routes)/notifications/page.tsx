@@ -1,16 +1,13 @@
 "use client"
-import { getUser } from "@/app/api/userRequests";
 import LoadingPage from "@/app/components/loader";
 import MainLayout from "@/app/components/MainLayout";
 import NotificationCard from "@/app/components/notificationCard";
 import { INotificationProps } from "@/app/interface/INotification";
-import { IUser } from "@/app/interface/IUser";
-import { getAccessTokenFromCookies, parseJwt } from "@/app/utils/utils";
 import { useEffect, useState } from "react";
+import { useFormState } from "@/app/context/FormProvider";
 
 export default function NotificationsPage() {
-  const [user, setUser] = useState<IUser | null>(null);
-  const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
+  const { userData } = useFormState();
   // const [pageLoading, setIsPageLoading] = useState(false);
   const pageLoading = false
   const [showLoader, setShowLoader] = useState(true);
@@ -93,41 +90,6 @@ export default function NotificationsPage() {
     status: Math.random() < 0.5 ? 'read' : 'unread',
   }));
 
-
-useEffect(() => {
-  const fetchUser = async () => {
-    if(isDoneFetchingUser) return;
-    else{
-      try {
-        if (!user) { // If no user, try getting one from cookies
-          const token = getAccessTokenFromCookies();
-          if (!token) {
-            console.error("No access_token found in cookies");
-            return;
-          }
-          const parsedUser = parseJwt(token).user;
-          if (!parsedUser || !parsedUser.user_id) {
-            console.error("Failed to parse user or missing user_id in token");
-            return;
-          }
-          setIsDoneFetchingUser(true);
-          setUser(parsedUser);
-          return;
-        }
-        // Only fetch updated user info if we have a user
-        const response = await getUser(user.user_id);
-        if (response) {
-          setIsDoneFetchingUser(true);
-          setUser(response);
-        }
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-      }
-    }
-  };
-  fetchUser();
-}, [user, setUser, isDoneFetchingUser]);
-
 useEffect(() => {
   if (!pageLoading) {
     setTimeout(() => setShowLoader(false), 500); // Match transition duration
@@ -145,8 +107,12 @@ useEffect(() => {
               <div className="flex items-center gap-3">
                 <div className="w-1 h-8 bg-primary-default rounded-full"></div>
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 fade-in select-none">
-                  Notifications
+                  <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
+                        userData?.theme === "dark" 
+                          ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
+                          : "bg-gradient-to-r from-gray-800 to-gray-600"
+                  }`}>
+                    Notifications
                   </h1>
                   <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none mt-1">
                   Never Miss an Important Update

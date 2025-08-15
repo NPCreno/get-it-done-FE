@@ -75,7 +75,16 @@ const config: Config = {
 				'500': '#3EA24F',
 				'600': '#296C35',
 				'700': '#15361A',
-				default: '#53D86A'
+				default: '#53D86A',
+				dark: {
+					'100': '#1A2E21',
+					'200': '#245C3A',
+					'300': '#2E8A53',
+					'500': '#3EA24F',
+					'600': '#4BC75E',
+					'700': '#7EE28F',
+					default: '#53D86A'
+				}
 			},
 			darkBlue: {
 				'100': '#BFCBD1',
@@ -88,10 +97,16 @@ const config: Config = {
 			}, 
   			warning: '#FEC242',
   			info: '#2196F3',
-  			background: '#EEEEEE',
+  			background: {
+			 'light': '#EEEEEE',
+			 'dark': '#0d0e12'
+			},
   			text: '#333',
   			border: 'hsl(var(--border))',
-  			foreground: 'hsl(var(--foreground))',
+  			foreground: {
+				'light': '#ffffff',
+				'dark': '#111317'
+			},
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'

@@ -1,10 +1,8 @@
 "use client";
 import MainLayout from "@/app/components/MainLayout";
 import ProjectCard from "../../components/projectCard";
-import { getAccessTokenFromCookies, parseJwt } from "@/app/utils/utils";
 import { useFormState } from "@/app/context/FormProvider";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getUser } from "@/app/api/userRequests";
 import {
   getTasksByProject,
   createTaskApi,
@@ -31,7 +29,6 @@ import { createTaskSchema } from "@/app/schemas/createTaskSchema";
 import TaskModal from "@/app/components/modals/taskModal";
 import { UpdateTaskDto } from "@/app/interface/dto/update-task-dto";
 import { ITaskResponse } from "@/app/interface/responses/ITaskResponse";
-import { IUser } from "@/app/interface/IUser";
 import LoadingPage from "@/app/components/loader";
 import { IProjectOrTaskFormValues } from "@/app/interface/forms/IProjectorTaskFormValues";
 import { IProjectFormErrors } from "@/app/interface/forms/IProjectFormErrors";
@@ -47,9 +44,7 @@ interface ProjectModalState {
 }
 
 export default function ProjectsPage() {
-  const [user, setUser] = useState<IUser | null>(null);
-  const { selectedTaskData } = useFormState();
-  const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
+  const { selectedTaskData, userData } = useFormState();
   const [projectData, setProjectData] = useState<IProject[]>([]);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState<ProjectModalState>({
     isOpen: false,
@@ -89,7 +84,7 @@ export default function ProjectsPage() {
       due_date: null,
       colorLabel: "",
       color: "",
-      user_id: user?.user_id ?? "",
+      user_id: userData?.user_id ?? "",
       project_id: "",
       project_title: "",
       project_color: "",
@@ -102,7 +97,7 @@ export default function ProjectsPage() {
       end_date: null,
       project: "",
     }),
-    [user?.user_id]
+    [userData?.user_id]
   );
 
   const {
@@ -122,10 +117,10 @@ export default function ProjectsPage() {
     validateOnChange: false, // Disable real-time validation
     validateOnBlur: false,
     onSubmit: async (values) => {
-      if (!user) return;
+      if (!userData) return;
       const withUser = {
         ...values,
-        user_id: user.user_id,
+        user_id: userData.user_id,
         due_date: values.due_date || null,
       };
       handleSubmitForm(withUser as IProjectOrTaskFormValues);
@@ -146,7 +141,7 @@ export default function ProjectsPage() {
   const createProj = async (values: IProjectOrTaskFormValues) => {
     try {
       setIsLoading(true);
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -206,7 +201,7 @@ export default function ProjectsPage() {
   const updateProj = async (values: IProjectOrTaskFormValues) => {
     try {
       setIsLoading(true);
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -262,45 +257,11 @@ export default function ProjectsPage() {
       }, 10000); // Toast display duration
     }
   };
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (isDoneFetchingUser) return;
-      else {
-        try {
-          if (!user) {
-            // If no user, try getting one from cookies
-            const token = getAccessTokenFromCookies();
-            if (!token) {
-              console.error("No access_token found in cookies");
-              return;
-            }
-            const parsedUser = parseJwt(token).user;
-            if (!parsedUser || !parsedUser.user_id) {
-              console.error("Failed to parse user or missing user_id in token");
-              return;
-            }
-            setIsDoneFetchingUser(true);
-            setUser(parsedUser);
-            return;
-          }
-          // Only fetch updated user info if we have a user
-          const response = await getUser(user.user_id);
-          if (response) {
-            setIsDoneFetchingUser(true);
-            setUser(response);
-          }
-        } catch (error) {
-          console.error("Failed to fetch user:", error);
-        }
-      }
-    };
-    fetchUser();
-  }, [user, setUser, isDoneFetchingUser]);
 
   useEffect(() => {
-    if (user) {
+    if (userData) {
       const fetchProjects = async () => {
-        const projects = await getProjectsForUser(user.user_id);
+        const projects = await getProjectsForUser(userData.user_id);
         if (projects?.status === "success") {
           setProjectData(projects.data);
           return;
@@ -310,7 +271,7 @@ export default function ProjectsPage() {
       };
       fetchProjects();
     }
-  }, [user, isProjectModalOpen, isTaskModalOpen, refreshPage]);
+  }, [userData, isProjectModalOpen, isTaskModalOpen, refreshPage]);
 
   const clearValueAndErrors = () => {
     setErrors({});
@@ -373,7 +334,7 @@ export default function ProjectsPage() {
 
   const createTask = async (values: IProjectOrTaskFormValues) => {
     try {
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -381,7 +342,7 @@ export default function ProjectsPage() {
         title: values.title,
         description: values.description,
         due_date: values.due_date || undefined,
-        user_id: user.user_id,
+        user_id: userData.user_id,
         project_id: selectedProject
           ? selectedProject.project_id
           : values.project_id,
@@ -461,7 +422,7 @@ export default function ProjectsPage() {
   const updateTask = async (values: IProjectOrTaskFormValues) => {
     try {
       setIsLoading(true);
-      if (!user) {
+      if (!userData) {
         console.error("No User data found");
         return;
       }
@@ -628,7 +589,7 @@ export default function ProjectsPage() {
       due_date: task.due_date ?? null,
       colorLabel: "",
       color: "",
-      user_id: user?.user_id ?? "",
+      user_id: userData?.user_id ?? "",
       project_id: task.project_id,
       project_title: task.project_title ?? "",
       project_color: "",
@@ -665,13 +626,13 @@ export default function ProjectsPage() {
 
   useEffect(() => {
       const fetchProjects = async () => {
-        if (!user) return;
+        if (!userData) return;
         // Only show loading spinner for first load
         if (isFirstLoad.current) {
           setIsPageLoading(true);
         }
         
-        const projects = await getProjectsForUser(user.user_id);
+        const projects = await getProjectsForUser(userData.user_id);
         if (projects?.status === "success") {
           if (isFirstLoad.current) {
             setIsPageLoading(false);
@@ -689,7 +650,7 @@ export default function ProjectsPage() {
 
       };
       fetchProjects();
-  }, [user, isTaskModalOpen, refreshPage]);
+  }, [userData, isTaskModalOpen, refreshPage]);
 
   useEffect(() => {
     if (!pageLoading) {
@@ -700,7 +661,7 @@ export default function ProjectsPage() {
   useEffect(() => {
     const fetchProjectById = async () => {
       try {
-        if (!user) return;
+        if (!userData) return;
         if (!isProjectModalOpen.projectId) return;
         const project: IProjectResponse = await getProjectById(isProjectModalOpen.projectId);
         if (project?.status === "success") {
@@ -719,7 +680,7 @@ export default function ProjectsPage() {
       
     };
     fetchProjectById();
-  }, [isProjectModalOpen.projectId, setFieldValue, user]);
+  }, [isProjectModalOpen.projectId, setFieldValue, userData]);
 
   const deleteProject = async (projectId: string) => {
     try {
@@ -818,8 +779,12 @@ export default function ProjectsPage() {
               <div className="flex items-center gap-3">
                 <div className="w-1 h-8 bg-primary-default rounded-full"></div>
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 fade-in select-none">
-                  Projects
+                  <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
+                        userData?.theme === "dark" 
+                          ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
+                          : "bg-gradient-to-r from-gray-800 to-gray-600"
+                  }`}>
+                    Projects
                   </h1>
                   <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none mt-1">
                   Organize your tasks into projects
@@ -917,26 +882,41 @@ export default function ProjectsPage() {
         {(projectOptions.length === 0 && !pageLoading) && (
           <>
             <div className="w-full h-full flex items-center justify-center py-16 px-4">
-              <div className="flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 bg-white rounded-2xl shadow-sm border border-gray-100 transform transition-all hover:shadow-md">
+              <div className={`flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 ${
+                userData?.theme === "dark" 
+                  ? "bg-foreground-dark border border-gray-800" 
+                  : "bg-white border border-gray-100"
+              } rounded-2xl shadow-sm transform transition-all hover:shadow-md`}>
                 <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="fade-in">
-                  <path d="M12.5 37.5063V23.4438C12.5 21.3718 13.3231 19.3847 14.7882 17.9196C16.2534 16.4544 18.2405 15.6313 20.3125 15.6313H35.1348C36.6773 15.6314 38.1853 16.0881 39.4687 16.9438L44.9062 20.5688C46.1897 21.4246 47.6977 21.8813 49.2402 21.8813H79.6875C81.7595 21.8813 83.7466 22.7044 85.2118 24.1696C86.6769 25.6347 87.5 27.6218 87.5 29.6938V37.5063" stroke="#FEAD03" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M93.7308 44.2578L90.5628 76.5723C90.5628 78.6419 89.7416 80.627 88.2795 82.0917C86.8173 83.5564 84.8337 84.3811 82.764 84.3848H17.2367C15.167 84.3811 13.1834 83.5564 11.7212 82.0917C10.2591 80.627 9.43784 78.6419 9.43785 76.5723L6.26988 44.2578C6.20112 43.3978 6.31118 42.5329 6.5931 41.7175C6.87503 40.9021 7.32272 40.1539 7.90799 39.52C8.49326 38.8861 9.20343 38.3802 9.99379 38.0343C10.7842 37.6883 11.6376 37.5097 12.5003 37.5098H87.5199C88.381 37.5124 89.2323 37.693 90.0203 38.0401C90.8084 38.3873 91.5162 38.8935 92.0993 39.5271C92.6825 40.1607 93.1284 40.908 93.4092 41.7221C93.6899 42.5361 93.7994 43.3994 93.7308 44.2578V44.2578Z" stroke="#FEAD03" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M50 47V75.5" stroke="#FEAD03" stroke-width="7" stroke-linecap="round"/>
-                  <path d="M36 61H64" stroke="#FEAD03" stroke-width="7" stroke-linecap="round"/>
+                  <path d="M12.5 37.5063V23.4438C12.5 21.3718 13.3231 19.3847 14.7882 17.9196C16.2534 16.4544 18.2405 15.6313 20.3125 15.6313H35.1348C36.6773 15.6314 38.1853 16.0881 39.4687 16.9438L44.9062 20.5688C46.1897 21.4246 47.6977 21.8813 49.2402 21.8813H79.6875C81.7595 21.8813 83.7466 22.7044 85.2118 24.1696C86.6769 25.6347 87.5 27.6218 87.5 29.6938V37.5063" stroke="#FEAD03" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M93.7308 44.2578L90.5628 76.5723C90.5628 78.6419 89.7416 80.627 88.2795 82.0917C86.8173 83.5564 84.8337 84.3811 82.764 84.3848H17.2367C15.167 84.3811 13.1834 83.5564 11.7212 82.0917C10.2591 80.627 9.43784 78.6419 9.43785 76.5723L6.26988 44.2578C6.20112 43.3978 6.31118 42.5329 6.5931 41.7175C6.87503 40.9021 7.32272 40.1539 7.90799 39.52C8.49326 38.8861 9.20343 38.3802 9.99379 38.0343C10.7842 37.6883 11.6376 37.5097 12.5003 37.5098H87.5199C88.381 37.5124 89.2323 37.693 90.0203 38.0401C90.8084 38.3873 91.5162 38.8935 92.0993 39.5271C92.6825 40.1607 93.1284 40.908 93.4092 41.7221C93.6899 42.5361 93.7994 43.3994 93.7308 44.2578V44.2578Z" stroke="#FEAD03" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M50 47V75.5" stroke="#FEAD03" strokeWidth="7" strokeLinecap="round"/>
+                  <path d="M36 61H64" stroke="#FEAD03" strokeWidth="7" strokeLinecap="round"/>
                 </svg>
                 <div className="space-y-2">
-                  <h1 className="font-lato text-2xl md:text-3xl text-gray-800 font-bold fade-in-delay-1 bg-gradient-to-r from-primary-default to-yellow-400 bg-clip-text text-transparent">
+                  <h1 className={`font-lato text-2xl md:text-3xl font-bold fade-in-delay-1 bg-gradient-to-r ${
+                    userData?.theme === 'dark' 
+                      ? 'from-amber-400 to-yellow-500' 
+                      : 'from-primary-default to-yellow-400'
+                  } bg-clip-text text-transparent`}>
                     No Projects Yet ✨
                   </h1>
-                  <p className="font-lato text-gray-600 fade-in-delay-2 max-w-md leading-relaxed">
+                  <p className={`font-lato fade-in-delay-2 max-w-md leading-relaxed ${
+                    userData?.theme === "dark" ? "text-gray-300" : "text-gray-600"
+                  }`}>
                     Start organizing your work by creating your first project.
                     <br />
                     Every great achievement starts with a plan!
                   </p>
                 </div>
                 <button
-                  className="px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato bg-gradient-to-r from-primary-default to-yellow-400 rounded-xl 
-                    hover:shadow-lg hover:shadow-primary-default/20 transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5"
+                  className={`px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato rounded-xl 
+                    hover:shadow-lg transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5
+                    ${
+                      userData?.theme === 'dark'
+                        ? 'bg-gradient-to-r from-amber-600 to-yellow-500 hover:shadow-amber-500/20'
+                        : 'bg-gradient-to-r from-primary-default to-yellow-400 hover:shadow-primary-default/20'
+                    }`}
                   onClick={() => {
                     setIsProjectModalOpen({
                       isOpen: true,

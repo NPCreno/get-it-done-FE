@@ -6,9 +6,10 @@ import { DotLottie } from '@lottiefiles/dotlottie-web';
 interface StreakCounterProps {
   streakCount: number;
   header: string;
+  theme?: string;
 }
 
-export default function StreakCounter({ streakCount, header }: StreakCounterProps) {
+export default function StreakCounter({ streakCount, header, theme="light"}: StreakCounterProps) {
     
     const isInactive = streakCount === 0;
     const isActive = streakCount > 0 && streakCount < 6;
@@ -55,11 +56,14 @@ export default function StreakCounter({ streakCount, header }: StreakCounterProp
       }, [streakCount]);
 
     return (
-      <div className={`flex flex-col h-full p-4 text-center bg-white rounded-[10px] shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] ${
-        isOnFirePlus ? 'border border-orange-500 animate-fire-glow' : ''
-      }`}>
+      <div className={`flex flex-col h-full p-4 text-center rounded-[10px] shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] 
+        ${isOnFirePlus ? 'border border-orange-500 animate-fire-glow' : ''}
+        ${theme === "dark" ? "bg-foreground-dark border-gray-800 border" : "bg-foreground-light"}`}
+      >
         <div className="flex w-full items-start">
-        <CardTitle>{header}</CardTitle>
+        <CardTitle className={`text-text ${theme === "dark" ? "text-white" : "text-black"}`}>
+          {header}
+        </CardTitle>
         </div>
         <div className="flex flex-col items-center justify-center h-full">
         <div className="relative mb-4">
@@ -107,16 +111,24 @@ export default function StreakCounter({ streakCount, header }: StreakCounterProp
             </div>
           )}
         </div>
-        <h3 className="text-xl font-bold text-gray-800 mb-2">{streakMessage}</h3>
+        <h3 className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-gray-800"} mb-2 `}>{streakMessage}</h3>
         <p className="text-gray-600 mb-4">{progressMessage}</p>
         {!isInactive && (
           <>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className={`w-full rounded-full h-2.5 ${
+              theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
+              }`}>
               <div 
-                className={`h-2.5 rounded-full ${isOnFire || isOnFirePlus ? 'bg-red-500' : 'bg-orange-400'}`} 
+                className={`h-2.5 rounded-full ${
+                  isOnFire || isOnFirePlus 
+                    ? 'bg-red-500' 
+                    : theme === 'dark' 
+                      ? 'bg-orange-400' 
+                      : 'bg-orange-400'
+                }`} 
                 style={{ width: `${progressWidth}%` }}
               ></div>
-            </div>
+              </div>
             <p className="text-xs text-gray-500 mt-2">
               {isOnFire 
                 ? 'Amazing! Keep the streak going!' 

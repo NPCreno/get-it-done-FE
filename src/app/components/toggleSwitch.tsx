@@ -7,6 +7,7 @@ interface ToggleSwitchProps {
   onLabel?: string;
   offLabel?: string;
   className?: string;
+  theme?: string;
 }
 
 const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
@@ -16,19 +17,27 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   onLabel = "On",
   offLabel = "Off",
   className = "",
+  theme = "light",
 }) => {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <span className="text-sm text-text">{value ? onLabel : offLabel}</span>
+      <span className={`text-sm  ${theme === "dark" ? "text-white" : "text-text"}`}>{value ? onLabel : offLabel}</span>
       <button
         type="button"
         onClick={() => onChange(name, !value)}
         className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${
-          value ? "bg-text" : "bg-gray-300"
+          value 
+            ? theme === 'dark' 
+              ? 'bg-primary-default' 
+              : 'bg-text' 
+            : theme === 'dark' 
+              ? 'bg-gray-600' 
+              : 'bg-gray-300'
         }`}
+        aria-label={value ? onLabel : offLabel}
       >
         <div
-          className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${
+          className={`${theme === 'dark' ? 'bg-gray-200' : 'bg-white'} w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${
             value ? "translate-x-6" : "translate-x-0"
           }`}
         />

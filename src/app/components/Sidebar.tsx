@@ -4,13 +4,17 @@ import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
 
 export default function Sidebar() {
-  const { sidebarWidth, setSidebarWidth, isSidebarOpen, setIsSidebarOpen } = useFormState();
+  const { sidebarWidth, setSidebarWidth, isSidebarOpen, setIsSidebarOpen, userData } = useFormState();
 
   return (
     <>
       {/* Sidebar for large screens */}
       <aside
-        className="flex flex-col h-full py-5 px-[10px] bg-white text-black rounded-[10px] items-start group transition-all duration-300"
+        className={`flex flex-col h-full py-5 px-[10px] rounded-[10px] items-start group transition-all duration-300 border
+        ${userData?.theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"} 
+        ${userData?.theme === "dark" ? "text-white" : "text-black"}
+        ${userData?.theme === "dark" ? "border-gray-800" : ""}`
+      }
         style={{ width: `${sidebarWidth}px` }} // Use global state for width
         onMouseEnter={() => {
           setSidebarWidth(146);

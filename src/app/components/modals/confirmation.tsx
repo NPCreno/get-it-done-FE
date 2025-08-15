@@ -1,3 +1,4 @@
+import { useFormState } from '@/app/context/FormProvider';
 import React, { useEffect, useCallback, useState } from 'react';
 
 interface ConfirmationModalProps {
@@ -22,7 +23,8 @@ export default function ConfirmationModal({
   fullScreen = false,
 }: ConfirmationModalProps) {
   const [isClosing, setIsClosing] = useState(false);
-  
+  const { userData } = useFormState();
+
   const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
@@ -47,7 +49,7 @@ export default function ConfirmationModal({
       <div className={`${fullScreen ? 'absolute inset-0' : 'fixed inset-0 bg-black bg-opacity-40'} flex justify-center items-center z-[100] transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'}`}>
                 <div
-        className={`bg-white ${
+        className={`${userData?.theme === 'dark' ? 'bg-foreground-dark border border-gray-800' : ''} ${
           fullScreen ? 'w-full h-full' : 'w-auto h-auto rounded-[10px] shadow-2xl transform transition-all duration-200'
         } p-5 flex flex-col gap-5 justify-center ${
           isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
@@ -58,13 +60,13 @@ export default function ConfirmationModal({
         }}
       >
         <div className="flex flex-col gap-[10px]">
-            <div className="flex flex-row justify-center items-center text-text text-3xl font-bold font-lato">
+            <div className={`flex flex-row justify-center items-center ${userData?.theme === 'dark' ? 'text-white' : 'text-text'} text-3xl font-bold font-lato`}>
               {title}
             </div>
             <h2 className="text-[#676767] text-sm font-lato text-center">{description}</h2>
         </div>
 
-        <div className="flex justify-end space-x-3">
+        <div className={`flex ${actions.length > 2 ? "flex-col items-center gap-[10px] justify-center" : "flex-row items-center gap-[10px] justify-center"}`}>
           {actions.map((action, index) => (
             <button
               key={index}

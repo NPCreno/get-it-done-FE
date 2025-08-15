@@ -84,7 +84,7 @@ export default function TaskModal({
   isUpdate,
   isLoading,
 }: taskModalProps) {
-  const { setSelectedTaskData } = useFormState();
+  const { setSelectedTaskData, userData } = useFormState();
   const [height, setHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -160,14 +160,14 @@ export default function TaskModal({
       }}
     >
       <div
-        className="modal-popup bg-white w-[550px] rounded-[10px] p-5 shadow-lg overflow-hidden transition-all duration-200 ease-in-out"
+        className={`modal-popup ${userData?.theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'} dark:bg-gray-900 w-[550px] rounded-[10px] p-5 shadow-lg overflow-hidden transition-all duration-200 ease-in-out`}
         onClick={(e) => e.stopPropagation()}
         style={{ height }}
       >
         <div ref={ref} className="h-auto flex flex-col gap-5 ">
           <div className="flex flex-col">
             <div className="flex flex-row justify-between items-center">
-              <h1 className="text-text text-[20px] font-bold font-lato">
+              <h1 className={`${userData?.theme === 'dark' ? 'text-white' : 'text-text'} text-[20px] font-bold font-lato`}>
                 {isUpdate ? "Task" : "Add New Task"}
               </h1>
               <button
