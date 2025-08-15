@@ -339,13 +339,13 @@ export default function ProfileSettingsPage() {
 
                   {/* password input */}
                   <InputBox
-                    label="Username"
+                    label="Password"
                     placeholder="Enter your password"
                     value={{ name: values.password }}
                     onChange={handleChange}
                     type="text"
                     onBlur={handleBlur}
-                    error={errors.fullname}
+                    error={errors.password}
                     disabled={!isEditEnabled}
                     isLabelVisible={true}
                   />

@@ -384,7 +384,7 @@ export function TaskItem({
         <div className="flex flex-col flex-1 min-w-0">
           <div className="flex items-center justify-between w-full">
             <div className="flex flex-col items-start">
-              <span className={`ml-2 flex-1 font-lato text-4 ${task.status === 'Complete' 
+              <span className={`flex-1 font-lato text-4 ${task.status === 'Complete' 
                 ? 'line-through text-start text-gray-400' 
                 : `text-start ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}`}>
                 {task.title}

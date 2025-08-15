@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import InputBox from '../inputBox';
 import { useFormState } from '@/app/context/FormProvider';
 
@@ -64,7 +64,12 @@ export default function ProjectModal({
     }
   };
 
-  window.addEventListener('keydown', handleEscapeKey);
+  useEffect(() => {
+    window.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      window.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [handleEscapeKey]);
   
   return (
     <div
@@ -133,7 +138,7 @@ export default function ProjectModal({
                 customClass="translate-x-[150px] translate-y-[-228px]"
             />
             <InputBox 
-                type="datewithtime"
+                type="date"
                 label="Due Date" 
                 value={{ 
                   name: formik.values.due_date 
@@ -144,7 +149,6 @@ export default function ProjectModal({
                 isLabelVisible={true}
                 placeholder="Select due date (optional)"
                 error={errors.due_date}
-                customClass="translate-x-[-250px] translate-y-[-400px]"
             />
         </div>
         <div className="flex flex-row justify-end gap-4 w-full">

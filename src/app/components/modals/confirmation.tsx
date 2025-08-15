@@ -66,7 +66,7 @@ export default function ConfirmationModal({
             <h2 className="text-[#676767] text-sm font-lato text-center">{description}</h2>
         </div>
 
-        <div className="flex flex-col items-center gap-[10px] justify-center">
+        <div className={`flex ${actions.length > 2 ? "flex-col items-center gap-[10px] justify-center" : "flex-row items-center gap-[10px] justify-center"}`}>
           {actions.map((action, index) => (
             <button
               key={index}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IProject } from '@/app/interface/IProject';
 import { ITask } from '@/app/interface/ITask';
 import { useFormState } from '@/app/context/FormProvider';
@@ -29,7 +29,12 @@ export default function ViewProjectModal({
     }
   };
 
-  window.addEventListener('keydown', handleEscapeKey);
+  useEffect(() => {
+    window.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      window.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [handleEscapeKey]);
 
   const { userData } = useFormState();
   const isDarkMode = userData?.theme === 'dark';

@@ -136,12 +136,6 @@ export default function PomodoroModal({
     toggle();
   }, [toggle]);
 
-  // Clean up any resources when modal is closed
-  useEffect(() => {
-    return () => {
-      // Any cleanup if needed when component unmounts
-    };
-  }, []);
 
   const renderConfirmationModal = useMemo(() => {
     if (!showConfirm || !pendingTimerType) return null;
@@ -178,8 +172,6 @@ export default function PomodoroModal({
           className={`relative ${userData?.theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'} dark:bg-gray-900 w-[500px] max-w-[95vw] rounded-2xl shadow-xl dark:shadow-2xl flex flex-col items-center justify-center p-8 transition-all duration-300 ease-out overflow-hidden border border-gray-200 dark:border-gray-700`}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Subtle gradient accent */}
-          <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-${currentTimer.buttonColor} to-transparent`}></div>
           
           {/* Timer type selector */}
           <div className='w-full max-w-xs mb-8 mx-auto'>
