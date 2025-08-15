@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { IProject } from '@/app/interface/IProject';
 import { ITask } from '@/app/interface/ITask';
 import { useFormState } from '@/app/context/FormProvider';
@@ -23,11 +23,11 @@ export default function ViewProjectModal({
   handleDeleteTask,
 }: ViewProjectModalProps) {
  
-  const handleEscapeKey = (event: KeyboardEvent) => {
+  const handleEscapeKey = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      onClose();
-    }
-  };
+      onClose();  
+    } 
+  }, [onClose]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleEscapeKey);

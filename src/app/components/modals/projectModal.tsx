@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import InputBox from '../inputBox';
 import { useFormState } from '@/app/context/FormProvider';
 
@@ -44,6 +44,22 @@ export default function ProjectModal({
   isEdit,
 }: ProjectModalProps) {
   const { userData } = useFormState();
+  
+  const handleEscapeKey = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      onClose();  
+    } 
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    window.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      window.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [handleEscapeKey, isOpen]);
+  
   if (!isOpen) return null;
   const dropdownOptions = [
     { name: "Lavender", color: "#E6E6FA" },  
@@ -57,19 +73,6 @@ export default function ProjectModal({
     { name: "Coral", color: "#FFB5A7" },     
     { name: "Seafoam", color: "#C3FBD8" },   
   ];
-  
-  const handleEscapeKey = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleEscapeKey);
-    return () => {
-      window.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, [handleEscapeKey]);
   
   return (
     <div
