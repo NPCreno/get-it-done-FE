@@ -1336,7 +1336,6 @@ export default function DashboardPage() {
             {
               label: 'Cancel',
               onClick: () => setShowConfirmation(false),
-              className: 'ml-auto'
             }
           ]}
         />
