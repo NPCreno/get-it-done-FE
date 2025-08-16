@@ -265,11 +265,11 @@ export default function TaskModal({
                 );
               }}
               isLabelVisible={true}
-              placeholder="Select project (optional)"
+              placeholder={`${projectOptions.length === 0 ? "No projects available" : "Select project (optional)"}`}
               dropdownptions={projectOptions}
               error={formik.errors.project}
               labelCustomClass="fade-in-delay-3"
-              disabled={preselectedProject ? true : false}
+              disabled={(preselectedProject || projectOptions.length === 0) ? true : false}
             />
           </div>
 
@@ -285,6 +285,7 @@ export default function TaskModal({
               placeholder="Select status"
               dropdownptions={statusOptions}
               error={formik.errors.status}
+              disabled={!isUpdate}
             />
             <InputBox
               type="datewithtime"
