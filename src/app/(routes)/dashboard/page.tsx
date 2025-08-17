@@ -367,7 +367,7 @@ export default function DashboardPage() {
     try {
       setIsLoading(true);
       if (!userData) {
-        console.error("No User data found");
+        console.log("No User data found");  
         return;
       }
       const payload: UpdateTaskDto = {
