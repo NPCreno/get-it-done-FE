@@ -3,7 +3,7 @@ import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
 
 export default function MobileSidebar() {
-  const { isMobileSidebarOpen, closeMobileSidebar } = useFormState();
+  const { isMobileSidebarOpen, closeMobileSidebar, userData } = useFormState();
 
   // Close on escape key
   useEffect(() => {
@@ -102,7 +102,7 @@ export default function MobileSidebar() {
         aria-hidden={!isMobileSidebarOpen}
       >
         <div 
-          className="h-full flex flex-col py-5 px-4 overflow-y-auto w-full"
+          className={`h-full flex flex-col py-5 px-4 overflow-y-auto w-full ${userData?.theme === 'dark' ? 'bg-background-dark' : 'bg-background-light'}`}
           role="menu"
           aria-label="Main menu"
           aria-orientation="vertical"

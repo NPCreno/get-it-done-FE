@@ -795,11 +795,17 @@ export default function ProjectsPage() {
 
               <div className="flex flex-row gap-[10px] items-end">
                 <button
-                  className="relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
-                  bg-gradient-to-r from-primary-default to-primary-200 shadow-md hover:shadow-lg
-                  transform transition-all duration-300 hover:translate-y-[-1px] active:translate-y-0 active:scale-95 overflow-hidden group
-                  before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary-200 before:to-primary-default
-                  before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300 ml-3"
+                  className={`relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
+                    shadow-md hover:shadow-lg transform transition-all duration-300 hover:translate-y-[-1px] 
+                    active:translate-y-0 active:scale-95 overflow-hidden group
+                    ${userData?.theme === 'dark' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:shadow-amber-500/20' : 'bg-gradient-to-r from-primary-default to-primary-200 hover:shadow-primary-default/20'}
+                    before:absolute before:inset-0 
+                    ${
+                      userData?.theme === 'dark'
+                        ? 'before:bg-gradient-to-r before:from-amber-600 before:to-yellow-400'
+                        : 'before:bg-gradient-to-r before:from-primary-200 before:to-primary-default'
+                    }
+                    before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300`}
                   onClick={() => {
                     setIsProjectModalOpen({
                       isOpen: true,
