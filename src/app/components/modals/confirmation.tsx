@@ -49,7 +49,7 @@ export default function ConfirmationModal({
       <div className={`${fullScreen ? 'absolute inset-0' : 'fixed inset-0 bg-black bg-opacity-40'} flex justify-center items-center z-[100] transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'}`}>
                 <div
-        className={`${userData?.theme === 'dark' ? 'bg-foreground-dark border border-gray-800' : ''} ${
+        className={`${userData?.theme === 'dark' ? 'bg-foreground-dark border border-gray-800' : 'bg-white'} ${
           fullScreen ? 'w-full h-full' : 'w-auto h-auto rounded-[10px] shadow-2xl transform transition-all duration-200'
         } p-5 flex flex-col gap-5 justify-center ${
           isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
