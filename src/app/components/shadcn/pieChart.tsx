@@ -145,12 +145,12 @@ export function ChartPieInteractive({
           >
             <SelectValue placeholder="Select month" />
           </SelectTrigger>
-          <SelectContent align="end" className="rounded-xl">
+          <SelectContent align="end" className={`rounded-xl ${theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'}`}>
             {months.map((month) => (
               <SelectItem
                 key={month.value}
                 value={month.value}
-                className="rounded-lg [&_span]:flex  cursor-pointer"
+                className={`rounded-lg [&_span]:flex cursor-pointer ${theme === 'dark' ? 'text-white' : 'text-text'}`}
               >
                 <div className="flex items-center gap-2 text-xs">
                   <span
