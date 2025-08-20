@@ -43,7 +43,8 @@ export function CustomDropdownMenu({
         <DropdownMenuTrigger asChild>
           <Button
           variant="outline"
-          className={userData?.theme === 'dark' ? 'w-full h-[40px] rounded-[10px] justify-between text-white border border-gray-800' : 'w-full h-[40px] rounded-[10px] justify-between text-text'}
+          className={userData?.theme === 'dark' ? 'w-full h-[40px] rounded-[10px] justify-between text-white border border-gray-800' 
+            : 'w-full h-[40px] rounded-[10px] justify-between text-text border'}
           disabled={disabled}
         >
           <div className={`flex flex-row items-center justify-between w-full ${userData?.theme === 'dark' ? 'bg-foreground-dark' : 'bg-white'}`}>
