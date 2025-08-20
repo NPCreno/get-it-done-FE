@@ -775,7 +775,7 @@ export default function DashboardPage() {
     }, 3000);
   };
 
-  const onDirtyChange = (dirty: boolean) => {
+  const onDirtyChange = () => {
     setShowConfirmation(true);
     setConfirmationState({
       show: true,
