@@ -12,6 +12,7 @@ interface taskModalProps {
   isUpdate?: boolean;
   handleUpdateTask: (values: FormValues) => void;
   isLoading?: boolean;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 interface FormValues {
@@ -83,15 +84,19 @@ export default function TaskModal({
   preselectedProject,
   isUpdate,
   isLoading,
+  onDirtyChange,
 }: taskModalProps) {
   const { setSelectedTaskData, userData } = useFormState();
   const [height, setHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const hasUpdatedValues = Object.values(formik.values).some(value => value !== "");
 
   const handleEscapeKey = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
+    if (event.key === "Escape" && !hasUpdatedValues) {
       clearAllData();
       onClose();
+    } else if(event.key === "Escape" && hasUpdatedValues){
+      onDirtyChange?.(true);
     }
   };
 
@@ -155,8 +160,12 @@ export default function TaskModal({
     <div
       className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
       onClick={() => {
-        clearAllData();
-        onClose();
+        if(!hasUpdatedValues){
+          clearAllData();
+          onClose();
+        }else{
+          onDirtyChange?.(true);
+        }
       }}
     >
       <div
@@ -173,8 +182,12 @@ export default function TaskModal({
               <button
                 className="cursor-pointer"
                 onClick={() => {
-                  clearAllData();
-                  onClose();
+                  if(!hasUpdatedValues){
+                    clearAllData();
+                    onClose();
+                  }else{
+                    onDirtyChange?.(true);
+                  }
                 }}
               >
                 <svg
@@ -421,8 +434,12 @@ export default function TaskModal({
                 className="border border-primary-200 rounded-[5px] flex justify-center items-center text-primary-default 
                 font-lato text-[13px] font-bold p-[10px]"
                 onClick={() => {
-                  clearAllData();
-                  onClose();
+                  if(!hasUpdatedValues){
+                    clearAllData();
+                    onClose();
+                  }else{
+                    onDirtyChange?.(true);
+                  }
                 }}
               >
                 Cancel
