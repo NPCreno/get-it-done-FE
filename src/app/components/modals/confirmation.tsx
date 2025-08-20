@@ -1,14 +1,14 @@
 import { useFormState } from '@/app/context/FormProvider';
 import React, { useEffect, useCallback, useState } from 'react';
 
-interface ConfirmationModalProps {
+export interface ConfirmationModalProps {
   onClose: () => void;
   title: string;
   description: string;
   actions: ActionButton[];
   fullScreen?: boolean;
 }
-interface ActionButton {
+export interface ActionButton {
   label: string;
   onClick: () => void;
   variant?: 'primary' | 'secondary' | 'danger'; // Add more variants as needed

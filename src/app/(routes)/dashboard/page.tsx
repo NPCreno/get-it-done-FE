@@ -40,7 +40,15 @@ import { ITaskFormValues } from "@/app/interface/forms/ITaskFormValues";
 import { ITaskDistribution } from "@/app/interface/ITaskDistribution";
 import { IHeatmapData } from "@/app/interface/IHeatmapData";
 import PomodoroModal from "@/app/components/modals/pomodoro";
-import ConfirmationModal from "@/app/components/modals/confirmation";
+import ConfirmationModal, { ActionButton } from "@/app/components/modals/confirmation";
+
+export interface ConfirmationState {
+  show: boolean;
+  taskIdToDelete?: string | null;
+  title: string;
+  description: string;
+  actions: ActionButton[];
+}
 
 export default function DashboardPage() {
   const { 
@@ -90,6 +98,14 @@ export default function DashboardPage() {
       setShowToast(false);
     }, 400);
   };
+
+  const [confirmationState, setConfirmationState ] = useState<ConfirmationState>({
+    show: false,
+    taskIdToDelete: null,
+    title: "",
+    description: "",
+    actions: [],
+  });
 
   const handleToggleSubtasks = useCallback((taskId: string) => {
     setExpandedTaskIds(prev => {
@@ -493,6 +509,34 @@ export default function DashboardPage() {
     setTaskTemplateIdToDelete(taskTemplate_id);
     setTaskIdToDelete(taskId);
     setShowConfirmation(true);
+    setConfirmationState({
+      show: true,
+      taskIdToDelete: taskId,
+      title: "Delete Recurring Tasks",
+      description: "How would you like to delete these tasks?",
+      actions: [
+        {
+          label: 'Delete This Task Only',
+          onClick: () => {
+            handleDeleteTask(taskIdToDelete);
+            setShowConfirmation(false);
+          },
+          variant: 'primary'
+        },
+        {
+          label: 'Delete All Recurring Tasks',
+          onClick: async () => {
+            handleConfirmDeleteRecurringTasks();
+            setShowConfirmation(false);
+          },
+          variant: 'danger'
+        },
+        {
+          label: 'Cancel',
+          onClick: () => setShowConfirmation(false),
+        }
+      ]
+    });
   };
    
   const handleConfirmDeleteRecurringTasks = async () => {
@@ -729,6 +773,29 @@ export default function DashboardPage() {
       setIsExitingToast(true);
       setTimeout(() => setShowToast(false), 400);
     }, 3000);
+  };
+
+  const onDirtyChange = (dirty: boolean) => {
+    setShowConfirmation(true);
+    setConfirmationState({
+      show: true,
+      title: "You have unsaved changes",
+      description: "Are you sure you want to close?",
+      actions: [
+        {
+          label: 'Discard Changes',
+          onClick: () => {
+            setIsTaskModalOpen(false);
+            setShowConfirmation(false);
+          },
+          variant: 'danger'
+        },
+        {
+          label: 'Cancel',
+          onClick: () => setShowConfirmation(false),
+        }
+      ]
+    });
   };
 
   return (
@@ -1304,6 +1371,7 @@ export default function DashboardPage() {
           isUpdate={isUpdateTask}
           handleUpdateTask={() => handleUpdateTask(values as ITaskFormValues)}
           isLoading={isLoading}
+          onDirtyChange={onDirtyChange}
         />
       )}
 
@@ -1314,30 +1382,9 @@ export default function DashboardPage() {
       {showConfirmation && (
         <ConfirmationModal
           onClose={() => setShowConfirmation(false)}
-          title="Delete Recurring Tasks"
-          description="How would you like to delete these tasks?"
-          actions={[
-            {
-              label: 'Delete This Task Only',
-              onClick: () => {
-                handleDeleteTask(taskIdToDelete);
-                setShowConfirmation(false);
-              },
-              variant: 'primary'
-            },
-            {
-              label: 'Delete All Recurring Tasks',
-              onClick: async () => {
-                handleConfirmDeleteRecurringTasks();
-                setShowConfirmation(false);
-              },
-              variant: 'danger'
-            },
-            {
-              label: 'Cancel',
-              onClick: () => setShowConfirmation(false),
-            }
-          ]}
+          title={confirmationState.title}
+          description={confirmationState.description}
+          actions={confirmationState.actions}
         />
       )}
     </MainLayout>
