@@ -38,8 +38,6 @@ export function Toast({
     }, 300); // Match this with your CSS transition duration
   }, [isExiting, onClose]);
 
-  if (!isVisible) return null;
-
   useEffect(() => {
     if (duration > 0) {
       const timer = setTimeout(() => {
@@ -49,6 +47,8 @@ export function Toast({
       return () => clearTimeout(timer);
     }
   }, [duration, handleClose]);
+
+  if (!isVisible) return null;
 
   return (
     <div
