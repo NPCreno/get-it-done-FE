@@ -12,23 +12,17 @@ import Cookies from 'js-cookie';
 import LoadingPage from "@/app/components/loader";
 import InputBox from "@/app/components/inputBox";
 import { useFormState } from "@/app/context/FormProvider";
-interface profileSettingsFormValues {
-  fullname: string;
-  username: string;
-  password: string;
-  theme: string;
-  enableNotifications: boolean;
-  soundFx: boolean;
-}
+import { profileSettingsFormValues, toasMessage } from "@/app/interface/types";
 
 export default function ProfileSettingsPage() {
   const { userData, setUserData } = useFormState();
   const [isEditEnabled, setIsEditEnabled] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState({
+  const [toastMessage, setToastMessage] = useState<toasMessage>({
     title: "",
     description: "",
     className: "",
+    variant: "default",
   });
   const [isExitingToast, setIsExitingToast] = useState(false);
   const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
@@ -64,12 +58,6 @@ export default function ProfileSettingsPage() {
     },
   });
 
-  useEffect(() => {
-    if (!pageLoading) {
-      setTimeout(() => setShowLoader(false), 500); // Match transition duration
-    }
-  }, [pageLoading]);
-
   const handleSubmitForm = async (values: profileSettingsFormValues) => {
     const validationErrors: FormikErrors<typeof values> = await validateForm();
 
@@ -98,7 +86,7 @@ export default function ProfileSettingsPage() {
         setToastMessage({
           title: "Profile Settings Saved",
           description: "Your preferences have been saved",
-          className: "text-green-600",
+          variant: "success"
         });
 
         setTimeout(() => {
@@ -112,13 +100,13 @@ export default function ProfileSettingsPage() {
         setToastMessage({
           title: "Something Went Wrong",
           description: error.message,
-          className: "text-error-default",
+          variant: "error"
         });
       } else {
         setToastMessage({
           title: "Something Went Wrong",
           description: "An unknown error occurred",
-          className: "text-error-default",
+          variant: "error"
         });
       }
       setShowToast(true);
@@ -198,6 +186,12 @@ export default function ProfileSettingsPage() {
     fetchUser();
   }, [userData, setUserData, isDoneFetchingUser]);
 
+  useEffect(() => {
+    if (!pageLoading) {
+      setTimeout(() => setShowLoader(false), 500); // Match transition duration
+    }
+  }, [pageLoading]);
+
   return (
     <MainLayout>
       {showToast && (
@@ -206,7 +200,7 @@ export default function ProfileSettingsPage() {
             isExitingToast ? "toast-exit" : "toast-enter"
           }`}
         >
-          <Toast {...toastMessage} onClose={handleToastClose} />
+          <Toast {...toastMessage} onClose={handleToastClose} variant={toastMessage.variant} />
         </div>
       )}
       <div className="main flex justify-center w-full">

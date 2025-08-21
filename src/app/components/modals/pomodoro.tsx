@@ -3,46 +3,11 @@ import { useTimer } from '@/hooks/useTimer';
 import type { TimerType } from '@/lib/timerService';
 import ConfirmationModal from './confirmation';
 import { useFormState } from '@/app/context/FormProvider';
+import { TIMER_CONFIG, TimerConfig } from '@/app/interface/types';
 
 interface PomodoroModalProps {
   onClose: () => void;
 }
-
-interface TimerConfig {
-  label: string;
-  time: number;
-  bgGradient: string;
-  buttonColor: string;
-  borderColor: string;
-  textColor: string;
-}
-
-const TIMER_CONFIG: Record<TimerType, TimerConfig> = {
-  pomodoro: {
-    label: 'Focus',
-    time: 25 * 60, // 25 minutes in seconds
-    bgGradient: 'from-white to-gray-100 dark:from-gray-900 dark:to-gray-800',
-    buttonColor: 'bg-primary-default',
-    borderColor: 'border-primary-default/30',
-    textColor: 'text-primary-default dark:text-primary-400'
-  },
-  shortBreak: {
-    label: 'Short Break',
-    time: 5 * 60, // 5 minutes in seconds
-    bgGradient: 'from-white to-gray-100 dark:from-gray-900 dark:to-gray-800',
-    buttonColor: 'bg-blue-500',
-    borderColor: 'border-blue-500/30',
-    textColor: 'text-blue-500 dark:text-blue-400'
-  },
-  longBreak: {
-    label: 'Long Break',
-    time: 15 * 60, // 15 minutes in seconds
-    bgGradient: 'from-white to-gray-100 dark:from-gray-900 dark:to-gray-800',
-    buttonColor: 'bg-emerald-500',
-    borderColor: 'border-emerald-500/30',
-    textColor: 'text-emerald-500 dark:text-emerald-400'
-  }
-} as const;
 
 export default function PomodoroModal({ 
   onClose,
@@ -74,16 +39,7 @@ export default function PomodoroModal({
     (activeTimer in TIMER_CONFIG ? activeTimer : 'pomodoro') as TimerType
   , [activeTimer]);
 
-  useEffect(() => {
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-    
-    window.addEventListener("keydown", handleEscapeKey);
-    return () => window.removeEventListener("keydown", handleEscapeKey);
-  }, [onClose]);
+
 
   const handleTimerChange = useCallback((timerType: TimerType) => {
     // Only change timer type if it's different from current and valid
@@ -161,6 +117,17 @@ export default function PomodoroModal({
     );
   }, [showConfirm, pendingTimerType, handleCancelChange, handleConfirmChange]);
 
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    
+    window.addEventListener("keydown", handleEscapeKey);
+    return () => window.removeEventListener("keydown", handleEscapeKey);
+  }, [onClose]);
+  
   return (
     <div>
       {renderConfirmationModal}

@@ -36,12 +36,7 @@ import ProjectModal from "@/app/components/modals/projectModal";
 import { IProjectResponse } from "@/app/interface/responses/IProjectResponse";
 import { IUpdateProjectResponse } from "@/app/interface/responses/IUpdateProjectResponse";
 import { UpdateProjectDto } from "@/app/interface/dto/update-project-dto";
-
-interface ProjectModalState {
-  isOpen: boolean;
-  projectId: string | undefined;
-  isEdit: boolean;
-}
+import { ProjectModalState, toasMessage } from "@/app/interface/types";
 
 export default function ProjectsPage() {
   const { selectedTaskData, userData } = useFormState();
@@ -54,10 +49,10 @@ export default function ProjectsPage() {
   const [isViewProjectModalOpen, setIsViewProjectModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState({
+  const [toastMessage, setToastMessage] = useState<toasMessage>({
     title: "",
     description: "",
-    className: "",
+    variant: "default"
   });
   const [isExitingToast, setIsExitingToast] = useState(false);
   const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
@@ -159,7 +154,7 @@ export default function ProjectsPage() {
         setToastMessage({
           title: "Project Created",
           description: "Your new project has been created successfully",
-          className: "text-green-600",
+          variant: "success"
         });
 
         setShowToast(true);
@@ -178,13 +173,13 @@ export default function ProjectsPage() {
         setToastMessage({
           title: "Something Went Wrong",
           description: error.message,
-          className: "text-error-default",
+          variant: "error"
         });
       } else {
         setToastMessage({
           title: "Something Went Wrong",
           description: "An unknown error occurred",
-          className: "text-error-default",
+          variant: "error"
         });
       }
       setShowToast(true);
@@ -205,9 +200,7 @@ export default function ProjectsPage() {
         console.error("No User data found");
         return;
       }
-      const response: IUpdateProjectResponse = await updateProject(
-        values as UpdateProjectDto
-      );
+      const response: IUpdateProjectResponse = await updateProject(values as UpdateProjectDto);
       if (response.status === "success") {
         setIsLoading(false);
         setRefreshPage(!refreshPage)
@@ -219,7 +212,7 @@ export default function ProjectsPage() {
         setToastMessage({
           title: "Project Updated",
           description: "Your project has been updated successfully",
-          className: "text-green-600",
+          variant: "success"
         });
 
         setShowToast(true);
@@ -238,13 +231,13 @@ export default function ProjectsPage() {
         setToastMessage({
           title: "Something Went Wrong",
           description: error.message,
-          className: "text-error-default",
+          variant: "error"
         });
       } else {
         setToastMessage({
           title: "Something Went Wrong",
           description: "An unknown error occurred",
-          className: "text-error-default",
+          variant: "error"
         });
       }
       setShowToast(true);
@@ -258,21 +251,6 @@ export default function ProjectsPage() {
     }
   };
 
-  useEffect(() => {
-    if (userData) {
-      const fetchProjects = async () => {
-        const projects = await getProjectsForUser(userData.user_id);
-        if (projects?.status === "success") {
-          setProjectData(projects.data);
-          return;
-        } else {
-          setProjectData([]);
-        }
-      };
-      fetchProjects();
-    }
-  }, [userData, isProjectModalOpen, isTaskModalOpen, refreshPage]);
-
   const clearValueAndErrors = () => {
     setErrors({});
     setFieldValue("title", "");
@@ -282,39 +260,6 @@ export default function ProjectsPage() {
     setFieldValue("color", "");
     
   };
-
-  useEffect(() => {
-    const fetchTasksByProj = async () => {
-      if (selectedProject) {
-        try {
-          const startDate = new Date().toISOString();
-          const endDate = new Date(
-            new Date().setDate(new Date().getDate() + 1)
-          ).toISOString(); //tomorrow
-          const tasks = await getTasksByProject(
-            selectedProject?.project_id ?? "",
-            startDate,
-            endDate
-          );
-          if (tasks) {
-            setTasks(tasks);
-          } else {
-            setTasks([]);
-          }
-        } catch (error) {
-          setTasks([]);
-          console.error("Failed to fetch tasks by project:", error);
-        }
-      }
-    };
-    fetchTasksByProj();
-  }, [selectedProject, updateTasksData]);
-
-  useEffect(() => {
-    if (!isTaskModalOpen && !isViewProjectModalOpen) {
-      setSelectedProject(null);
-    }
-  }, [isViewProjectModalOpen, isTaskModalOpen]);
 
   const handleCreateTask = async (values: IProjectOrTaskFormValues) => {
     const validationErrors: FormikErrors<typeof values> = await validateForm();
@@ -361,9 +306,8 @@ export default function ProjectsPage() {
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Task Created",
-          description:
-            response.message || "Your new task has been created successfully",
-          className: "text-green-600",
+          description: response.message || "Your new task has been created successfully",
+          variant: "success"
         });
 
         setShowToast(true);
@@ -381,7 +325,7 @@ export default function ProjectsPage() {
         setToastMessage({
           title: response.message,
           description: response?.error || "Something Went Wrong",
-          className: "text-error-default",
+          variant: "error"
         });
 
         setShowToast(true);
@@ -399,13 +343,13 @@ export default function ProjectsPage() {
         setToastMessage({
           title: "Something Went Wrong",
           description: error.message,
-          className: "text-error-default",
+          variant: "error"
         });
       } else {
         setToastMessage({
           title: "Something Went Wrong",
           description: "An unknown error occurred",
-          className: "text-error-default",
+          variant: "error"
         });
       }
       setShowToast(true);
@@ -444,7 +388,7 @@ export default function ProjectsPage() {
           title: "Task Created",
           description:
             response.message || "Your new task has been created successfully",
-          className: "text-green-600",
+          variant: "success"
         });
 
         setShowToast(true);
@@ -463,7 +407,7 @@ export default function ProjectsPage() {
         setToastMessage({
           title: response.message,
           description: response?.error || "Something Went Wrong",
-          className: "text-error-default",
+          variant: "error"
         });
 
         setShowToast(true);
@@ -481,13 +425,13 @@ export default function ProjectsPage() {
         setToastMessage({
           title: "Something Went Wrong",
           description: error.message,
-          className: "text-error-default",
+          variant: "error"
         });
       } else {
         setToastMessage({
           title: "Something Went Wrong",
           description: "An unknown error occurred",
-          className: "text-error-default",
+          variant: "error"
         });
       }
       setShowToast(true);
@@ -510,9 +454,8 @@ export default function ProjectsPage() {
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Task Deleted",
-          description:
-            response.message || "Your task has been deleted successfully",
-          className: "text-green-600",
+          description: response.message || "Your task has been deleted successfully",
+          variant: "error"
         });
 
         setShowToast(true);
@@ -530,7 +473,7 @@ export default function ProjectsPage() {
         setToastMessage({
           title: response.message,
           description: response?.error || "Something Went Wrong",
-          className: "text-error-default",
+          variant: "error"
         });
 
         setShowToast(true);
@@ -548,13 +491,13 @@ export default function ProjectsPage() {
         setToastMessage({
           title: "Something Went Wrong",
           description: error.message,
-          className: "text-error-default",
+          variant: "error"
         });
       } else {
         setToastMessage({
           title: "Something Went Wrong",
           description: "An unknown error occurred",
-          className: "text-error-default",
+          variant: "error"
         });
       }
       setShowToast(true);
@@ -581,6 +524,54 @@ export default function ProjectsPage() {
       return;
     }
   }, [selectedTaskData, setFieldValue]);
+  
+  useEffect(() => {
+    const fetchTasksByProj = async () => {
+      if (selectedProject) {
+        try {
+          const startDate = new Date().toISOString();
+          const endDate = new Date(
+            new Date().setDate(new Date().getDate() + 1)
+          ).toISOString(); //tomorrow
+          const tasks = await getTasksByProject(
+            selectedProject?.project_id ?? "",
+            startDate,
+            endDate
+          );
+          if (tasks) {
+            setTasks(tasks);
+          } else {
+            setTasks([]);
+          }
+        } catch (error) {
+          setTasks([]);
+          console.error("Failed to fetch tasks by project:", error);
+        }
+      }
+    };
+    fetchTasksByProj();
+  }, [selectedProject, updateTasksData]);
+
+  useEffect(() => {
+    if (!isTaskModalOpen && !isViewProjectModalOpen) {
+      setSelectedProject(null);
+    }
+  }, [isViewProjectModalOpen, isTaskModalOpen]);
+
+  useEffect(() => {
+    if (userData) {
+      const fetchProjects = async () => {
+        const projects = await getProjectsForUser(userData.user_id);
+        if (projects?.status === "success") {
+          setProjectData(projects.data);
+          return;
+        } else {
+          setProjectData([]);
+        }
+      };
+      fetchProjects();
+    }
+  }, [userData, isProjectModalOpen, isTaskModalOpen, refreshPage]);
 
   const handleTaskStatus = async (task: ITask) => {
     const mappedTask: IProjectOrTaskFormValues = {
@@ -691,9 +682,8 @@ export default function ProjectsPage() {
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Project Deleted",
-          description:
-            response.message || "Your project has been deleted successfully",
-          className: "text-green-600",
+          description: response.message || "Your project has been deleted successfully",
+          variant: "success"
         });
 
         setShowToast(true);
@@ -712,7 +702,7 @@ export default function ProjectsPage() {
         setToastMessage({
           title: response.message,
           description: response?.error || "Something Went Wrong",
-          className: "text-error-default",
+          variant: "error"
         });
 
         setShowToast(true);
@@ -730,13 +720,13 @@ export default function ProjectsPage() {
         setToastMessage({
           title: "Something Went Wrong",
           description: error.message,
-          className: "text-error-default",
+          variant: "error"
         });
       } else {
         setToastMessage({
           title: "Something Went Wrong",
           description: "An unknown error occurred",
-          className: "text-error-default",
+          variant: "error"
         });
       }
       setShowToast(true);
@@ -758,7 +748,7 @@ export default function ProjectsPage() {
             isExitingToast ? "toast-exit" : "toast-enter"
           }`}
         >
-          <Toast {...toastMessage} onClose={handleToastClose} />
+          <Toast {...toastMessage} onClose={handleToastClose} variant={toastMessage.variant}/>
         </div>
       )}
       <div className="main flex justify-center h-full w-full">

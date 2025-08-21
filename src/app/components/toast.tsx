@@ -1,34 +1,17 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-
-type ToastVariant = 'default' | 'success' | 'error' | 'warning' | 'info';
+import { ToastVariant, variantStyles, variantTextColors } from "../interface/types";
 
 interface ToastProps {
   title: string;
   description: string;
   onClose?: () => void;
   className?: string;
-  variant?: ToastVariant;
+  variant: ToastVariant;
   duration?: number;
   showCloseButton?: boolean;
   icon?: React.ReactNode; 
 }
-
-const variantStyles: Record<ToastVariant, string> = {
-  default: 'bg-white border-[#CCCCCC]',
-  success: 'bg-green-50 border-green-200',
-  error: 'bg-red-50 border-red-200',
-  warning: 'bg-amber-50 border-amber-200',
-  info: 'bg-blue-50 border-blue-200',
-};
-
-const variantTextColors: Record<ToastVariant, string> = {
-  default: 'text-text',
-  success: 'text-green-700',
-  error: 'text-red-700',
-  warning: 'text-amber-700',
-  info: 'text-blue-700',
-};
 
 export function Toast({
   title,
@@ -55,6 +38,8 @@ export function Toast({
     }, 300); // Match this with your CSS transition duration
   }, [isExiting, onClose]);
 
+  if (!isVisible) return null;
+
   useEffect(() => {
     if (duration > 0) {
       const timer = setTimeout(() => {
@@ -64,8 +49,6 @@ export function Toast({
       return () => clearTimeout(timer);
     }
   }, [duration, handleClose]);
-
-  if (!isVisible) return null;
 
   return (
     <div
@@ -118,17 +101,3 @@ export function Toast({
     </div>
   );
 }
-
-export const SuccessToast = (props: Omit<ToastProps, 'variant'>) => (
-  <Toast {...props} variant="success" />
-);
-export const ErrorToast = (props: Omit<ToastProps, 'variant'>) => (
-  <Toast {...props} variant="error" />
-);
-
-export const WarningToast = (props: Omit<ToastProps, 'variant'>) => (
-  <Toast {...props} variant="warning" />
-);
-export const InfoToast = (props: Omit<ToastProps, 'variant'>) => (
-  <Toast {...props} variant="info" />
-);

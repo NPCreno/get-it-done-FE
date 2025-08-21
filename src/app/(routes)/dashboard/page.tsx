@@ -40,15 +40,8 @@ import { ITaskFormValues } from "@/app/interface/forms/ITaskFormValues";
 import { ITaskDistribution } from "@/app/interface/ITaskDistribution";
 import { IHeatmapData } from "@/app/interface/IHeatmapData";
 import PomodoroModal from "@/app/components/modals/pomodoro";
-import ConfirmationModal, { ActionButton } from "@/app/components/modals/confirmation";
-
-export interface ConfirmationState {
-  show: boolean;
-  taskIdToDelete?: string | null;
-  title: string;
-  description: string;
-  actions: ActionButton[];
-}
+import ConfirmationModal from "@/app/components/modals/confirmation";
+import { ConfirmationState, toasMessage } from "@/app/interface/types";
 
 export default function DashboardPage() {
   const { 
@@ -64,18 +57,16 @@ export default function DashboardPage() {
   const [projectOptions, setProjectOptions] = useState<IProject[]>([]);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  // Toast
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState({
+  const [toastMessage, setToastMessage] = useState<toasMessage>({
     title: "",
     description: "",
     className: "",
+    variant: "default",
   });
   const [isExitingToast, setIsExitingToast] = useState(false);
   const [tasks, setTasks] = useState<ITask[]>([]);
-  const [dashboardData, setDashboardData] = useState<
-    IDashboardData | undefined
-  >();
+  const [dashboardData, setDashboardData] = useState<IDashboardData | undefined>();
   const [isUpdateTask, setIsUpdateTask] = useState(false);
   const [updateTaskDashboard, setUpdateTaskDashboard] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -92,6 +83,7 @@ export default function DashboardPage() {
   const [taskIdToDelete, setTaskIdToDelete] = useState<string>("");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [expandedTaskIds, setExpandedTaskIds] = useState<Set<string>>(new Set());
+
   const handleToastClose = () => {
     setIsExitingToast(true);
     setTimeout(() => {
@@ -204,9 +196,8 @@ export default function DashboardPage() {
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Task Created",
-          description:
-            response.message || "Your new task has been created successfully",
-          className: "text-green-600",
+          description: response.message || "Your new task has been created successfully",
+          variant: "success"
         });
 
         setShowToast(true);
@@ -225,13 +216,13 @@ export default function DashboardPage() {
         setToastMessage({
           title: "Something Went Wrong",
           description: error.message,
-          className: "text-error-default",
+          variant: "error",
         });
       } else {
         setToastMessage({
           title: "Something Went Wrong",
           description: "An unknown error occurred",
-          className: "text-error-default",
+          variant: "error",
         });
       }
       setShowToast(true);
@@ -243,6 +234,419 @@ export default function DashboardPage() {
         }, 400); // Must match the toastOut animation duration
       }, 10000); // Toast display duration
     }
+  };
+
+  const handleUpdateTask = async (values: ITaskFormValues) => {
+    const validationErrors: FormikErrors<typeof values> = await validateForm();
+    if (Object.keys(validationErrors).length === 0) {
+      await updateTask(values);
+    }
+    setSubmitting(false);
+  };
+
+  const updateTask = async (values: ITaskFormValues) => {
+    try {
+      setIsLoading(true);
+      if (!userData) {
+        console.log("No User data found");  
+        return;
+      }
+      const payload: UpdateTaskDto = {
+        title: values.title,
+        description: values.description,
+        due_date: values.due_date || undefined,
+        priority: values.priority || undefined,
+        status: values.status || undefined,
+        task_id: selectedTaskData ? selectedTaskData.task_id : values.task_id,
+      };
+      const response: ITaskResponse = await updateTaskApi(payload);
+      if (response.status === "success") {
+        setIsLoading(false);
+        setUpdateTaskDashboard(!updateTaskDashboard);
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: "Task Updated",
+          description:
+            response.message || "Your task has been updated successfully",
+          variant: "success",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      } else {
+        setIsLoading(false);
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: response.message,
+          description: response?.error || "Something Went Wrong",
+          variant: "error",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+    } catch (error) {
+      setIsLoading(false);
+      if (error instanceof Error) {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: error.message,
+          variant: "error",
+        });
+      } else {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: "An unknown error occurred",
+          variant: "error",
+        });
+      }
+      setShowToast(true);
+      setIsExitingToast(false);
+      setTimeout(() => {
+        setIsExitingToast(true); // Start exit animation
+        setTimeout(() => {
+          setShowToast(false); // Remove after animation completes
+        }, 400); // Must match the toastOut animation duration
+      }, 10000); // Toast display duration
+    }
+  };
+
+  const clearValueAndErrors = () => {
+    setFieldValue("title", "");
+    setFieldValue("description", "");
+    setFieldValue("priority", "");
+    setFieldValue("project", "");
+    setFieldValue("status", "");
+    setFieldValue("due_date", null);
+    setFieldValue("isRecurring", false);
+    setFieldValue("repeat_every", "");
+    setFieldValue("repeat_days", []);
+    setFieldValue("start_date", null);
+    setFieldValue("end_date", null);
+    setFieldError("title", "");
+    setFieldError("description", "");
+    setFieldError("priority", "");
+    setFieldError("project", "");
+    setFieldError("status", "");
+    setFieldError("due_date", "");
+  };
+
+
+  const handleDeleteTask = async (taskId: string) => {
+    await deleteTask(taskId);
+  };
+
+  const handleDeleteSubTask = async (taskId: string) => {
+    await deleteSubTask(taskId);
+  };
+
+  const handleDeleteRecurringTasks = (taskTemplate_id: string, taskId: string) => {
+    setTaskTemplateIdToDelete(taskTemplate_id);
+    setTaskIdToDelete(taskId);
+    setShowConfirmation(true);
+    setConfirmationState({
+      show: true,
+      taskIdToDelete: taskId,
+      title: "Delete Recurring Tasks",
+      description: "How would you like to delete these tasks?",
+      actions: [
+        {
+          label: 'Delete This Task Only',
+          onClick: () => {
+            handleDeleteTask(taskIdToDelete);
+            setShowConfirmation(false);
+          },
+          variant: 'primary'
+        },
+        {
+          label: 'Delete All Recurring Tasks',
+          onClick: async () => {
+            handleConfirmDeleteRecurringTasks();
+            setShowConfirmation(false);
+          },
+          variant: 'danger'
+        },
+        {
+          label: 'Cancel',
+          onClick: () => setShowConfirmation(false),
+        }
+      ]
+    });
+  };
+   
+  const handleConfirmDeleteRecurringTasks = async () => {
+    // after confirming to delete
+    if (taskTemplateIdToDelete) {
+      try {
+        await deleteRecurringTasksApi(taskTemplateIdToDelete);
+        // Optionally refresh tasks or show success message
+        setToastMessage({
+          title: "Success",
+          description: "Recurring tasks deleted successfully",
+          variant: "success",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      } catch (error) {
+        console.error('Failed to delete recurring tasks:', error);
+        setToastMessage({
+          title: "Error",
+          description: "Failed to delete recurring tasks",
+          variant: "error",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+      setShowConfirmation(false);
+      setTaskTemplateIdToDelete("");
+    }
+  };
+
+  const deleteTask = async (taskId: string) => {
+    try {
+      const response: ITaskResponse = await deleteTaskApi(taskId);
+      if (response.status === "success") {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: "Task Deleted",
+          description:
+            response.message || "Your task has been deleted successfully",
+          variant: "success",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      } else {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: response.message,
+          description: response?.error || "Something Went Wrong",
+          variant: "error",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: error.message,
+          variant: "error",
+        });
+      } else {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: "An unknown error occurred",
+          variant: "error",
+        });
+      }
+      setShowToast(true);
+      setIsExitingToast(false);
+      setTimeout(() => {
+        setIsExitingToast(true); // Start exit animation
+        setTimeout(() => {
+          setShowToast(false); // Remove after animation completes
+        }, 400); // Must match the toastOut animation duration
+      }, 10000); // Toast display duration
+    }
+  };
+
+  const deleteSubTask = async (taskSubInstance_id: string) => {
+    try {
+      const response: ITaskResponse = await deleteSubTaskApi(taskSubInstance_id);
+      if (response.status === "success") {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: "Subtask Deleted",
+          description:
+            response.message || "Your subtask has been deleted successfully",
+          variant: "success",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      } else {
+        clearValueAndErrors();
+        setIsTaskModalOpen(false);
+        setToastMessage({
+          title: response.message,
+          description: response?.error || "Something Went Wrong",
+          variant: "error",
+        });
+
+        setShowToast(true);
+        setIsExitingToast(false);
+
+        setTimeout(() => {
+          setIsExitingToast(true); // Start exit animation
+          setTimeout(() => {
+            setShowToast(false); // Remove after animation completes
+          }, 400); // Must match the toastOut animation duration
+        }, 10000); // Toast display duration
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: error.message,
+          variant: "error",
+        });
+      } else {
+        setToastMessage({
+          title: "Something Went Wrong",
+          description: "An unknown error occurred",
+          variant: "error",
+        });
+      }
+      setShowToast(true);
+      setIsExitingToast(false);
+      setTimeout(() => {
+        setIsExitingToast(true); // Start exit animation
+        setTimeout(() => {
+          setShowToast(false); // Remove after animation completes
+        }, 400); // Must match the toastOut animation duration
+      }, 10000); // Toast display duration
+    }
+  };
+
+  const handleTaskUpdateStatus = (message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
+    // For backward compatibility, we'll use the message to determine the new status
+    const newStatus = message.toLowerCase().includes('completed') ? 'Complete' : 'Pending';
+    
+    // Optimistically update the task status in the local state
+    setTasks(currentTasks => 
+      currentTasks.map(task => 
+        task.task_id === task.task_id 
+          ? { ...task, status: newStatus } 
+          : task
+      )
+    );
+    
+    // Update dashboard data optimistically
+    if (dashboardData) {
+      setDashboardData(prev => {
+        if (!prev) return prev;
+        const newData = { ...prev };
+        
+        // Decrease the count of the old status
+        if (task.status === 'Complete') {
+          newData.complete_tasks = Math.max(0, newData.complete_tasks - 1);
+        } else {
+          newData.pending_tasks = Math.max(0, newData.pending_tasks - 1);
+        }
+        
+        // Increase the count of the new status
+        if (newStatus === 'Complete') {
+          newData.complete_tasks += 1;
+        } else {
+          newData.pending_tasks += 1;
+        }
+        
+        return newData;
+      });
+    }
+
+    // Show toast notification with the provided type
+    setToastMessage({
+      title: `Task ${newStatus.toLowerCase()}`,
+      description: message,
+      className: type === 'success' 
+        ? 'text-success-default' 
+        : type === 'error' 
+          ? 'text-error-default'
+          : type === 'warning'
+            ? 'text-warning-default'
+            : 'text-accent-default',
+      variant: type,
+    });
+    setShowToast(true);
+    setIsExitingToast(false);
+    
+    // Auto-hide toast after delay
+    setTimeout(() => {
+      setIsExitingToast(true);
+      setTimeout(() => setShowToast(false), 400);
+    }, 3000);
+  };
+
+  const onDirtyChange = () => {
+    setShowConfirmation(true);
+    setConfirmationState({
+      show: true,
+      title: "You have unsaved changes",
+      description: "Are you sure you want to close?",
+      actions: [
+        {
+          label: 'Discard Changes',
+          onClick: () => {
+            setIsTaskModalOpen(false);
+            setShowConfirmation(false);
+          },
+          variant: 'danger'
+        },
+        {
+          label: 'Cancel',
+          onClick: () => setShowConfirmation(false),
+        }
+      ]
+    });
   };
 
   useEffect(() => {
@@ -346,7 +750,7 @@ export default function DashboardPage() {
         setToastMessage({
           title: 'Error',
           description: 'Failed to load dashboard data. Please try again later.',
-          className: 'bg-red-500',
+          variant: "error",
         });
         setShowToast(true);
       } finally {
@@ -371,97 +775,6 @@ export default function DashboardPage() {
     }
   }, [isTaskModalOpen, isUpdateTask, initialValues, resetForm]);
 
-  const handleUpdateTask = async (values: ITaskFormValues) => {
-    const validationErrors: FormikErrors<typeof values> = await validateForm();
-    if (Object.keys(validationErrors).length === 0) {
-      await updateTask(values);
-    }
-    setSubmitting(false);
-  };
-
-  const updateTask = async (values: ITaskFormValues) => {
-    try {
-      setIsLoading(true);
-      if (!userData) {
-        console.log("No User data found");  
-        return;
-      }
-      const payload: UpdateTaskDto = {
-        title: values.title,
-        description: values.description,
-        due_date: values.due_date || undefined,
-        priority: values.priority || undefined,
-        status: values.status || undefined,
-        task_id: selectedTaskData ? selectedTaskData.task_id : values.task_id,
-      };
-      const response: ITaskResponse = await updateTaskApi(payload);
-      if (response.status === "success") {
-        setIsLoading(false);
-        setUpdateTaskDashboard(!updateTaskDashboard);
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        setToastMessage({
-          title: "Task Updated",
-          description:
-            response.message || "Your task has been updated successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      } else {
-        setIsLoading(false);
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        setToastMessage({
-          title: response.message,
-          description: response?.error || "Something Went Wrong",
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      }
-    } catch (error) {
-      setIsLoading(false);
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
-    }
-  };
-
   useEffect(() => {
     setFieldValue("title", selectedTaskData?.title || "");
     setFieldValue("description", selectedTaskData?.description || "");
@@ -471,332 +784,11 @@ export default function DashboardPage() {
     setFieldValue("isRecurring", false);
   }, [selectedTaskData, setFieldValue]);
 
-  const clearValueAndErrors = () => {
-    setFieldValue("title", "");
-    setFieldValue("description", "");
-    setFieldValue("priority", "");
-    setFieldValue("project", "");
-    setFieldValue("status", "");
-    setFieldValue("due_date", null);
-    setFieldValue("isRecurring", false);
-    setFieldValue("repeat_every", "");
-    setFieldValue("repeat_days", []);
-    setFieldValue("start_date", null);
-    setFieldValue("end_date", null);
-    setFieldError("title", "");
-    setFieldError("description", "");
-    setFieldError("priority", "");
-    setFieldError("project", "");
-    setFieldError("status", "");
-    setFieldError("due_date", "");
-  };
-
   useEffect(() => {
     if (!pageLoading) {
       setTimeout(() => setShowLoader(false), 500); // Match transition duration
     }
   }, [pageLoading]);
-
-  const handleDeleteTask = async (taskId: string) => {
-    await deleteTask(taskId);
-  };
-
-  const handleDeleteSubTask = async (taskId: string) => {
-    await deleteSubTask(taskId);
-  };
-
-  const handleDeleteRecurringTasks = (taskTemplate_id: string, taskId: string) => {
-    setTaskTemplateIdToDelete(taskTemplate_id);
-    setTaskIdToDelete(taskId);
-    setShowConfirmation(true);
-    setConfirmationState({
-      show: true,
-      taskIdToDelete: taskId,
-      title: "Delete Recurring Tasks",
-      description: "How would you like to delete these tasks?",
-      actions: [
-        {
-          label: 'Delete This Task Only',
-          onClick: () => {
-            handleDeleteTask(taskIdToDelete);
-            setShowConfirmation(false);
-          },
-          variant: 'primary'
-        },
-        {
-          label: 'Delete All Recurring Tasks',
-          onClick: async () => {
-            handleConfirmDeleteRecurringTasks();
-            setShowConfirmation(false);
-          },
-          variant: 'danger'
-        },
-        {
-          label: 'Cancel',
-          onClick: () => setShowConfirmation(false),
-        }
-      ]
-    });
-  };
-   
-  const handleConfirmDeleteRecurringTasks = async () => {
-    // after confirming to delete
-    if (taskTemplateIdToDelete) {
-      try {
-        await deleteRecurringTasksApi(taskTemplateIdToDelete);
-        // Optionally refresh tasks or show success message
-        setToastMessage({
-          title: "Success",
-          description: "Recurring tasks deleted successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      } catch (error) {
-        console.error('Failed to delete recurring tasks:', error);
-        setToastMessage({
-          title: "Error",
-          description: "Failed to delete recurring tasks",
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      }
-      setShowConfirmation(false);
-      setTaskTemplateIdToDelete("");
-    }
-  };
-
-  const deleteTask = async (taskId: string) => {
-    try {
-      const response: ITaskResponse = await deleteTaskApi(taskId);
-      if (response.status === "success") {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        setToastMessage({
-          title: "Task Deleted",
-          description:
-            response.message || "Your task has been deleted successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      } else {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        setToastMessage({
-          title: response.message,
-          description: response?.error || "Something Went Wrong",
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
-    }
-  };
-
-  const deleteSubTask = async (taskSubInstance_id: string) => {
-    try {
-      const response: ITaskResponse = await deleteSubTaskApi(taskSubInstance_id);
-      if (response.status === "success") {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        setToastMessage({
-          title: "Subtask Deleted",
-          description:
-            response.message || "Your subtask has been deleted successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      } else {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        setToastMessage({
-          title: response.message,
-          description: response?.error || "Something Went Wrong",
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
-    }
-  };
-
-  const handleTaskUpdateStatus = (message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
-    // For backward compatibility, we'll use the message to determine the new status
-    // since the type parameter is used for the toast style
-    const newStatus = message.toLowerCase().includes('completed') ? 'Complete' : 'Pending';
-    
-    // Optimistically update the task status in the local state
-    setTasks(currentTasks => 
-      currentTasks.map(t => 
-        t.task_id === task.task_id 
-          ? { ...t, status: newStatus } 
-          : t
-      )
-    );
-    
-    // Update dashboard data optimistically
-    if (dashboardData) {
-      setDashboardData(prev => {
-        if (!prev) return prev;
-        const newData = { ...prev };
-        
-        // Decrease the count of the old status
-        if (task.status === 'Complete') {
-          newData.complete_tasks = Math.max(0, newData.complete_tasks - 1);
-        } else {
-          newData.pending_tasks = Math.max(0, newData.pending_tasks - 1);
-        }
-        
-        // Increase the count of the new status
-        if (newStatus === 'Complete') {
-          newData.complete_tasks += 1;
-        } else {
-          newData.pending_tasks += 1;
-        }
-        
-        return newData;
-      });
-    }
-
-    // Show toast notification with the provided type
-    setToastMessage({
-      title: `Task ${newStatus.toLowerCase()}`,
-      description: message,
-      className: type === 'success' 
-        ? 'text-success-default' 
-        : type === 'error' 
-          ? 'text-error-default'
-          : type === 'warning'
-            ? 'text-warning-default'
-            : 'text-accent-default',
-    });
-    setShowToast(true);
-    setIsExitingToast(false);
-    
-    // Auto-hide toast after delay
-    setTimeout(() => {
-      setIsExitingToast(true);
-      setTimeout(() => setShowToast(false), 400);
-    }, 3000);
-  };
-
-  const onDirtyChange = () => {
-    setShowConfirmation(true);
-    setConfirmationState({
-      show: true,
-      title: "You have unsaved changes",
-      description: "Are you sure you want to close?",
-      actions: [
-        {
-          label: 'Discard Changes',
-          onClick: () => {
-            setIsTaskModalOpen(false);
-            setShowConfirmation(false);
-          },
-          variant: 'danger'
-        },
-        {
-          label: 'Cancel',
-          onClick: () => setShowConfirmation(false),
-        }
-      ]
-    });
-  };
 
   return (
     <MainLayout>
@@ -806,7 +798,7 @@ export default function DashboardPage() {
             isExitingToast ? "toast-exit" : "toast-enter"
           }`}
         >
-          <Toast {...toastMessage} onClose={handleToastClose} />
+          <Toast {...toastMessage} onClose={handleToastClose} variant={toastMessage.variant} />
         </div>
       )}
       <div className="main flex justify-center w-full h-full">
