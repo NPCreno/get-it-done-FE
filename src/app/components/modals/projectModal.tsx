@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import InputBox from '../inputBox';
-import { useFormState } from '@/app/context/FormProvider';
+import { useFormStore } from '@/app/store/useFormStore';
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -43,7 +43,7 @@ export default function ProjectModal({
   submitForm,
   isEdit,
 }: ProjectModalProps) {
-  const { userData } = useFormState();
+  const { userData } = useFormStore();
   
   const handleEscapeKey = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape') {

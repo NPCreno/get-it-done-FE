@@ -3,7 +3,7 @@
 import * as React from "react"
 import { format } from "date-fns"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/app/utils/utils"
 import { Button } from "@/app/components/shadcn/button"
 import { Calendar } from "@/app/components/shadcn/calendar"
 import {
@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/app/components/shadcn/popover"
-import { useFormState } from "../context/FormProvider"
+import { useFormStore } from "../store/useFormStore"
 
 interface DatePickerProps {
   date?: Date
@@ -22,7 +22,7 @@ interface DatePickerProps {
 
 export function DatePicker({ date, setDate, customClass, placeholder }: DatePickerProps) {
   const [open, setOpen] = React.useState(false)
-  const { userData } = useFormState();
+  const { userData } = useFormStore();
   const handleDateSelect = (day: Date | undefined) => {
     if (day) {
       setDate(day as Date)

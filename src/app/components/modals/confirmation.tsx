@@ -1,4 +1,4 @@
-import { useFormState } from '@/app/context/FormProvider';
+import { useFormStore } from '@/app/store/useFormStore';
 import React, { useEffect, useCallback, useState } from 'react';
 
 export interface ConfirmationModalProps {
@@ -23,7 +23,7 @@ export default function ConfirmationModal({
   fullScreen = false,
 }: ConfirmationModalProps) {
   const [isClosing, setIsClosing] = useState(false);
-  const { userData } = useFormState();
+  const { userData } = useFormStore();
 
   const handleClose = useCallback(() => {
     setIsClosing(true);

@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { useFormState } from "@/app/context/FormProvider";
+import { useFormStore } from "@/app/store/useFormStore";
 import SidebarLink from "./sidebarLink";
 
 export default function MobileSidebar() {
-  const { isMobileSidebarOpen, closeMobileSidebar, userData } = useFormState();
+  const { isMobileSidebarOpen, closeMobileSidebar, userData } = useFormStore();
 
   // Close on escape key
   useEffect(() => {

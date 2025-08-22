@@ -1,7 +1,7 @@
-import { useFormState } from "@/app/context/FormProvider";
+import { useFormStore } from "@/app/store/useFormStore";
 
 export default function HamburgerButton() {
-  const { isMobileSidebarOpen, toggleMobileSidebar } = useFormState();
+  const { isMobileSidebarOpen, toggleMobileSidebar } = useFormStore();
 
   // Don't render the button when sidebar is open
   if (isMobileSidebarOpen) {

@@ -1,6 +1,6 @@
 import { IProject } from "../interface/IProject";
 import { useState } from "react";
-import { useFormState } from "@/app/context/FormProvider";
+import { useFormStore } from "@/app/store/useFormStore";
 import ConfirmationModal from "./modals/confirmation";
 import { Pencil2Icon } from "@radix-ui/react-icons"
 
@@ -18,7 +18,7 @@ export default function ProjectCard({
   onEditClick?: (e: React.MouseEvent) => void;
   onDeleteClick?: (project: IProject) => void;
 }) {
-  const { userData } = useFormState();
+  const { userData } = useFormStore();
   const projectColor = project.colorLabel?.toLowerCase() || 'gray';
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);

@@ -1,3 +1,6 @@
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
 export function parseJwt(token: string) {
   try {
     const base64Url = token.split('.')[1];
@@ -57,3 +60,7 @@ export const getIPAddress = async (): Promise<string> => {
     return "";
   }
 };
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { IProject } from '@/app/interface/IProject';
 import { ITask } from '@/app/interface/ITask';
-import { useFormState } from '@/app/context/FormProvider';
+import { useFormStore } from '@/app/store/useFormStore';
 import Image from 'next/image';
 interface ViewProjectModalProps {
   onClose: () => void;
@@ -36,7 +36,7 @@ export default function ViewProjectModal({
     };
   }, [handleEscapeKey]);
 
-  const { userData } = useFormState();
+  const { userData } = useFormStore();
   const isDarkMode = userData?.theme === 'dark';
 
   return (
@@ -106,7 +106,7 @@ const TaskCard = ({ task, handleUpdateTask, handleTaskStatus, handleDeleteTask }
   const {
     setSelectedTaskData,
     userData
-  } = useFormState();
+  } = useFormStore();
   const isDarkMode = userData?.theme === 'dark';
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   

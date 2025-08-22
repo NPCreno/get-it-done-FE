@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/components/shadcn/select"
-import { useFormState } from "@/app/context/FormProvider"
+import { useFormStore } from "@/app/store/useFormStore"
 import { Database } from "lucide-react"
 
 export interface PieChartData {
@@ -112,7 +112,7 @@ export function ChartPieInteractive({
   theme = "light",
 }: ChartPieInteractiveProps) {
   const id = "pie-interactive";
-  const { selectedMonth: contextMonth, setSelectedMonth } = useFormState();
+  const { selectedMonth: contextMonth, setSelectedMonth } = useFormStore();
   
   // Use prop if provided, otherwise use context, otherwise default to current month
   const selectedMonth = propSelectedMonth || contextMonth || (new Date().getMonth() + 1).toString();

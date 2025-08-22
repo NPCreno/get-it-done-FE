@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { useTimer } from '@/hooks/useTimer';
 import type { TimerType } from '@/lib/timerService';
 import ConfirmationModal from './confirmation';
-import { useFormState } from '@/app/context/FormProvider';
+import { useFormStore } from '@/app/store/useFormStore';
 import { TIMER_CONFIG, TimerConfig } from '@/app/interface/types';
 
 interface PomodoroModalProps {
@@ -16,7 +16,7 @@ export default function PomodoroModal({
   const [pendingTimerType, setPendingTimerType] = useState<TimerType | null>(null);
   const { 
     userData
-  } = useFormState();
+  } = useFormStore();
 
   const { 
     timeLeft, 

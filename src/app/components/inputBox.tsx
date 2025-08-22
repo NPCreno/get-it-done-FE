@@ -3,7 +3,7 @@ import { DatePicker } from "./datePicker";
 import { CustomDropdownMenu } from "./dropdown";
 import { DatePickerWithTime } from "./datePickerWithTime";
 import WeekdaySelector from "./weekdaySelector";
-import { useFormState } from "../context/FormProvider";
+import { useFormStore } from "../store/useFormStore";
 interface InputBoxProps {
   label?: string;
   placeholder: string;
@@ -58,7 +58,7 @@ export default function InputBox({
   autoFocus,
   ref
 }: InputBoxProps) {
-  const { userData } = useFormState();
+  const { userData } = useFormStore();
   return (
     <div className="w-full">
       <div className={`${error ? "shake" : ""} ${labelCustomClass}`}>

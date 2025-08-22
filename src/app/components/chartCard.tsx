@@ -11,7 +11,7 @@ import { ITaskCompletionTrendData } from "../interface/ITaskCompletionTrendData"
 import { ITaskDistribution } from "../interface/ITaskDistribution";
 import { Database } from 'lucide-react';
 import { IHeatmapData } from "../interface/IHeatmapData";
-import { useFormState } from "../context/FormProvider";
+import { useFormStore } from "../store/useFormStore";
 interface ChartCardProps {
   header: string;
   delay: string;
@@ -29,7 +29,7 @@ export default function ChartCard({
   taskDistributionData = [],
   calendarHeatmapData = [],
 }: ChartCardProps) {
-  const { userData } = useFormState();
+  const { userData } = useFormStore();
 
   const renderNoDataState = () => (
     <div className={`w-full h-full flex flex-col items-center justify-center p-4 text-center 

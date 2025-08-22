@@ -1,7 +1,7 @@
 "use client";
 import MainLayout from "@/app/components/MainLayout";
 import ProjectCard from "../../components/projectCard";
-import { useFormState } from "@/app/context/FormProvider";
+import { useFormStore } from "@/app/store/useFormStore";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getTasksByProject,
@@ -39,7 +39,7 @@ import { UpdateProjectDto } from "@/app/interface/dto/update-project-dto";
 import { ProjectModalState, toasMessage } from "@/app/interface/types";
 
 export default function ProjectsPage() {
-  const { selectedTaskData, userData } = useFormState();
+  const { selectedTaskData, userData } = useFormStore();
   const [projectData, setProjectData] = useState<IProject[]>([]);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState<ProjectModalState>({
     isOpen: false,

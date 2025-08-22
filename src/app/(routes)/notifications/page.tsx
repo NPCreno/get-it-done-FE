@@ -4,10 +4,10 @@ import MainLayout from "@/app/components/MainLayout";
 import NotificationCard from "@/app/components/notificationCard";
 import { INotificationProps } from "@/app/interface/INotification";
 import { useEffect, useState } from "react";
-import { useFormState } from "@/app/context/FormProvider";
+import { useFormStore } from "@/app/store/useFormStore";
 
 export default function NotificationsPage() {
-  const { userData } = useFormState();
+  const { userData } = useFormStore();
   // const [pageLoading, setIsPageLoading] = useState(false);
   const pageLoading = false
   const [showLoader, setShowLoader] = useState(true);

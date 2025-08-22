@@ -9,7 +9,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/app/components/shadcn/dropdown-menu"
-import { useFormState } from "../context/FormProvider"
+import { useFormStore } from "../store/useFormStore"
 
 interface CustomDropdownMenuProps {
   options: {
@@ -34,7 +34,7 @@ export function CustomDropdownMenu({
   placeholder,
   disabled,
 }: CustomDropdownMenuProps) {
-  const { userData } = useFormState();
+  const { userData } = useFormStore();
   const currentSelectedColor = options.find(option => option.name === selectedOption.name)?.color;
 
   return (

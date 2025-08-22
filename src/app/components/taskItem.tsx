@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { updateTaskStatus, updateSubTaskStatus, createSubTaskApi } from "@/app/api/taskRequests";
-import { useFormState } from "../context/FormProvider";
+import { useFormStore } from "../store/useFormStore";
 import { ITask } from "../interface/ITask";
 import { ISubTask } from '../interface/ISubTask';
 import { CreateSubTaskDto } from '../interface/dto/create-subTask-dto';
@@ -33,7 +33,7 @@ export function TaskItem({
   showSubtasks = false,
   onToggleSubtasks
 }: TaskItemProps) {
-  const { setSelectedTaskData, userData } = useFormState();
+  const { setSelectedTaskData, userData } = useFormStore();
   const [updateState, setUpdateState] = useState<{ 
     status: string | null;
     isUpdating: boolean;

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import InputBox from "../inputBox";
 import { IProject } from "@/app/interface/IProject";
-import { useFormState } from "@/app/context/FormProvider";
+import { useFormStore } from "@/app/store/useFormStore";
 
 interface taskModalProps {
   onClose: () => void;
@@ -86,7 +86,7 @@ export default function TaskModal({
   isLoading,
   onDirtyChange,
 }: taskModalProps) {
-  const { setSelectedTaskData, userData } = useFormState();
+  const { setSelectedTaskData, userData } = useFormStore();
   const [height, setHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const hasUpdatedValues = Object.values(formik.values).some(value => value !== "");

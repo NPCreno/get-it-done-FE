@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import MobileSidebar from "./MobileSidebar";
 import HamburgerButton from "./HamburgerButton";
-import { useFormState } from "@/app/context/FormProvider";
+import { useFormStore } from "@/app/store/useFormStore";
 import { getAccessToken, parseJwt } from "../utils/utils";
 import { getUser } from "../api/userRequests";
 
@@ -19,7 +19,7 @@ export default function MainLayout({
     closeMobileSidebar, 
     setUserData, 
     userData
-  } = useFormState();
+  } = useFormStore();
   const [isMobile, setIsMobile] = useState(false);
   const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
 

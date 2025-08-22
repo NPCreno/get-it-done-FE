@@ -1,10 +1,10 @@
 "use client";
 
-import { useFormState } from "@/app/context/FormProvider";
+import { useFormStore } from "@/app/store/useFormStore";
 import SidebarLink from "./sidebarLink";
 
 export default function Sidebar() {
-  const { sidebarWidth, setSidebarWidth, isSidebarOpen, setIsSidebarOpen, userData } = useFormState();
+  const { sidebarWidth, setSidebarWidth, isSidebarOpen, setIsSidebarOpen, userData } = useFormStore();
 
   return (
     <>

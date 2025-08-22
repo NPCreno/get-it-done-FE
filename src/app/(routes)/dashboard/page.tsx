@@ -5,7 +5,7 @@ import StatsCard from "../../components/statsCard";
 import TaskModal from "@/app/components/modals/taskModal";
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import PomodoroButton from '@/app/components/PomodoroButton';
-import { useFormState } from "@/app/context/FormProvider";
+import { useFormStore } from "@/app/store/useFormStore";
 import { FormikErrors, useFormik } from "formik";
 import { createTaskSchema } from "@/app/schemas/createTaskSchema";
 import {
@@ -49,9 +49,9 @@ export default function DashboardPage() {
     setSelectedTaskData, 
     selectedMonth, 
     selectedYear, 
-    calendarMonthYear, 
+    calendarMonthYear,
     userData
-  } = useFormState();
+  } = useFormStore();
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [projectOptions, setProjectOptions] = useState<IProject[]>([]);

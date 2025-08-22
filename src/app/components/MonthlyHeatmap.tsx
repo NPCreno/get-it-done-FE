@@ -12,7 +12,7 @@ import {
   addDays
 } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useFormState } from '../context/FormProvider';
+import { useFormStore } from '../store/useFormStore';
 
 interface HeatmapValue {
   date: string;
@@ -30,7 +30,7 @@ export default function MonthlyHeatmap({
   className = '',
   theme = "light" 
 }: MonthlyHeatmapProps) {
-  const { calendarMonthYear, setCalendarMonthYear } = useFormState();
+  const { calendarMonthYear, setCalendarMonthYear } = useFormStore();
   // Initialize currentMonth from calendarMonthYear if available, otherwise use current date
   const [currentMonth, setCurrentMonth] = useState(() => {
     if (calendarMonthYear?.month && calendarMonthYear?.year) {

@@ -1,5 +1,5 @@
 "use client";
-import { useFormState } from "../context/FormProvider";
+import { useFormStore } from "../store/useFormStore";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -20,7 +20,7 @@ export default function SidebarLink({
   forceShowText?: boolean;
   className?: string;
 }) {
-  const { isSidebarOpen } = useFormState();
+  const { isSidebarOpen } = useFormStore();
   const router = useRouter();
   const pathname = usePathname();
   

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { format } from "date-fns";
  
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/utils/utils";
 import { Button } from "@/app/components/shadcn/button";
 import { Calendar } from "@/app/components/shadcn/calendar";
 import {
@@ -12,7 +12,7 @@ import {
   PopoverTrigger,
 } from "@/app/components/shadcn/popover";
 import { ScrollArea, ScrollBar } from "@/app/components/shadcn/scroll-area";
-import { useFormState } from "../context/FormProvider";
+import { useFormStore } from "../store/useFormStore";
 
 interface DatePickerProps {
   date?: Date
@@ -23,7 +23,7 @@ interface DatePickerProps {
 
 export function DatePickerWithTime({ date, setDate, customClass, placeholder }: DatePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const { userData } = useFormState();
+  const { userData } = useFormStore();
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {

@@ -11,11 +11,11 @@ import ConfirmationModal from "@/app/components/modals/confirmation";
 import Cookies from 'js-cookie';
 import LoadingPage from "@/app/components/loader";
 import InputBox from "@/app/components/inputBox";
-import { useFormState } from "@/app/context/FormProvider";
+import { useFormStore } from "@/app/store/useFormStore";
 import { profileSettingsFormValues, toasMessage } from "@/app/interface/types";
 
 export default function ProfileSettingsPage() {
-  const { userData, setUserData } = useFormState();
+  const { userData, setUserData } = useFormStore();
   const [isEditEnabled, setIsEditEnabled] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState<toasMessage>({
