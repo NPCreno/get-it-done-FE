@@ -4,31 +4,17 @@ import { ITask } from "../interface/ITask";
 import { IUser } from "../interface/IUser";
 import { create } from "zustand";
 
-// Define the types for form state and additional universal states
-type FormStateType = {
-  name: string;
-  email: string;
-  applicationStatus: string;
-};
-
 type CalendarMonthYear = { month: string; year: string };
 
 
 type FormStore = {
-  // form state
-  formState: FormStateType;
-  setFormState: (updater: Partial<FormStateType>) => void;
-
   // universal states
   isSidebarOpen: boolean;
   setIsSidebarOpen: (value: boolean) => void;
-
   isMobileSidebarOpen: boolean;
+
   toggleMobileSidebar: () => void;
   closeMobileSidebar: () => void;
-
-  isLoading: boolean;
-  setIsLoading: (value: boolean) => void;
 
   sidebarWidth: number;
   setSidebarWidth: (value: number) => void;
@@ -53,14 +39,6 @@ type FormStore = {
 };
 
 export const useFormStore = create<FormStore>((set) => ({
-  formState: {
-    name: "",
-    email: "",
-    applicationStatus: "pending",
-  },
-  setFormState: (updater) =>
-    set((state) => ({ formState: { ...state.formState, ...updater } })),
-
   isSidebarOpen: false,
   setIsSidebarOpen: (value) => set({ isSidebarOpen: value }),
 
@@ -68,9 +46,6 @@ export const useFormStore = create<FormStore>((set) => ({
   toggleMobileSidebar: () =>
     set((state) => ({ isMobileSidebarOpen: !state.isMobileSidebarOpen })),
   closeMobileSidebar: () => set({ isMobileSidebarOpen: false }),
-
-  isLoading: false,
-  setIsLoading: (value) => set({ isLoading: value }),
 
   sidebarWidth: 60,
   setSidebarWidth: (value) => set({ sidebarWidth: value }),
