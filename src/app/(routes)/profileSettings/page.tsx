@@ -398,7 +398,6 @@ export default function ProfileSettingsPage() {
                         onLabel="Enabled"
                         offLabel="Disabled"
                         className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
-                        theme={userData?.theme}
                       />
                     </div>
                   </div>
@@ -422,7 +421,6 @@ export default function ProfileSettingsPage() {
                         onLabel="Enabled"
                         offLabel="Disabled"
                         className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
-                        theme={userData?.theme}
                       />
                     </div>
                   </div>
@@ -473,7 +471,6 @@ export default function ProfileSettingsPage() {
                     onLabel="Dark"
                     offLabel="Light"
                     className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
-                    theme={userData?.theme}
                   />
                 </div>
               </div>

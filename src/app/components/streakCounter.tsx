@@ -2,15 +2,15 @@
 import { useEffect } from "react";
 import { CardTitle } from "./shadcn/card";
 import { DotLottie } from '@lottiefiles/dotlottie-web';
+import { useFormStore } from "../store/useFormStore";
 
 interface StreakCounterProps {
   streakCount: number;
   header: string;
-  theme?: string;
 }
 
-export default function StreakCounter({ streakCount, header, theme="light"}: StreakCounterProps) {
-    
+export default function StreakCounter({ streakCount, header}: StreakCounterProps) {
+    const { userData } = useFormStore();
     const isInactive = streakCount === 0;
     const isActive = streakCount > 0 && streakCount < 6;
     const isOnFire = streakCount > 5 && streakCount < 8;
@@ -58,10 +58,10 @@ export default function StreakCounter({ streakCount, header, theme="light"}: Str
     return (
       <div className={`flex flex-col h-full p-4 text-center rounded-[10px] shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] 
         ${isOnFirePlus ? 'border border-orange-500 animate-fire-glow' : ''}
-        ${theme === "dark" ? "bg-foreground-dark border-gray-800 border" : "bg-foreground-light"}`}
+        ${userData?.theme === "dark" ? "bg-foreground-dark border-gray-800 border" : "bg-foreground-light"}`}
       >
         <div className="flex w-full items-start">
-        <CardTitle className={`text-text ${theme === "dark" ? "text-white" : "text-black"}`}>
+        <CardTitle className={`text-text ${userData?.theme === "dark" ? "text-white" : "text-black"}`}>
           {header}
         </CardTitle>
         </div>
@@ -111,18 +111,18 @@ export default function StreakCounter({ streakCount, header, theme="light"}: Str
             </div>
           )}
         </div>
-        <h3 className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-gray-800"} mb-2 `}>{streakMessage}</h3>
+        <h3 className={`text-xl font-bold ${userData?.theme === "dark" ? "text-white" : "text-gray-800"} mb-2 `}>{streakMessage}</h3>
         <p className="text-gray-600 mb-4">{progressMessage}</p>
         {!isInactive && (
           <>
             <div className={`w-full rounded-full h-2.5 ${
-              theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
+              userData?.theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
               }`}>
               <div 
                 className={`h-2.5 rounded-full ${
                   isOnFire || isOnFirePlus 
                     ? 'bg-red-500' 
-                    : theme === 'dark' 
+                    : userData?.theme === 'dark' 
                       ? 'bg-orange-400' 
                       : 'bg-orange-400'
                 }`} 

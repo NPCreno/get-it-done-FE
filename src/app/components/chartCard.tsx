@@ -67,12 +67,11 @@ export default function ChartCard({
               title="Task Distribution"
               description="Completed tasks by project"
               noData={!taskDistributionData || taskDistributionData.length === 0 || taskDistributionData.every(task => task.value === 0)}
-              theme={userData?.theme}
             />
           </div>
         );
       case "Productivity Streak":
-        return <StreakCounter streakCount={streakCount} header={header} theme={userData?.theme}/>
+        return <StreakCounter streakCount={streakCount} header={header}/>
       case "Calendar Heat map":
         return (
           <div className={`w-full h-full p-4  rounded-[10px] shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] 
@@ -84,7 +83,6 @@ export default function ChartCard({
                 date: item.date,
                 count: item.value
               }))}
-              theme={userData?.theme}
             />
           </div>
         );

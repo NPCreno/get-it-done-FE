@@ -73,7 +73,6 @@ interface ChartPieInteractiveProps {
   onMonthChange?: (month: string) => void;
   months?: {value: string; label: string}[];
   noData?: boolean;
-  theme?: string;
 }
 
 const getMonthsUntilCurrent = () => {
@@ -109,10 +108,9 @@ export function ChartPieInteractive({
   onMonthChange,
   months = defaultMonths,
   noData,
-  theme = "light",
 }: ChartPieInteractiveProps) {
   const id = "pie-interactive";
-  const { selectedMonth: contextMonth, setSelectedMonth } = useFormStore();
+  const { selectedMonth: contextMonth, setSelectedMonth, userData } = useFormStore();
   
   // Use prop if provided, otherwise use context, otherwise default to current month
   const selectedMonth = propSelectedMonth || contextMonth || (new Date().getMonth() + 1).toString();
@@ -131,26 +129,26 @@ export function ChartPieInteractive({
   };
 
   return (
-    <Card data-chart={id} className={`flex flex-col h-full min-h-[280px] ${theme === "dark" ? "bg-foreground-dark border-gray-800 border" : "bg-foreground-light"}`}>
+    <Card data-chart={id} className={`flex flex-col h-full min-h-[280px] ${userData?.theme === "dark" ? "bg-foreground-dark border-gray-800 border" : "bg-foreground-light"}`}>
       <ChartStyle id={id} config={chartConfig} />
       <CardHeader className="flex-row items-start space-y-0 p-4 pb-2">
         <div className="grid gap-0.5">
-          <CardTitle className={`${theme === "dark" ? "text-white" : "text-gray-800"}`}>{title}</CardTitle>
+          <CardTitle className={`${userData?.theme === "dark" ? "text-white" : "text-gray-800"}`}>{title}</CardTitle>
           {description && <CardDescription>{description}</CardDescription>}
         </div>
         <Select value={selectedMonth} onValueChange={handleMonthChange}>
           <SelectTrigger
-            className={`ml-auto h-7 w-[130px] rounded-lg pl-2.5 ${theme === "dark" ? "text-white border-gray-800 border" : "text-black"}`}
+            className={`ml-auto h-7 w-[130px] rounded-lg pl-2.5 ${userData?.theme === "dark" ? "text-white border-gray-800 border" : "text-black"}`}
             aria-label="Select month"
           >
             <SelectValue placeholder="Select month" />
           </SelectTrigger>
-          <SelectContent align="end" className={`rounded-xl ${theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'}`}>
+          <SelectContent align="end" className={`rounded-xl ${userData?.theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'}`}>
             {months.map((month) => (
               <SelectItem
                 key={month.value}
                 value={month.value}
-                className={`rounded-lg [&_span]:flex cursor-pointer ${theme === 'dark' ? 'text-white' : 'text-text'}`}
+                className={`rounded-lg [&_span]:flex cursor-pointer ${userData?.theme === 'dark' ? 'text-white' : 'text-text'}`}
               >
                 <div className="flex items-center gap-2 text-xs">
                   <span
@@ -167,7 +165,7 @@ export function ChartPieInteractive({
         </Select>
       </CardHeader>
       {noData && (
-        <div className={`w-full h-full flex flex-col items-center justify-center p-4 text-center ${theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"}`}>
+        <div className={`w-full h-full flex flex-col items-center justify-center p-4 text-center ${userData?.theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"}`}>
           <Database className="h-16 w-16 text-gray-400 mb-2" />
           <p className="text-gray-500 text-sm">No data available</p>
         </div>

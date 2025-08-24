@@ -970,7 +970,6 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-1"
                     className="h-full hover:bg-gradient-to-br from-white to-gray-50 transition-all duration-300"
-                    theme={userData?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-100/30">
@@ -982,7 +981,6 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-2"
                     className="h-full hover:bg-gradient-to-br from-white to-amber-50/30 transition-all duration-300"
-                    theme={userData?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-100/30">
@@ -994,7 +992,6 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-3"
                     className="h-full hover:bg-gradient-to-br from-white to-blue-50/30 transition-all duration-300"
-                    theme={userData?.theme}
                   />
                 </div>
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-green-100/30">
@@ -1006,7 +1003,6 @@ export default function DashboardPage() {
                     )}
                     delay="fade-in-left-delay-4"
                     className="h-full hover:bg-gradient-to-br from-white to-green-50/30 transition-all duration-300"
-                    theme={userData?.theme}
                   />
                 </div>
               </div> 
