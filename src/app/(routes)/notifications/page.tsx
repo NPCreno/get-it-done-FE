@@ -121,7 +121,7 @@ useEffect(() => {
               </div>
             </div>
 
-            <div className="flex font-lato font-bold text-[13px] fade-in-delay-2 text-text cursor-pointer items-end"> 
+            <div className={`flex font-lato font-bold text-[13px] fade-in-delay-2  ${userData?.theme === "dark" ? "text-white" : "text-text"} cursor-pointer items-end`}> 
               Mark all as read
             </div>  
           </div>
@@ -158,7 +158,7 @@ useEffect(() => {
                 <h1 className="font-lato text-2xl text-primary-default font-bold fade-in-delay-1 text-center">
                   You&apos;re All Caught Up! ✨
                 </h1>
-                <span className="font-lato text-base text-text text-center fade-in-delay-2">
+                <span className={`font-lato text-base ${userData?.theme === "dark" ? "text-white" : "text-text"} text-center fade-in-delay-2`}>
                   No new notifications right now. When you start creating tasks and achieving goals, you&apos;ll see your progress updates here.
                 </span>
               </div>
