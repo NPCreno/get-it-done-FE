@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import InputBox from "../inputBox";
 import { IProject } from "@/app/interface/IProject";
 import { useFormStore } from "@/app/store/useFormStore";
-
 interface taskModalProps {
   onClose: () => void;
   formik: FormikType;
@@ -64,6 +63,7 @@ interface FormikType {
     >
   ) => void;
   setFieldError: (field: keyof FormErrors, message: string) => void;
+  dirty?: boolean;
 }
 
 interface CustomChangeEvent extends React.ChangeEvent<HTMLInputElement> {
@@ -86,19 +86,11 @@ export default function TaskModal({
   isLoading,
   onDirtyChange,
 }: taskModalProps) {
-  const { setSelectedTaskData, userData } = useFormStore();
+  
+  const { setSelectedTaskData, selectedTaskData, userData } = useFormStore();
   const [height, setHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
-  const hasUpdatedValues = Object.values(formik.values).some(value => value !== "");
-
-  const handleEscapeKey = (event: KeyboardEvent) => {
-    if (event.key === "Escape" && !hasUpdatedValues) {
-      clearAllData();
-      onClose();
-    } else if(event.key === "Escape" && hasUpdatedValues){
-      onDirtyChange?.(true);
-    }
-  };
+  const hasUpdatedValues = formik.dirty;
 
   const priorityOptions = [
     { name: "Low", color: "#219EBC" },
@@ -122,8 +114,6 @@ export default function TaskModal({
     project_id: option.project_id,
     color: option.color,
   }));
-
-  window.addEventListener("keydown", handleEscapeKey);
 
   const clearAllData = () => {
     setSelectedTaskData(null);

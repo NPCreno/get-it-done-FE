@@ -11,4 +11,11 @@ export interface ITask {
     project_title?: string;
     template_id?: string;
     subInstances?: ISubTask[] | null;
+    project?: string;
+    project_color?: string;
+    isRecurring?: boolean;
+    repeat_every?: string;
+    repeat_days?: string[];
+    start_date?: Date;
+    end_date?: Date;
 }

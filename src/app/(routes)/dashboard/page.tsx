@@ -113,23 +113,23 @@ export default function DashboardPage() {
 
   const initialValues = useMemo(
     () => ({
-      title: "",
-      description: "",
-      due_date: null,
+      title: selectedTaskData?.title ?? "",
+      description: selectedTaskData?.description ?? "",
+      due_date: selectedTaskData?.due_date ?? null,
       user_id: userData?.user_id ?? "",
-      project_id: "",
-      project_title: "",
-      project_color: "",
-      priority: "Low",
-      status: "Pending",
-      isRecurring: false,
-      repeat_every: "",
-      repeat_days: [],
-      start_date: null,
-      end_date: null,
-      project: "",
+      project_id: selectedTaskData?.project_id ?? "",
+      project_title: selectedTaskData?.project_title ?? "",
+      project_color: selectedTaskData?.project_color ?? "",
+      priority: selectedTaskData?.priority ?? "Low",
+      status: selectedTaskData?.status ?? "Pending",
+      isRecurring: selectedTaskData?.isRecurring ?? false,
+      repeat_every: selectedTaskData?.repeat_every ?? "",
+      repeat_days: selectedTaskData?.repeat_days ?? [],
+      start_date: selectedTaskData?.start_date ?? null,
+      end_date: selectedTaskData?.end_date ?? null,
+      project: selectedTaskData?.project ?? "",
     }),
-    [userData?.user_id]
+    [userData?.user_id, selectedTaskData]
   );
 
   const {
@@ -142,6 +142,7 @@ export default function DashboardPage() {
     handleChange,
     setSubmitting,
     resetForm,
+    dirty,
   } = useFormik({
     initialValues,
     enableReinitialize: true,
@@ -1353,6 +1354,7 @@ export default function DashboardPage() {
             handleChange,
             setFieldValue,
             setFieldError,
+            dirty,
           }}
           handleCreateTask={() => handleSubmit()}
           project={projectOptions}
