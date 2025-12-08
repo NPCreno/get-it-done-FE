@@ -5,26 +5,19 @@ import ToggleSwitch from "@/app/components/toggleSwitch";
 import { updateUserSchema } from "@/app/schemas/updateUserSchema";
 import { useFormik, FormikErrors } from "formik";
 import { useEffect, useRef, useState } from "react";
-import { Toast } from "@/app/components/toast";
 import { getAccessToken, parseJwt } from "@/app/utils/utils";
 import ConfirmationModal from "@/app/components/modals/confirmation";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 import LoadingPage from "@/app/components/loader";
 import InputBox from "@/app/components/inputBox";
 import { useFormStore } from "@/app/store/useFormStore";
-import { profileSettingsFormValues, toasMessage } from "@/app/interface/types";
+import { profileSettingsFormValues } from "@/app/interface/types";
+import { useToast } from "@/app/hooks/useToast";
 
 export default function ProfileSettingsPage() {
   const { userData, setUserData } = useFormStore();
+  const { toast } = useToast();
   const [isEditEnabled, setIsEditEnabled] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState<toasMessage>({
-    title: "",
-    description: "",
-    className: "",
-    variant: "default",
-  });
-  const [isExitingToast, setIsExitingToast] = useState(false);
   const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -45,7 +38,9 @@ export default function ProfileSettingsPage() {
       username: userData ? userData.username : "",
       password: "",
       theme: userData?.theme ?? "light",
-      enableNotifications: userData ? userData.enableNotifications === "true" : false,
+      enableNotifications: userData
+        ? userData.enableNotifications === "true"
+        : false,
       soundFx: userData ? userData.soundFx === "true" : false,
     },
     enableReinitialize: true,
@@ -83,56 +78,28 @@ export default function ProfileSettingsPage() {
       const response = await updateUser(userData.user_id, updateData);
 
       if (response) {
-        setToastMessage({
+        toast({
           title: "Profile Settings Saved",
           description: "Your preferences have been saved",
-          variant: "success"
+          variant: "success",
         });
-
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-        setShowToast(true);
-        setIsExitingToast(false);
       }
     } catch (error) {
       if (error instanceof Error) {
-        setToastMessage({
+        toast({
           title: "Something Went Wrong",
           description: error.message,
-          variant: "error"
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          variant: "error"
+          variant: "error",
         });
       }
-      setShowToast(true);
-      setIsExitingToast(false);
-
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
     }
   };
 
-  const handleToastClose = () => {
-    setIsExitingToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 400);
-  };
-
   const confirmLogout = () => {
-    Cookies.remove('access_token');
-    Cookies.remove('refresh_token');
-    localStorage.removeItem('pomodoroTimerState');
-    window.location.href = '/';
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    localStorage.removeItem("pomodoroTimerState");
+    window.location.href = "/";
   };
 
   useEffect(() => {
@@ -141,7 +108,7 @@ export default function ProfileSettingsPage() {
       if (isFirstLoad.current) {
         setPageLoading(true);
       }
-            
+
       if (isDoneFetchingUser) return;
       else {
         try {
@@ -174,8 +141,7 @@ export default function ProfileSettingsPage() {
           }
         } catch (error) {
           console.error("Failed to fetch user:", error);
-        }
-        finally{
+        } finally {
           if (isFirstLoad.current) {
             setPageLoading(false);
             isFirstLoad.current = false;
@@ -194,15 +160,6 @@ export default function ProfileSettingsPage() {
 
   return (
     <MainLayout>
-      {showToast && (
-        <div
-          className={`fixed bottom-4 right-4 z-50 ${
-            isExitingToast ? "toast-exit" : "toast-enter"
-          }`}
-        >
-          <Toast {...toastMessage} onClose={handleToastClose} variant={toastMessage.variant} />
-        </div>
-      )}
       <div className="main flex justify-center w-full">
         {/* Main Page */}
         <div className="inside max-w-[1440px] w-full mx-auto gap-5 flex flex-col">
@@ -221,15 +178,17 @@ export default function ProfileSettingsPage() {
               <div className="flex items-center gap-3">
                 <div className="w-1 h-8 bg-primary-default rounded-full"></div>
                 <div>
-                  <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
-                        userData?.theme === "dark" 
-                          ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
-                          : "bg-gradient-to-r from-gray-800 to-gray-600"
-                  }`}>
+                  <h1
+                    className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
+                      userData?.theme === "dark"
+                        ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300"
+                        : "bg-gradient-to-r from-gray-800 to-gray-600"
+                    }`}
+                  >
                     Profile Settings
                   </h1>
                   <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none mt-1">
-                  Manage Your Profile & Preferences
+                    Manage Your Profile & Preferences
                   </p>
                 </div>
               </div>
@@ -245,7 +204,13 @@ export default function ProfileSettingsPage() {
             {/* left side */}
             <div className="flex flex-col gap-5 w-full md:min-w-[400px] lg:min-w-[700px] h-full">
               {/* Profile Information */}
-              <div className={`flex flex-col rounded-[10px] ${userData?.theme === "dark" ? "bg-foreground-dark  border border-gray-800" : "bg-white"} p-5`}>
+              <div
+                className={`flex flex-col rounded-[10px] ${
+                  userData?.theme === "dark"
+                    ? "bg-foreground-dark  border border-gray-800"
+                    : "bg-white"
+                } p-5`}
+              >
                 {/* profile information header */}
                 <div className="flex flex-row justify-between">
                   <div className="flex flex-col">
@@ -270,7 +235,11 @@ export default function ProfileSettingsPage() {
                         Profile Information
                       </p>
                     </div>
-                    <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
+                    <p
+                      className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${
+                        userData?.theme === "dark" ? "text-white" : "text-text"
+                      }`}
+                    >
                       Update your personal information
                     </p>
                   </div>
@@ -347,7 +316,13 @@ export default function ProfileSettingsPage() {
               </div>
 
               {/* General Settings*/}
-              <div className={`flex flex-col rounded-[10px] ${userData?.theme === "dark" ? "bg-foreground-dark  border border-gray-800" : "bg-white"} p-5 gap-[10px]`}>
+              <div
+                className={`flex flex-col rounded-[10px] ${
+                  userData?.theme === "dark"
+                    ? "bg-foreground-dark  border border-gray-800"
+                    : "bg-white"
+                } p-5 gap-[10px]`}
+              >
                 {/* profile information header */}
                 <div className="flex flex-row justify-between">
                   <div className="flex flex-col">
@@ -372,7 +347,11 @@ export default function ProfileSettingsPage() {
                         Notifications
                       </p>
                     </div>
-                    <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
+                    <p
+                      className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${
+                        userData?.theme === "dark" ? "text-white" : "text-text"
+                      }`}
+                    >
                       Configure notification preferences
                     </p>
                   </div>
@@ -385,7 +364,13 @@ export default function ProfileSettingsPage() {
                       <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                         Enable notifications
                       </p>
-                      <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
+                      <p
+                        className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${
+                          userData?.theme === "dark"
+                            ? "text-white"
+                            : "text-text"
+                        }`}
+                      >
                         Recieve notifications for tasks and reminders
                       </p>
                     </div>
@@ -397,7 +382,11 @@ export default function ProfileSettingsPage() {
                         onChange={setFieldValue}
                         onLabel="Enabled"
                         offLabel="Disabled"
-                        className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
+                        className={`fade-in-delay-1 ${
+                          userData?.theme === "dark"
+                            ? "text-white"
+                            : "text-text"
+                        }`}
                       />
                     </div>
                   </div>
@@ -408,7 +397,13 @@ export default function ProfileSettingsPage() {
                       <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                         Sound Effects
                       </p>
-                      <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
+                      <p
+                        className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${
+                          userData?.theme === "dark"
+                            ? "text-white"
+                            : "text-text"
+                        }`}
+                      >
                         Play sound when completing tasks
                       </p>
                     </div>
@@ -420,7 +415,11 @@ export default function ProfileSettingsPage() {
                         onChange={setFieldValue}
                         onLabel="Enabled"
                         offLabel="Disabled"
-                        className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
+                        className={`fade-in-delay-1 ${
+                          userData?.theme === "dark"
+                            ? "text-white"
+                            : "text-text"
+                        }`}
                       />
                     </div>
                   </div>
@@ -430,13 +429,23 @@ export default function ProfileSettingsPage() {
 
             {/* right side */}
             <div className="flex flex-col gap-5 w-full md:w-[350px] lg:w-[350px] fade-in-delay-1-2">
-              <div className={`flex flex-col gap-5 p-5 rounded-[10px] ${userData?.theme === "dark" ? "bg-foreground-dark border border-gray-800" : "bg-white"}`}>
+              <div
+                className={`flex flex-col gap-5 p-5 rounded-[10px] ${
+                  userData?.theme === "dark"
+                    ? "bg-foreground-dark border border-gray-800"
+                    : "bg-white"
+                }`}
+              >
                 {/* Appearance header */}
                 <div className="flex-flex-col">
                   <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                     Appearance
                   </p>
-                  <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
+                  <p
+                    className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${
+                      userData?.theme === "dark" ? "text-white" : "text-text"
+                    }`}
+                  >
                     Customize how Task Tracker looks
                   </p>
                 </div>
@@ -451,14 +460,20 @@ export default function ProfileSettingsPage() {
                     >
                       <path
                         d="M12 2V4M12 20V22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M2 12H4M20 12H22M6.34 17.66L4.93 19.07M19.07 4.93L17.66 6.34M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z"
-                        stroke={`${userData?.theme === "dark" ? "white" : "black"}`}
+                        stroke={`${
+                          userData?.theme === "dark" ? "white" : "black"
+                        }`}
                         stroke-width="2"
                         stroke-linecap="round"
                         stroke-linejoin="round"
                       />
                     </svg>
 
-                    <p className={`font-lato text-base font-bold fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
+                    <p
+                      className={`font-lato text-base font-bold fade-in-delay-1 select-none ${
+                        userData?.theme === "dark" ? "text-white" : "text-text"
+                      }`}
+                    >
                       Dark Mode
                     </p>
                   </div>
@@ -470,7 +485,9 @@ export default function ProfileSettingsPage() {
                     }
                     onLabel="Dark"
                     offLabel="Light"
-                    className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
+                    className={`fade-in-delay-1 ${
+                      userData?.theme === "dark" ? "text-white" : "text-text"
+                    }`}
                   />
                 </div>
               </div>
@@ -534,23 +551,23 @@ export default function ProfileSettingsPage() {
       </div>
 
       {isLogoutModalOpen && (
-       <ConfirmationModal
-       onClose={() => setIsLogoutModalOpen(false)}
-       title="Are you sure you want to log out?"
-       description="This will end your current session. You can log in again anytime"
-       actions={[
-         {
-           label: 'Cancel',
-           onClick: () => setIsLogoutModalOpen(false),
-           variant: 'secondary'
-         },
-         {
-           label: 'Log out',
-           onClick: confirmLogout,
-           variant: 'danger'
-         }
-       ]}
-     />
+        <ConfirmationModal
+          onClose={() => setIsLogoutModalOpen(false)}
+          title="Are you sure you want to log out?"
+          description="This will end your current session. You can log in again anytime"
+          actions={[
+            {
+              label: "Cancel",
+              onClick: () => setIsLogoutModalOpen(false),
+              variant: "secondary",
+            },
+            {
+              label: "Log out",
+              onClick: confirmLogout,
+              variant: "danger",
+            },
+          ]}
+        />
       )}
     </MainLayout>
   );
