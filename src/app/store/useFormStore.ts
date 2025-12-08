@@ -3,9 +3,9 @@
 import { ITask } from "../interface/ITask";
 import { IUser } from "../interface/IUser";
 import { create } from "zustand";
+import { ToastMessage } from "../interface/IToastMessage";
 
 type CalendarMonthYear = { month: string; year: string };
-
 
 type FormStore = {
   // universal states
@@ -36,6 +36,12 @@ type FormStore = {
 
   refreshPage: boolean;
   setRefreshPage: (value: boolean) => void;
+
+  // Toast state
+  toasts: ToastMessage[];
+  addToast: (toast: Omit<ToastMessage, 'id'>) => void;
+  removeToast: (id: string) => void;
+  clearToasts: () => void;
 };
 
 export const useFormStore = create<FormStore>((set) => ({
@@ -70,5 +76,14 @@ export const useFormStore = create<FormStore>((set) => ({
 
   refreshPage: false,
   setRefreshPage: (value) => set({ refreshPage: value }),
+
+  // Toast state
+  toasts: [],
+  addToast: (toast) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    set((state) => ({ toasts: [...state.toasts, { ...toast, id }] }));
+  },
+  removeToast: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
+  clearToasts: () => set({ toasts: [] }),
 }));
 

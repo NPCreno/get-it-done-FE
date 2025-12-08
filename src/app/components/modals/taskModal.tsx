@@ -86,8 +86,7 @@ export default function TaskModal({
   isLoading,
   onDirtyChange,
 }: taskModalProps) {
-  
-  const { setSelectedTaskData, selectedTaskData, userData } = useFormStore();
+  const { setSelectedTaskData, userData } = useFormStore();
   const [height, setHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const hasUpdatedValues = formik.dirty;
@@ -150,32 +149,40 @@ export default function TaskModal({
     <div
       className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
       onClick={() => {
-        if(!hasUpdatedValues){
+        if (!hasUpdatedValues) {
           clearAllData();
           onClose();
-        }else{
+        } else {
           onDirtyChange?.(true);
         }
       }}
     >
       <div
-        className={`modal-popup ${userData?.theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'} dark:bg-gray-900 w-[550px] rounded-[10px] p-5 shadow-lg overflow-hidden transition-all duration-200 ease-in-out`}
+        className={`modal-popup ${
+          userData?.theme === "dark"
+            ? "bg-foreground-dark border-gray-800 border"
+            : "bg-white"
+        } dark:bg-gray-900 w-[550px] rounded-[10px] p-5 shadow-lg overflow-hidden transition-all duration-200 ease-in-out`}
         onClick={(e) => e.stopPropagation()}
         style={{ height }}
       >
         <div ref={ref} className="h-auto flex flex-col gap-5 ">
           <div className="flex flex-col">
             <div className="flex flex-row justify-between items-center">
-              <h1 className={`${userData?.theme === 'dark' ? 'text-white' : 'text-text'} text-[20px] font-bold font-lato`}>
+              <h1
+                className={`${
+                  userData?.theme === "dark" ? "text-white" : "text-text"
+                } text-[20px] font-bold font-lato`}
+              >
                 {isUpdate ? "Task" : "Add New Task"}
               </h1>
               <button
                 className="cursor-pointer"
                 onClick={() => {
-                  if(!hasUpdatedValues){
+                  if (!hasUpdatedValues) {
                     clearAllData();
                     onClose();
-                  }else{
+                  } else {
                     onDirtyChange?.(true);
                   }
                 }}
@@ -268,11 +275,17 @@ export default function TaskModal({
                 );
               }}
               isLabelVisible={true}
-              placeholder={`${projectOptions.length === 0 ? "No projects available" : "Select project (optional)"}`}
+              placeholder={`${
+                projectOptions.length === 0
+                  ? "No projects available"
+                  : "Select project (optional)"
+              }`}
               dropdownptions={projectOptions}
               error={formik.errors.project}
               labelCustomClass="fade-in-delay-3"
-              disabled={(preselectedProject || projectOptions.length === 0) ? true : false}
+              disabled={
+                preselectedProject || projectOptions.length === 0 ? true : false
+              }
             />
           </div>
 
@@ -424,10 +437,10 @@ export default function TaskModal({
                 className="border border-primary-200 rounded-[5px] flex justify-center items-center text-primary-default 
                 font-lato text-[13px] font-bold p-[10px]"
                 onClick={() => {
-                  if(!hasUpdatedValues){
+                  if (!hasUpdatedValues) {
                     clearAllData();
                     onClose();
-                  }else{
+                  } else {
                     onDirtyChange?.(true);
                   }
                 }}
@@ -445,7 +458,13 @@ export default function TaskModal({
                     : handleCreateTask(formik.values)
                 }
               >
-                {isLoading ? <div className="loader"></div> : (isUpdate ? "Update" : "Create")}
+                {isLoading ? (
+                  <div className="loader"></div>
+                ) : isUpdate ? (
+                  "Update"
+                ) : (
+                  "Create"
+                )}
               </button>
             </div>
           </div>

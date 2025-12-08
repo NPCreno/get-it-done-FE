@@ -3,8 +3,8 @@ import MainLayout from "@/app/components/MainLayout";
 import ChartCard from "../../components/chartCard";
 import StatsCard from "../../components/statsCard";
 import TaskModal from "@/app/components/modals/taskModal";
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import PomodoroButton from '@/app/components/PomodoroButton';
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import PomodoroButton from "@/app/components/PomodoroButton";
 import { useFormStore } from "@/app/store/useFormStore";
 import { FormikErrors, useFormik } from "formik";
 import { createTaskSchema } from "@/app/schemas/createTaskSchema";
@@ -22,12 +22,9 @@ import {
   deleteSubTaskApi,
 } from "@/app/api/taskRequests";
 import { getProjectsForUser } from "@/app/api/projectsRequests";
-import {
-  getWeekRange,
-} from "@/app/utils/utils";
+import { getWeekRange } from "@/app/utils/utils";
 import { IProject } from "@/app/interface/IProject";
 import { CreateTaskDto } from "@/app/interface/dto/create-task-dto";
-import { Toast } from "@/app/components/toast";
 import { ITask } from "@/app/interface/ITask";
 import { UpdateTaskDto } from "@/app/interface/dto/update-task-dto";
 import { ITaskResponse } from "@/app/interface/responses/ITaskResponse";
@@ -41,66 +38,64 @@ import { ITaskDistribution } from "@/app/interface/ITaskDistribution";
 import { IHeatmapData } from "@/app/interface/IHeatmapData";
 import PomodoroModal from "@/app/components/modals/pomodoro";
 import ConfirmationModal from "@/app/components/modals/confirmation";
-import { ConfirmationState, toasMessage } from "@/app/interface/types";
+import { ConfirmationState } from "@/app/interface/types";
+import { useToast } from "@/app/hooks/useToast";
 
 export default function DashboardPage() {
-  const { 
-    selectedTaskData, 
-    setSelectedTaskData, 
-    selectedMonth, 
-    selectedYear, 
+  const {
+    selectedTaskData,
+    setSelectedTaskData,
+    selectedMonth,
+    selectedYear,
     calendarMonthYear,
-    userData
+    userData,
   } = useFormStore();
-
+  const { toast } = useToast();
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [projectOptions, setProjectOptions] = useState<IProject[]>([]);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState<toasMessage>({
-    title: "",
-    description: "",
-    className: "",
-    variant: "default",
-  });
-  const [isExitingToast, setIsExitingToast] = useState(false);
   const [tasks, setTasks] = useState<ITask[]>([]);
-  const [dashboardData, setDashboardData] = useState<IDashboardData | undefined>();
+  const [dashboardData, setDashboardData] = useState<
+    IDashboardData | undefined
+  >();
   const [isUpdateTask, setIsUpdateTask] = useState(false);
   const [updateTaskDashboard, setUpdateTaskDashboard] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [pageLoading, setIsPageLoading] = useState(true);
   const [showLoader, setShowLoader] = useState(true);
   const [isPomodoroModalOpen, setIsPomodoroModalOpen] = useState(false);
-  const [taskCompletionData, setTaskCompletionData] = useState<ITaskCompletionTrendData[]>([]);
-  const [taskDistributionData, setTaskDistributionData] = useState<ITaskDistribution[]>([]);
-  const [calendarHeatmapData, setCalendarHeatmapData] = useState<IHeatmapData[]>([]);
+  const [taskCompletionData, setTaskCompletionData] = useState<
+    ITaskCompletionTrendData[]
+  >([]);
+  const [taskDistributionData, setTaskDistributionData] = useState<
+    ITaskDistribution[]
+  >([]);
+  const [calendarHeatmapData, setCalendarHeatmapData] = useState<
+    IHeatmapData[]
+  >([]);
   const [streakCount, setStreakCount] = useState(0);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const isFirstLoad = useRef(true);
-  const [taskTemplateIdToDelete, setTaskTemplateIdToDelete] = useState<string>("");
+  const [taskTemplateIdToDelete, setTaskTemplateIdToDelete] =
+    useState<string>("");
   const [taskIdToDelete, setTaskIdToDelete] = useState<string>("");
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [expandedTaskIds, setExpandedTaskIds] = useState<Set<string>>(new Set());
-
-  const handleToastClose = () => {
-    setIsExitingToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 400);
-  };
-
-  const [confirmationState, setConfirmationState ] = useState<ConfirmationState>({
-    show: false,
-    taskIdToDelete: null,
-    title: "",
-    description: "",
-    actions: [],
-  });
+  const [expandedTaskIds, setExpandedTaskIds] = useState<Set<string>>(
+    new Set()
+  );
+  const [confirmationState, setConfirmationState] = useState<ConfirmationState>(
+    {
+      show: false,
+      taskIdToDelete: null,
+      title: "",
+      description: "",
+      actions: [],
+    }
+  );
 
   const handleToggleSubtasks = useCallback((taskId: string) => {
-    setExpandedTaskIds(prev => {
+    setExpandedTaskIds((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(taskId)) {
         newSet.delete(taskId);
@@ -195,45 +190,22 @@ export default function DashboardPage() {
         setIsLoading(false);
         setUpdateTaskDashboard(!updateTaskDashboard);
         setIsTaskModalOpen(false);
-        setToastMessage({
+        toast({
           title: "Task Created",
-          description: response.message || "Your new task has been created successfully",
-          variant: "success"
+          description:
+            response.message || "Your new task has been created successfully",
+          variant: "success",
         });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
       }
     } catch (error) {
       setIsLoading(false);
       if (error instanceof Error) {
-        setToastMessage({
+        toast({
           title: "Something Went Wrong",
           description: error.message,
           variant: "error",
         });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          variant: "error",
-        });
       }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
     }
   };
 
@@ -249,7 +221,7 @@ export default function DashboardPage() {
     try {
       setIsLoading(true);
       if (!userData) {
-        console.log("No User data found");  
+        console.log("No User data found");
         return;
       }
       const payload: UpdateTaskDto = {
@@ -266,65 +238,31 @@ export default function DashboardPage() {
         setUpdateTaskDashboard(!updateTaskDashboard);
         clearValueAndErrors();
         setIsTaskModalOpen(false);
-        setToastMessage({
+        toast({
           title: "Task Updated",
           description:
             response.message || "Your task has been updated successfully",
           variant: "success",
         });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
       } else {
         setIsLoading(false);
         clearValueAndErrors();
         setIsTaskModalOpen(false);
-        setToastMessage({
+        toast({
           title: response.message,
           description: response?.error || "Something Went Wrong",
           variant: "error",
         });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
       }
     } catch (error) {
       setIsLoading(false);
       if (error instanceof Error) {
-        setToastMessage({
+        toast({
           title: "Something Went Wrong",
           description: error.message,
           variant: "error",
         });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          variant: "error",
-        });
       }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
     }
   };
 
@@ -348,7 +286,6 @@ export default function DashboardPage() {
     setFieldError("due_date", "");
   };
 
-
   const handleDeleteTask = async (taskId: string) => {
     await deleteTask(taskId);
   };
@@ -357,7 +294,10 @@ export default function DashboardPage() {
     await deleteSubTask(taskId);
   };
 
-  const handleDeleteRecurringTasks = (taskTemplate_id: string, taskId: string) => {
+  const handleDeleteRecurringTasks = (
+    taskTemplate_id: string,
+    taskId: string
+  ) => {
     setTaskTemplateIdToDelete(taskTemplate_id);
     setTaskIdToDelete(taskId);
     setShowConfirmation(true);
@@ -368,67 +308,47 @@ export default function DashboardPage() {
       description: "How would you like to delete these tasks?",
       actions: [
         {
-          label: 'Delete This Task Only',
+          label: "Delete This Task Only",
           onClick: () => {
             handleDeleteTask(taskIdToDelete);
             setShowConfirmation(false);
           },
-          variant: 'primary'
+          variant: "primary",
         },
         {
-          label: 'Delete All Recurring Tasks',
+          label: "Delete All Recurring Tasks",
           onClick: async () => {
             handleConfirmDeleteRecurringTasks();
             setShowConfirmation(false);
           },
-          variant: 'danger'
+          variant: "danger",
         },
         {
-          label: 'Cancel',
+          label: "Cancel",
           onClick: () => setShowConfirmation(false),
-        }
-      ]
+        },
+      ],
     });
   };
-   
+
   const handleConfirmDeleteRecurringTasks = async () => {
     // after confirming to delete
     if (taskTemplateIdToDelete) {
       try {
         await deleteRecurringTasksApi(taskTemplateIdToDelete);
         // Optionally refresh tasks or show success message
-        setToastMessage({
+        toast({
           title: "Success",
           description: "Recurring tasks deleted successfully",
           variant: "success",
         });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
       } catch (error) {
-        console.error('Failed to delete recurring tasks:', error);
-        setToastMessage({
+        console.error("Failed to delete recurring tasks:", error);
+        toast({
           title: "Error",
           description: "Failed to delete recurring tasks",
           variant: "error",
         });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
       }
       setShowConfirmation(false);
       setTaskTemplateIdToDelete("");
@@ -441,190 +361,112 @@ export default function DashboardPage() {
       if (response.status === "success") {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
-        setToastMessage({
+        toast({
           title: "Task Deleted",
           description:
             response.message || "Your task has been deleted successfully",
           variant: "success",
         });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
       } else {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
-        setToastMessage({
+        toast({
           title: response.message,
           description: response?.error || "Something Went Wrong",
           variant: "error",
         });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
       }
     } catch (error) {
       if (error instanceof Error) {
-        setToastMessage({
+        toast({
           title: "Something Went Wrong",
           description: error.message,
           variant: "error",
         });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          variant: "error",
-        });
       }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
     }
   };
 
   const deleteSubTask = async (taskSubInstance_id: string) => {
     try {
-      const response: ITaskResponse = await deleteSubTaskApi(taskSubInstance_id);
+      const response: ITaskResponse = await deleteSubTaskApi(
+        taskSubInstance_id
+      );
       if (response.status === "success") {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
-        setToastMessage({
+        toast({
           title: "Subtask Deleted",
           description:
             response.message || "Your subtask has been deleted successfully",
           variant: "success",
         });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
       } else {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
-        setToastMessage({
+        toast({
           title: response.message,
           description: response?.error || "Something Went Wrong",
           variant: "error",
         });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
       }
     } catch (error) {
       if (error instanceof Error) {
-        setToastMessage({
+        toast({
           title: "Something Went Wrong",
           description: error.message,
           variant: "error",
         });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          variant: "error",
-        });
       }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
     }
   };
 
-  const handleTaskUpdateStatus = (message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
+  const handleTaskUpdateStatus = (
+    message: string,
+    type: "info" | "success" | "error" | "warning",
+    task: ITask
+  ) => {
     // For backward compatibility, we'll use the message to determine the new status
-    const newStatus = message.toLowerCase().includes('completed') ? 'Complete' : 'Pending';
-    
+    const newStatus = message.toLowerCase().includes("completed")
+      ? "Complete"
+      : "Pending";
+
     // Optimistically update the task status in the local state
-    setTasks(currentTasks => 
-      currentTasks.map(task => 
-        task.task_id === task.task_id 
-          ? { ...task, status: newStatus } 
-          : task
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.task_id === task.task_id ? { ...task, status: newStatus } : task
       )
     );
-    
+
     // Update dashboard data optimistically
     if (dashboardData) {
-      setDashboardData(prev => {
+      setDashboardData((prev) => {
         if (!prev) return prev;
         const newData = { ...prev };
-        
+
         // Decrease the count of the old status
-        if (task.status === 'Complete') {
+        if (task.status === "Complete") {
           newData.complete_tasks = Math.max(0, newData.complete_tasks - 1);
         } else {
           newData.pending_tasks = Math.max(0, newData.pending_tasks - 1);
         }
-        
+
         // Increase the count of the new status
-        if (newStatus === 'Complete') {
+        if (newStatus === "Complete") {
           newData.complete_tasks += 1;
         } else {
           newData.pending_tasks += 1;
         }
-        
+
         return newData;
       });
     }
-
     // Show toast notification with the provided type
-    setToastMessage({
+    toast({
       title: `Task ${newStatus.toLowerCase()}`,
       description: message,
-      className: type === 'success' 
-        ? 'text-success-default' 
-        : type === 'error' 
-          ? 'text-error-default'
-          : type === 'warning'
-            ? 'text-warning-default'
-            : 'text-accent-default',
       variant: type,
     });
-    setShowToast(true);
-    setIsExitingToast(false);
-    
-    // Auto-hide toast after delay
-    setTimeout(() => {
-      setIsExitingToast(true);
-      setTimeout(() => setShowToast(false), 400);
-    }, 3000);
   };
 
   const onDirtyChange = () => {
@@ -635,18 +477,18 @@ export default function DashboardPage() {
       description: "Are you sure you want to close?",
       actions: [
         {
-          label: 'Discard Changes',
+          label: "Discard Changes",
           onClick: () => {
             setIsTaskModalOpen(false);
             setShowConfirmation(false);
           },
-          variant: 'danger'
+          variant: "danger",
         },
         {
-          label: 'Cancel',
+          label: "Cancel",
           onClick: () => setShowConfirmation(false),
-        }
-      ]
+        },
+      ],
     });
   };
 
@@ -675,7 +517,9 @@ export default function DashboardPage() {
       }
 
       const startDate = new Date().toISOString();
-      const endDate = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString();
+      const endDate = new Date(
+        new Date().setDate(new Date().getDate() + 1)
+      ).toISOString();
       const range = getWeekRange(new Date().toISOString());
 
       try {
@@ -686,19 +530,27 @@ export default function DashboardPage() {
           trendResponse,
           distributionResponse,
           heatmapResponse,
-          streakResponse
+          streakResponse,
         ] = await Promise.allSettled([
           getTasksByUser(userData.user_id, startDate, endDate),
           getDashboardData(userData.user_id, startDate, endDate),
           getTaskCompletionTrend(userData.user_id, range.start, range.end),
-          getTaskDistributionData(userData.user_id, selectedMonth, selectedYear),
-          getCalendarHeatmap(userData.user_id, calendarMonthYear.month, calendarMonthYear.year),
-          getStreakCount(userData.user_id)
+          getTaskDistributionData(
+            userData.user_id,
+            selectedMonth,
+            selectedYear
+          ),
+          getCalendarHeatmap(
+            userData.user_id,
+            calendarMonthYear.month,
+            calendarMonthYear.year
+          ),
+          getStreakCount(userData.user_id),
         ]);
 
         // Process each response with error handling
         type ApiResponse<T> = {
-          status: 'success' | 'error';
+          status: "success" | "error";
           data: T;
           error?: string;
         };
@@ -708,52 +560,66 @@ export default function DashboardPage() {
           successHandler: (data: T) => void,
           errorValue: T
         ) => {
-          if (response.status === 'fulfilled' && response.value?.status === 'success' && response.value.data !== undefined) {
+          if (
+            response.status === "fulfilled" &&
+            response.value?.status === "success" &&
+            response.value.data !== undefined
+          ) {
             successHandler(response.value.data);
           } else {
-            const error = response.status === 'rejected' 
-              ? response.reason 
-              : response.status === 'fulfilled' 
-                ? response.value?.error 
-                : 'Unknown error';
-            console.error('API Error:', error);
+            const error =
+              response.status === "rejected"
+                ? response.reason
+                : response.status === "fulfilled"
+                ? response.value?.error
+                : "Unknown error";
+            console.error("API Error:", error);
             successHandler(errorValue);
           }
         };
 
         // Update states with responses
         processResponse<ITask[]>(tasksResponse, setTasks, []);
-        processResponse<IDashboardData>(
-          dashboardResponse, 
-          setDashboardData, 
-          { 
-            all_tasks: 0,
-            pending_tasks: 0,
-            complete_tasks: 0,
-            all_projects: 0,
-            streak_count: 0
-          }
+        processResponse<IDashboardData>(dashboardResponse, setDashboardData, {
+          all_tasks: 0,
+          pending_tasks: 0,
+          complete_tasks: 0,
+          all_projects: 0,
+          streak_count: 0,
+        });
+        processResponse<ITaskCompletionTrendData[]>(
+          trendResponse,
+          setTaskCompletionData,
+          []
         );
-        processResponse<ITaskCompletionTrendData[]>(trendResponse, setTaskCompletionData, []);
-        processResponse<ITaskDistribution[]>(distributionResponse, setTaskDistributionData, []);
-        processResponse<IHeatmapData[]>(heatmapResponse, setCalendarHeatmapData, []);
-        
+        processResponse<ITaskDistribution[]>(
+          distributionResponse,
+          setTaskDistributionData,
+          []
+        );
+        processResponse<IHeatmapData[]>(
+          heatmapResponse,
+          setCalendarHeatmapData,
+          []
+        );
+
         // Handle streak count separately since it has a different structure
-        if (streakResponse.status === 'fulfilled' && streakResponse.value?.status === 'success') {
+        if (
+          streakResponse.status === "fulfilled" &&
+          streakResponse.value?.status === "success"
+        ) {
           setStreakCount(streakResponse.value.data?.count || 0);
         } else {
           setStreakCount(0);
         }
-
       } catch (error) {
-        console.error('Error in fetchTasks:', error);
+        console.error("Error in fetchTasks:", error);
         // Optionally show a toast notification for the user
-        setToastMessage({
-          title: 'Error',
-          description: 'Failed to load dashboard data. Please try again later.',
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard data. Please try again later.",
           variant: "error",
         });
-        setShowToast(true);
       } finally {
         if (isFirstLoad.current) {
           setIsPageLoading(false);
@@ -763,7 +629,14 @@ export default function DashboardPage() {
     };
 
     fetchTasks();
-  }, [userData, updateTaskDashboard, showToast, selectedMonth, selectedYear, calendarMonthYear]);
+  }, [
+    userData,
+    updateTaskDashboard,
+    selectedMonth,
+    selectedYear,
+    calendarMonthYear,
+    toast,
+  ]);
 
   useEffect(() => {
     if (isTaskModalOpen && !isUpdateTask) {
@@ -793,15 +666,6 @@ export default function DashboardPage() {
 
   return (
     <MainLayout>
-      {showToast && (
-        <div
-          className={`fixed bottom-4 right-4 z-50 ${
-            isExitingToast ? "toast-exit" : "toast-enter"
-          }`}
-        >
-          <Toast {...toastMessage} onClose={handleToastClose} variant={toastMessage.variant} />
-        </div>
-      )}
       <div className="main flex justify-center w-full h-full">
         {/* Main Page */}
         <div className="inside max-w-[1440px] w-full mx-auto gap-5 flex flex-col">
@@ -824,11 +688,13 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-1 h-8 bg-gradient-to-b from-primary-default to-primary-200 rounded-full transform transition-transform duration-300 group-hover:scale-y-110"></div>
                     <div className="space-y-0.5">
-                    <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
-                          userData  ?.theme === "dark" 
-                            ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
+                      <h1
+                        className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
+                          userData?.theme === "dark"
+                            ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300"
                             : "bg-gradient-to-r from-gray-800 to-gray-600"
-                    }`}>
+                        }`}
+                      >
                         Dashboard
                       </h1>
                       <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none transition-all duration-300 group-hover:text-gray-600">
@@ -845,32 +711,34 @@ export default function DashboardPage() {
                   <div className="relative flex justify-end">
                     <div
                       className={`relative flex items-center ${
-                        userData?.theme === 'dark' 
-                          ? 'bg-foreground-dark border border-gray-800' 
-                          : 'bg-white'
+                        userData?.theme === "dark"
+                          ? "bg-foreground-dark border border-gray-800"
+                          : "bg-white"
                       } rounded-xl overflow-hidden h-[44px] transition-all duration-300 ease-out ${
                         isSearchExpanded
-                          ? userData?.theme === 'dark'
+                          ? userData?.theme === "dark"
                             ? "shadow-lg ring-1 ring-gray-800"
                             : "shadow-md ring-1 ring-gray-200"
-                          : userData?.theme === 'dark'
-                            ? "w-[44px] hover:bg-gray-900/80"
-                            : "w-[44px] hover:bg-gray-50"
+                          : userData?.theme === "dark"
+                          ? "w-[44px] hover:bg-gray-900/80"
+                          : "w-[44px] hover:bg-gray-50"
                       }`}
                       style={{
                         width: isSearchExpanded ? "280px" : "44px",
-                        transitionProperty: "width, box-shadow, border-color, background-color",
+                        transitionProperty:
+                          "width, box-shadow, border-color, background-color",
                         transitionDuration: "300ms",
-                        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+                        transitionTimingFunction:
+                          "cubic-bezier(0.16, 1, 0.3, 1)",
                       }}
                     >
                       <input
                         type="text"
                         placeholder={isSearchExpanded ? "Search tasks..." : ""}
                         className={`bg-transparent border-0 focus:ring-0 focus:outline-none h-full pl-4 pr-10 ${
-                          userData?.theme === 'dark' 
-                            ? 'text-white placeholder-gray-500' 
-                            : 'text-gray-700 placeholder-gray-400'
+                          userData?.theme === "dark"
+                            ? "text-white placeholder-gray-500"
+                            : "text-gray-700 placeholder-gray-400"
                         } transition-all duration-200 ${
                           isSearchExpanded
                             ? "w-full opacity-100"
@@ -901,18 +769,21 @@ export default function DashboardPage() {
                       <button
                         className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all duration-200 ${
                           isSearchExpanded && searchQuery
-                            ? userData?.theme === 'dark'
+                            ? userData?.theme === "dark"
                               ? "text-gray-400 hover:bg-gray-800"
                               : "text-gray-500 hover:bg-gray-100"
-                            : userData?.theme === 'dark'
-                              ? "text-gray-500 hover:text-gray-300 right-[4px]"
-                              : "text-gray-400 hover:text-gray-600 right-[4px]"
+                            : userData?.theme === "dark"
+                            ? "text-gray-500 hover:text-gray-300 right-[4px]"
+                            : "text-gray-400 hover:text-gray-600 right-[4px]"
                         }`}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (isSearchExpanded && searchQuery) {
                             setSearchQuery("");
-                            const input = e.currentTarget.parentElement?.querySelector("input");
+                            const input =
+                              e.currentTarget.parentElement?.querySelector(
+                                "input"
+                              );
                             input?.focus();
                           } else {
                             setIsSearchExpanded(!isSearchExpanded);
@@ -953,10 +824,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <PomodoroButton 
-                    onOpenChange={setIsPomodoroModalOpen}
-                  />
-                    
+                  <PomodoroButton onOpenChange={setIsPomodoroModalOpen} />
                 </div>
               </div>
 
@@ -1006,27 +874,47 @@ export default function DashboardPage() {
                     className="h-full hover:bg-gradient-to-br from-white to-green-50/30 transition-all duration-300"
                   />
                 </div>
-              </div> 
+              </div>
 
               <div className="w-full h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5 items-center justify-center text-center">
                 {/* Task board */}
-                <div className={`w-full h-full p-6 flex flex-col rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 fade-in-delay-2 flex-grow border
-                  ${userData?.theme === "dark" ? "bg-foreground-dark" : "bg-white"}
+                <div
+                  className={`w-full h-full p-6 flex flex-col rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 fade-in-delay-2 flex-grow border
+                  ${
+                    userData?.theme === "dark"
+                      ? "bg-foreground-dark"
+                      : "bg-white"
+                  }
                   ${userData?.theme === "dark" ? "border-gray-800" : ""}
-                   `}>
+                   `}
+                >
                   {/* Header - Fixed */}
-                  <div className={`flex flex-col sm:flex-row justify-between gap-4 
-                  ${userData?.theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}
-                  `}>
+                  <div
+                    className={`flex flex-col sm:flex-row justify-between gap-4 
+                  ${
+                    userData?.theme === "dark"
+                      ? "border-gray-800"
+                      : "border-gray-100"
+                  }
+                  `}
+                  >
                     <div>
-                      <h1 className={`text-xl font-lato font-bold text-start ${
-                        userData?.theme === 'dark' ? 'text-white' : 'text-gray-800'
-                      }`}>
+                      <h1
+                        className={`text-xl font-lato font-bold text-start ${
+                          userData?.theme === "dark"
+                            ? "text-white"
+                            : "text-gray-800"
+                        }`}
+                      >
                         Recent Tasks
                       </h1>
-                      <p className={`text-sm mt-1 text-start ${
-                        userData?.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                      }`}>
+                      <p
+                        className={`text-sm mt-1 text-start ${
+                          userData?.theme === "dark"
+                            ? "text-gray-400"
+                            : "text-gray-500"
+                        }`}
+                      >
                         Your most recent activities and tasks
                       </p>
                     </div>
@@ -1034,12 +922,16 @@ export default function DashboardPage() {
                       className={`relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white 
                       shadow-md hover:shadow-lg transform transition-all duration-300 hover:translate-y-[-1px] 
                       active:translate-y-0 active:scale-95 overflow-hidden group
-                      ${userData?.theme === 'dark' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:shadow-amber-500/20' : 'bg-gradient-to-r from-primary-default to-primary-200 hover:shadow-primary-default/20'}
+                      ${
+                        userData?.theme === "dark"
+                          ? "bg-gradient-to-r from-amber-500 to-yellow-500 hover:shadow-amber-500/20"
+                          : "bg-gradient-to-r from-primary-default to-primary-200 hover:shadow-primary-default/20"
+                      }
                       before:absolute before:inset-0 
                       ${
-                        userData?.theme === 'dark'
-                          ? 'before:bg-gradient-to-r before:from-amber-600 before:to-yellow-400'
-                          : 'before:bg-gradient-to-r before:from-primary-200 before:to-primary-default'
+                        userData?.theme === "dark"
+                          ? "before:bg-gradient-to-r before:from-amber-600 before:to-yellow-400"
+                          : "before:bg-gradient-to-r before:from-primary-200 before:to-primary-default"
                       }
                       before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300`}
                       onClick={() => {
@@ -1080,78 +972,141 @@ export default function DashboardPage() {
                       </span>
 
                       {/* Subtle shine effect on hover */}
-                      <span className={`absolute inset-0 ${
-                        userData?.theme === 'dark' ? 'bg-amber-400/5' : 'bg-white/5'
-                      } opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></span>
+                      <span
+                        className={`absolute inset-0 ${
+                          userData?.theme === "dark"
+                            ? "bg-amber-400/5"
+                            : "bg-white/5"
+                        } opacity-0 group-hover:opacity-100 transition-opacity duration-700`}
+                      ></span>
                     </button>
                   </div>
 
                   {/* Scrollable Task List */}
                   <div className="flex flex-col h-full">
                     {/* Active Tasks - Centered */}
-                    <div className={`flex-grow flex flex-col ${tasks.filter(task => task.status !== 'Complete').length > 0 ? 'justify-start mt-5' : 'justify-center'}`}>
-                      {tasks.filter(task => task.status !== 'Complete').length > 0 ? (
-                      tasks
-                        .filter(task => task.status !== 'Complete')
-                        .map((task) => (
-                        <TaskItem
-                          key={`active-${task.task_id}-${task.status}`}
-                          task={task}
-                          handleUpdateTask={() => {
-                            setSelectedTaskData(task);
-                            setIsTaskModalOpen(true);
-                            setIsUpdateTask(true);
-                          }}
-                          handleDeleteTask={(taskId: string) => handleDeleteTask(taskId)}
-                          handleDeleteSubTask={(taskSubInstance_id: string) => handleDeleteSubTask(taskSubInstance_id)}
-                          handleDeleteRecurringTasks={
-                            (taskTemplate_id: string, taskId: string) => 
-                            handleDeleteRecurringTasks(taskTemplate_id, taskId)
-                          }
-                          showSubtasks={expandedTaskIds.has(task.task_id)}
-                          onToggleSubtasks={handleToggleSubtasks}
-                          taskUpdateStatus={(message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
-                            handleTaskUpdateStatus(message, type, task);
-                          }}
-                          subTasks={task.subInstances}
-                        />
-                      )))
-                      : (
+                    <div
+                      className={`flex-grow flex flex-col ${
+                        tasks.filter((task) => task.status !== "Complete")
+                          .length > 0
+                          ? "justify-start mt-5"
+                          : "justify-center"
+                      }`}
+                    >
+                      {tasks.filter((task) => task.status !== "Complete")
+                        .length > 0 ? (
+                        tasks
+                          .filter((task) => task.status !== "Complete")
+                          .map((task) => (
+                            <TaskItem
+                              key={`active-${task.task_id}-${task.status}`}
+                              task={task}
+                              handleUpdateTask={() => {
+                                setSelectedTaskData(task);
+                                setIsTaskModalOpen(true);
+                                setIsUpdateTask(true);
+                              }}
+                              handleDeleteTask={(taskId: string) =>
+                                handleDeleteTask(taskId)
+                              }
+                              handleDeleteSubTask={(
+                                taskSubInstance_id: string
+                              ) => handleDeleteSubTask(taskSubInstance_id)}
+                              handleDeleteRecurringTasks={(
+                                taskTemplate_id: string,
+                                taskId: string
+                              ) =>
+                                handleDeleteRecurringTasks(
+                                  taskTemplate_id,
+                                  taskId
+                                )
+                              }
+                              showSubtasks={expandedTaskIds.has(task.task_id)}
+                              onToggleSubtasks={handleToggleSubtasks}
+                              taskUpdateStatus={(
+                                message: string,
+                                type: "info" | "success" | "error" | "warning",
+                                task: ITask
+                              ) => {
+                                handleTaskUpdateStatus(message, type, task);
+                              }}
+                              subTasks={task.subInstances}
+                            />
+                          ))
+                      ) : (
                         <div className="flex flex-col items-center justify-center text-center">
                           <div className="w-24 h-24 mb-6 text-primary-default">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
                             </svg>
                           </div>
-                          <h3 className={`text-xl font-semibold text-gray-800 mb-2 ${userData?.theme === "dark" ? "text-white" : "text-gray-800"}`}>All caught up!</h3>
-                          <p className="text-gray-500 mb-6 max-w-md">You&apos;ve completed all your tasks. Time to celebrate or add a new challenge!</p>
+                          <h3
+                            className={`text-xl font-semibold text-gray-800 mb-2 ${
+                              userData?.theme === "dark"
+                                ? "text-white"
+                                : "text-gray-800"
+                            }`}
+                          >
+                            All caught up!
+                          </h3>
+                          <p className="text-gray-500 mb-6 max-w-md">
+                            You&apos;ve completed all your tasks. Time to
+                            celebrate or add a new challenge!
+                          </p>
                         </div>
                       )}
                     </div>
 
                     {/* Completed Tasks Section - Stuck to bottom */}
                     <div className="mt-auto">
-                      {tasks.some(task => task.status === 'Complete') && (
+                      {tasks.some((task) => task.status === "Complete") && (
                         <div className="mt-4">
                           <button
-                            onClick={() => setShowCompletedTasks(!showCompletedTasks)}
+                            onClick={() =>
+                              setShowCompletedTasks(!showCompletedTasks)
+                            }
                             className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors mb-2"
                           >
-                            <span>Completed ({tasks.filter(task => task.status === 'Complete').length})</span>
+                            <span>
+                              Completed (
+                              {
+                                tasks.filter(
+                                  (task) => task.status === "Complete"
+                                ).length
+                              }
+                              )
+                            </span>
                             <svg
-                              className={`w-4 h-4 transition-transform duration-200 ${showCompletedTasks ? 'rotate-180' : ''}`}
+                              className={`w-4 h-4 transition-transform duration-200 ${
+                                showCompletedTasks ? "rotate-180" : ""
+                              }`}
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
                             >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 9l-7 7-7-7"
+                              />
                             </svg>
                           </button>
-                          
+
                           {showCompletedTasks && (
                             <div className="space-y-2 pl-4 border-l-2 border-gray-200">
                               {tasks
-                                .filter(task => task.status === 'Complete')
+                                .filter((task) => task.status === "Complete")
                                 .map((task) => (
                                   <TaskItem
                                     key={`completed-${task.task_id}-${task.status}`}
@@ -1161,15 +1116,41 @@ export default function DashboardPage() {
                                       setIsTaskModalOpen(true);
                                       setIsUpdateTask(true);
                                     }}
-                                    handleDeleteTask={() => handleDeleteTask(task.task_id)}
-                                    handleDeleteSubTask={(taskSubInstance_id: string) => handleDeleteSubTask(taskSubInstance_id)}
-                                    handleDeleteRecurringTasks={(taskTemplate_id: string, taskId: string) => 
-                                      handleDeleteRecurringTasks(taskTemplate_id, taskId)
+                                    handleDeleteTask={() =>
+                                      handleDeleteTask(task.task_id)
                                     }
-                                    showSubtasks={expandedTaskIds.has(task.task_id)}
+                                    handleDeleteSubTask={(
+                                      taskSubInstance_id: string
+                                    ) =>
+                                      handleDeleteSubTask(taskSubInstance_id)
+                                    }
+                                    handleDeleteRecurringTasks={(
+                                      taskTemplate_id: string,
+                                      taskId: string
+                                    ) =>
+                                      handleDeleteRecurringTasks(
+                                        taskTemplate_id,
+                                        taskId
+                                      )
+                                    }
+                                    showSubtasks={expandedTaskIds.has(
+                                      task.task_id
+                                    )}
                                     onToggleSubtasks={handleToggleSubtasks}
-                                    taskUpdateStatus={(message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
-                                      handleTaskUpdateStatus(message, type, task);
+                                    taskUpdateStatus={(
+                                      message: string,
+                                      type:
+                                        | "info"
+                                        | "success"
+                                        | "error"
+                                        | "warning",
+                                      task: ITask
+                                    ) => {
+                                      handleTaskUpdateStatus(
+                                        message,
+                                        type,
+                                        task
+                                      );
                                     }}
                                     subTasks={task.subInstances}
                                   />
@@ -1214,18 +1195,19 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              
             </>
           )}
 
           {tasks.length === 0 && !pageLoading && (
             <>
               <div className="w-full h-full flex items-center justify-center py-16 px-4">
-                <div className={`flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 ${
-                  userData?.theme === "dark" 
-                    ? "bg-foreground-dark border border-gray-800" 
-                    : "bg-white border border-gray-100"
-                } rounded-2xl shadow-sm transform transition-all hover:shadow-md`}>
+                <div
+                  className={`flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 ${
+                    userData?.theme === "dark"
+                      ? "bg-foreground-dark border border-gray-800"
+                      : "bg-white border border-gray-100"
+                  } rounded-2xl shadow-sm transform transition-all hover:shadow-md`}
+                >
                   <svg
                     width="100"
                     height="100"
@@ -1292,16 +1274,22 @@ export default function DashboardPage() {
                     </defs>
                   </svg>
                   <div className="space-y-2">
-                    <h1 className={`font-lato text-2xl md:text-3xl font-bold fade-in-delay-1 bg-gradient-to-r ${
-                      userData?.theme === 'dark' 
-                        ? 'from-amber-400 to-yellow-500' 
-                        : 'from-primary-default to-yellow-400'
-                    } bg-clip-text text-transparent`}>
+                    <h1
+                      className={`font-lato text-2xl md:text-3xl font-bold fade-in-delay-1 bg-gradient-to-r ${
+                        userData?.theme === "dark"
+                          ? "from-amber-400 to-yellow-500"
+                          : "from-primary-default to-yellow-400"
+                      } bg-clip-text text-transparent`}
+                    >
                       Welcome to Your Dashboard ✨
                     </h1>
-                    <p className={`font-lato fade-in-delay-2 max-w-md leading-relaxed ${
-                      userData?.theme === "dark" ? "text-gray-300" : "text-gray-600"
-                    }`}>
+                    <p
+                      className={`font-lato fade-in-delay-2 max-w-md leading-relaxed ${
+                        userData?.theme === "dark"
+                          ? "text-gray-300"
+                          : "text-gray-600"
+                      }`}
+                    >
                       Start organizing your life by creating your first task.
                       <br />
                       Every great journey begins with a single step!
@@ -1311,9 +1299,9 @@ export default function DashboardPage() {
                     className={`px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato rounded-xl 
                     hover:shadow-lg transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5
                     ${
-                      userData?.theme === 'dark'
-                        ? 'bg-gradient-to-r from-amber-600 to-yellow-500 hover:shadow-amber-500/20'
-                        : 'bg-gradient-to-r from-primary-default to-yellow-400 hover:shadow-primary-default/20'
+                      userData?.theme === "dark"
+                        ? "bg-gradient-to-r from-amber-600 to-yellow-500 hover:shadow-amber-500/20"
+                        : "bg-gradient-to-r from-primary-default to-yellow-400 hover:shadow-primary-default/20"
                     }`}
                     onClick={() => {
                       setIsTaskModalOpen(true);

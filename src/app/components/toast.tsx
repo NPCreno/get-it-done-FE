@@ -1,6 +1,10 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { ToastVariant, variantStyles, variantTextColors } from "../interface/types";
+import {
+  ToastVariant,
+  variantStyles,
+  variantTextColors,
+} from "../interface/types";
 
 interface ToastProps {
   title: string;
@@ -10,16 +14,16 @@ interface ToastProps {
   variant: ToastVariant;
   duration?: number;
   showCloseButton?: boolean;
-  icon?: React.ReactNode; 
+  icon?: React.ReactNode;
 }
 
 export function Toast({
   title,
   description,
   onClose,
-  className = '',
-  variant = 'default',
-  duration = 5000,
+  className = "",
+  variant = "default",
+  duration = 3000,
   showCloseButton = true,
   icon,
 }: ToastProps) {
@@ -29,7 +33,7 @@ export function Toast({
 
   const handleClose = useCallback(() => {
     if (isExiting) return;
-    
+
     setIsExiting(true);
     // Wait for exit animation to complete before calling onClose
     setTimeout(() => {
@@ -53,7 +57,7 @@ export function Toast({
   return (
     <div
       className={`relative flex flex-col gap-2 p-4 rounded-md shadow-md transition-all duration-300 transform ${
-        isExiting ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+        isExiting ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
       } ${variantStyles[variant]} ${className}`}
       onMouseEnter={() => setShowCloseButtonHover(true)}
       onMouseLeave={() => setShowCloseButtonHover(false)}
@@ -64,34 +68,34 @@ export function Toast({
         <div className="flex items-start gap-3">
           {icon && <div className="mt-0.5">{icon}</div>}
           <div>
-            <h3 className={`text-sm font-semibold ${variantTextColors[variant]}`}>
+            <h3
+              className={`text-sm font-semibold ${variantTextColors[variant]}`}
+            >
               {title}
             </h3>
-            <p className="mt-1 text-sm text-gray-600">
-              {description}
-            </p>
+            <p className="mt-1 text-sm text-gray-600">{description}</p>
           </div>
         </div>
-        
+
         {(showCloseButton || showCloseButtonHover) && (
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-500 transition-colors"
             aria-label="Close"
           >
-            <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 16 16" 
-              fill="none" 
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
               xmlns="http://www.w3.org/2000/svg"
               className="w-4 h-4"
             >
-              <path 
-                d="M11.5 4.5L4.5 11.5M11.5 11.5L4.5 4.5" 
-                stroke="currentColor" 
-                strokeWidth="1.5" 
-                strokeLinecap="round" 
+              <path
+                d="M11.5 4.5L4.5 11.5M11.5 11.5L4.5 4.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
