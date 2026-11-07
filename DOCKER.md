@@ -86,7 +86,7 @@ docker-compose exec app <command>
 
 Example (run tests):
 ```bash
-docker-compose exec app npm test
+docker-compose exec app pnpm test
 ```
 
 ## Environment Variables

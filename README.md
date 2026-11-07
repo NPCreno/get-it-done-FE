@@ -22,8 +22,8 @@ A modern productivity and task management web application built with Next.js and
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v18 or higher recommended)
-- npm, yarn, pnpm, or bun (choose one)
+- Node.js (v22 or higher recommended)
+- pnpm (pinned in `package.json` via `packageManager`; npm and yarn are not supported)
 
 ### Installation
 1. **Clone the repository:**
@@ -33,13 +33,7 @@ A modern productivity and task management web application built with Next.js and
    ```
 2. **Install dependencies:**
    ```bash
-   npm install
-   # or
-   yarn install
-   # or
    pnpm install
-   # or
-   bun install
    ```
 3. **Set up environment variables:**
    - Create a `.env.local` file in the root directory.
@@ -51,13 +45,7 @@ A modern productivity and task management web application built with Next.js and
 
 ### Running the Development Server
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the app.
