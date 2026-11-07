@@ -16,7 +16,7 @@ A modern productivity and task management web application built with Next.js and
 - **UI Libraries:** Radix UI, Lucide React, React Icons
 - **Forms & Validation:** Formik, React Hook Form, Yup, Zod
 - **Date Handling:** date-fns, react-day-picker
-- **Backend Integration:** Supabase (auth, SSR, JS client)
+- **Backend Integration:** Get It Done backend API (authentication and data)
 - **State/Context:** React Context API
 
 ## Getting Started
@@ -47,11 +47,6 @@ A modern productivity and task management web application built with Next.js and
      ```env
      NEXT_PUBLIC_API_URL=<your-backend-api-url>
      # Add any other required environment variables here
-     ```
-   - If using Supabase, you may also need:
-     ```env
-     NEXT_PUBLIC_SUPABASE_URL=<your-supabase-url>
-     NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-supabase-anon-key>
      ```
 
 ### Running the Development Server

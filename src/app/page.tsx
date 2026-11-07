@@ -2,22 +2,9 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/app/components/shadcn/button';
 import { ArrowRight, CheckCircle, Clock, Target, TrendingUp } from 'lucide-react';
-import { useEffect } from 'react';
-import { supabase } from './lib/supabase';
 
 export default function Home() {
   const router = useRouter();
-
-  // Check if user is already logged in
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        router.push('/dashboard');
-      }
-    };
-    checkSession();
-  }, [router]);
 
   return (
     <div className="min-h-screen bg-white">

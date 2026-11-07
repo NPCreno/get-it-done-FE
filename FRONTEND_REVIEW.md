@@ -15,7 +15,7 @@ See [Full-Stack Portfolio Roadmap](./FULL_STACK_PORTFOLIO_ROADMAP.md) for cross-
 | Shared state | Root `FormProvider` combines session user, navigation UI, task selection, date filters, loading, layout width, and refresh state. |
 | API integration | Three browser-side fetch modules call the Nest API using `NEXT_PUBLIC_API_URL`, read the access token from `document.cookie`, and construct their own headers/errors. |
 | Forms | Formik + Yup, wrapped by a polymorphic `InputBox` that converts custom control output into synthetic change events. `react-hook-form`, Zod, and Sonner are installed but unused. |
-| Authentication | Nest JWT login/signup writes access and refresh tokens from browser JavaScript. Middleware provides route redirects and refresh. Supabase session checks remain on some pages but are not used by the actual login flow. |
+| Authentication | Nest JWT login/signup writes access and refresh tokens from browser JavaScript. Middleware provides route redirects and refresh. |
 | Synchronization | Route-local effects, boolean refresh flags, and manual `setTimeout` toast/loaders. Dashboard requests six resources in parallel with `Promise.allSettled`. No query cache, polling, WebSocket, or SSE client. |
 | Tests | No unit, component, E2E, or accessibility tests found. |
 
@@ -48,18 +48,15 @@ See [Full-Stack Portfolio Roadmap](./FULL_STACK_PORTFOLIO_ROADMAP.md) for cross-
 
 ### Security and authentication
 
-- [ ] **SEC-01 — Remove public-secret configuration and fail closed**  
-  **Current:** `.env`/`.env.example` include `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` and `NEXT_PUBLIC_SUPABASE_JWT_SECRET`; middleware has a literal JWT fallback.  
-  **Issue:** Service-role keys and JWT signing secrets must never be public; a known fallback makes bad deployment configuration unsafe. Actual environment keys were checked without reading values.  
-  **Recommendation:** Remove public-prefixed secret fields, rotate any real key ever stored under them, validate server-only secrets at startup, and fail safely when missing. Keep only publishable/anon keys and the browser API URL public.  
-  **Benefit:** Prevents accidental credential exposure and predictable auth secrets.  
-  **Priority:** Critical · **Complexity:** Small  
-  **Files:** `.env`, `.env.example`, `src/middleware.ts`, `src/app/lib/supabase.ts`.
+- [x] **SEC-01 — Remove legacy third-party authentication configuration**  
+  **Completed:** The unused authentication client, its dependencies, and its environment variables were removed. Authentication now relies on the Get It Done backend API.  
+  **Follow-up:** Rotate any credentials that may have been exposed before this removal and ensure server-only secrets fail closed when absent.  
+  **Files:** `.env`, `.env.example`, `package.json`, landing/auth pages, and `src/middleware.ts`.
 
-- [ ] **SEC-02 — Choose one session authority and use HttpOnly cookies**  
-  **Current:** Login/signup write access and refresh JWTs with `js-cookie`/`document.cookie`; client requests read them back. Middleware sets refreshed cookies as HttpOnly. Supabase is a second, partial session model.  
+- [ ] **SEC-02 — Use HttpOnly cookies for the backend session authority**  
+  **Current:** Login/signup write access and refresh JWTs with `js-cookie`/`document.cookie`; client requests read them back. Middleware sets refreshed cookies as HttpOnly.  
   **Issue:** Browser-readable refresh tokens are vulnerable to XSS. Signup always writes a `Secure` cookie, which is incompatible with local HTTP. Two session authorities cause inconsistent redirect behavior.  
-  **Recommendation:** Decide between Nest JWT and Supabase as the only session authority. If Nest stays, issue same-origin `HttpOnly`, `Secure` (production), `SameSite` cookies through a backend or Next BFF/Route Handler; stop reading refresh tokens in browser code.  
+  **Recommendation:** Issue same-origin `HttpOnly`, `Secure` (production), `SameSite` cookies through a backend or Next BFF/Route Handler; stop reading refresh tokens in browser code.  
   **Benefit:** Stronger session protection and a prerequisite for safe server rendering/SSE.  
   **Priority:** Critical · **Complexity:** Large  
   **Files:** `LoginForm.tsx`, `SignupForm.tsx`, `userRequests.ts`, `authRequests.ts`, `middleware.ts`, landing/auth pages.

@@ -106,9 +106,9 @@ These are non-negotiable for a portfolio that claims modern practices.
 
 ### 3.1 Security and identity first
 
-- Remove `NEXT_PUBLIC_*` names for sensitive Supabase/service/JWT secrets and rotate any real secret ever placed under those names.
+- Keep authentication credentials server-only and rotate any credentials that were previously exposed through public configuration.
 - Remove development fallback JWT secrets from frontend and backend. Missing required secrets must fail deployment/startup.
-- Choose **one** auth authority: either Nest JWT or Supabase. The current code mixes them: Nest handles login while Supabase only gates some redirects.
+- Keep the Get It Done backend as the single authentication authority.
 - Move refresh tokens and preferably all session cookies to `HttpOnly`, `Secure` in production, `SameSite` cookies. Use a Next Route Handler/BFF or backend cookie flow.
 - Verify JWT signatures for every protected route, not only decoded expiration. Correct the `/profileSettings` versus `/profile-settings` protection mismatch.
 - Derive client IP at the trusted proxy/backend, not by calling an IP lookup service from middleware or login forms.

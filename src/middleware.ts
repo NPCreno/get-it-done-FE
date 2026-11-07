@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { base64UrlDecode, getIPAddress } from "./app/utils/utils";
 import { refreshAccessToken } from "./app/api/auth/authRequests";
-const JWT_SECRET = process.env.JWT_SECRET || 'your-256-bit-secret';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_ALGORITHM = 'HS256';
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET must be set before the application starts.");
+}
 
 const publicRoutes = ["/login", "/signup", "/forgot-password"];
 const protectedRoutes = ["/dashboard", "/projects", "/notifications", "/profile-settings"];
@@ -116,27 +120,3 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
-
-// import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
-// import { NextRequest, NextResponse } from "next/server";
-
-// export async function middleware(req: NextRequest) {
-//   const res = NextResponse.next();
-
-//   const supabase = createMiddlewareClient({ req, res });
-
-//   const {
-//     data: { session },
-//   } = await supabase.auth.getSession();
-
-//   console.log("Middleware running");
-//   console.log("session: ", session);
-//   if (!session) {
-//     return NextResponse.redirect(new URL("/", req.url));
-//   }
-//   return res;
-// }
-
-// export const config = {
-//   matcher: ["/dashboard", "/projects", "/notifications", "/profileSettings"],
-// };
