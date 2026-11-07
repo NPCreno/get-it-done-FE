@@ -252,6 +252,38 @@ This is an excellent portfolio feature once its security/data model is sound: it
 | Public shareable template pages | Good SEO landing pages that connect marketing to product value. | Dynamic metadata, slugs, OG images, CMS/revalidation. | CMS pilot. |
 | Planning assistant (optional) | AI can create structured task plans from a user goal, then require user approval. | Structured output, evaluation, rate limits, cost/abuse controls, UX. | Stable task contract, audit/logging. |
 
+### MCP task agent — a later, controlled capability
+
+An MCP server can be a strong portfolio feature because it connects your own task domain to AI clients without turning a model into an untrusted database administrator. It should **not** be the first implementation: it depends on SEC-02 (secure session ownership), DATA-01/DATA-02 (typed API contract), and backend authorization/tests.
+
+#### First tool set
+
+1. `list_projects` — read-only; returns only projects the authenticated user can access.
+2. `list_tasks` / `get_task` — read-only, paginated, and scope-checked.
+3. `propose_task_plan` — returns a structured, non-persistent plan for user review.
+4. `create_task` — writes one validated task only after explicit user confirmation; the server derives identity from the session, never model-supplied `user_id`.
+5. `update_task_status` — optional after task creation is reliable; do not expose delete tools in the first release.
+
+#### Non-negotiable agent guardrails
+
+- Authenticate the MCP caller and map it to exactly one Get It Done user/workspace.
+- Reuse Nest domain services and authorization checks; do not let MCP write directly to Postgres.
+- Validate every tool input with explicit schemas; enforce enum/date/project ownership constraints server-side.
+- Require confirmation for persistent writes and show the exact task(s) that will be created.
+- Use idempotency keys so retries cannot create duplicate tasks.
+- Record an audit event: actor, tool, sanitized input, result, timestamp, and correlation ID.
+- Rate-limit write tools and return structured, user-safe errors.
+- Never give an agent raw database credentials, admin tokens, refresh tokens, or cross-user list access.
+
+#### Learning/demo sequence
+
+- [ ] Build read-only tools with authentication, scopes, tests, and an audit log.
+- [ ] Build `propose_task_plan` with a strict JSON schema and no database write.
+- [ ] Add explicit-confirmation `create_task` with idempotency and integration tests.
+- [ ] Demonstrate: “Plan my launch week” → proposed tasks → user confirms → tasks appear in dashboard/activity history.
+
+**Portfolio evidence:** a tool contract, threat model, authorization tests, and a short demo that visibly shows the confirmation boundary.
+
 ### E-commerce later: a sensible “Focus Store” extension
 
 Make commerce adjacent to the product rather than bolted on:
