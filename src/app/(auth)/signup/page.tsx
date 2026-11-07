@@ -1,27 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import SignupForm from "@/app/components/auth/SignupForm";
-import { supabase } from "@/app/lib/supabase";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
   const [isSignedUp, setIsSignedUp] = useState(false);
-
-  // Check if user is already logged in
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        router.push("/dashboard");
-      } else {
-        setIsLoading(false);
-      }
-    };
-
-    checkSession();
-  }, [router]);
 
   // Handle view changes (e.g., switch to login)
   const handleViewChange = (view: string) => {
@@ -35,14 +19,6 @@ export default function SignupPage() {
       }, 3000);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-default"></div>
-      </div>
-    );
-  }
 
   if (isSignedUp) {
     return (

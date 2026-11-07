@@ -86,7 +86,7 @@ docker-compose exec app <command>
 
 Example (run tests):
 ```bash
-docker-compose exec app npm test
+docker-compose exec app pnpm test
 ```
 
 ## Environment Variables
@@ -94,8 +94,6 @@ docker-compose exec app npm test
 Create a `.env` file based on `.env.example` with your configuration. Required environment variables include:
 
 - `NODE_ENV` - Set to 'development' or 'production'
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_API_URL`
 - Other Next.js and application-specific variables
 

@@ -1,20 +1,22 @@
-FROM node:18-alpine as base
+FROM node:22-alpine as base
 RUN apk add --no-cache g++ make py3-pip libc6-compat
+RUN npm install -g pnpm@11.28.9
 WORKDIR /app
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
 EXPOSE 3000
 
 FROM base as builder
 WORKDIR /app
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 
 FROM base as production
 WORKDIR /app
 
 ENV NODE_ENV=production
-RUN npm ci
+RUN pnpm install --frozen-lockfile --prod
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
@@ -26,10 +28,10 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
 
-CMD npm start
+CMD pnpm start
 
 FROM base as dev
 ENV NODE_ENV=development
-RUN npm install 
+RUN pnpm install --frozen-lockfile
 COPY . .
-CMD npm run dev
+CMD pnpm run dev
