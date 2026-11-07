@@ -1,6 +1,6 @@
 FROM node:22-alpine as base
 RUN apk add --no-cache g++ make py3-pip libc6-compat
-RUN npm install -g pnpm@11.13.0
+RUN npm install -g pnpm@11.28.9
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 EXPOSE 3000
