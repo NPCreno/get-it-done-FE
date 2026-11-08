@@ -1,0 +1,7 @@
+{
+  "exclude": [
+    "coverage/",
+    "tsconfig.tsbuildinfo",
+    "pnpm-lock.yaml"
+  ]
+}
