@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify, errors } from "jose";
-import { getIPAddress } from "./app/utils/utils";
+import { getClientIp } from "./app/utils/clientIp";
 import { refreshAccessToken } from "./app/api/auth/authRequests";
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_ALGORITHM = 'HS256';
@@ -38,6 +38,7 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get("access_token")?.value;
   const refreshToken = req.cookies.get("refresh_token")?.value;
+  const clientIp = getClientIp(req.headers);
 
   // Login/logout endpoints handle their own cookies
   if (authApiRoutes.some(route => isRoute(pathname, route))) {
@@ -71,7 +72,7 @@ export async function middleware(req: NextRequest) {
 
   // No access token (e.g. the cookie expired) but a refresh token exists
   if (!token) {
-    const refreshResult = await refreshAccessToken(refreshToken!, await getIPAddress());
+    const refreshResult = await refreshAccessToken(refreshToken!, clientIp);
     return refreshResult ?? redirectToLogin(req);
   }
 
@@ -81,7 +82,7 @@ export async function middleware(req: NextRequest) {
 
     // Valid but about to expire: refresh ahead of time, keep going if it fails
     if (refreshToken && payload.exp && payload.exp - now < REFRESH_WINDOW_SECONDS) {
-      const refreshResult = await refreshAccessToken(refreshToken, await getIPAddress());
+      const refreshResult = await refreshAccessToken(refreshToken, clientIp);
       if (refreshResult) return refreshResult;
     }
 
@@ -91,7 +92,7 @@ export async function middleware(req: NextRequest) {
     // Bad signature, malformed token or wrong claims are rejected.
     if (err instanceof errors.JWTExpired) {
       if (refreshToken) {
-        const refreshResult = await refreshAccessToken(refreshToken, await getIPAddress());
+        const refreshResult = await refreshAccessToken(refreshToken, clientIp);
         if (refreshResult) return refreshResult;
       }
     } else {

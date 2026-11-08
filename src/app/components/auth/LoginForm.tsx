@@ -4,7 +4,6 @@ import { useFormik } from "formik";
 import { loginSchema } from "@/app/schemas/loginSchema";
 import { Loader2 } from "lucide-react";
 import InputBox from "@/app/components/inputBox";
-import { getIPAddress } from "@/app/utils/utils";
 
 interface LoginFormValues {
   usernameOrEmail: string;
@@ -33,7 +32,6 @@ export default function LoginForm({
         setIsLoading(true);
         setError('');
 
-        const ipAddress = await getIPAddress();
         // The route handler sets the auth cookies server-side
         const response = await fetch('/api/auth/login', {
           method: 'POST',
@@ -42,7 +40,6 @@ export default function LoginForm({
             usernameOrEmail: values.usernameOrEmail,
             password: values.password,
             rememberMe: values.rememberMe,
-            ipAddress,
           }),
         });
         const result = await response.json().catch(() => ({}));

@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 
 // Helper function to refresh token
-export async function refreshAccessToken(refreshToken: string, ipAddress: string) {
+export async function refreshAccessToken(refreshToken: string, clientIp: string) {
   try {
     console.log("Attempting to refresh token...");
     const refreshResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-Client-IP': clientIp,
       },
-      body: JSON.stringify({ refreshToken, ipAddress }),
+      body: JSON.stringify({ refreshToken }),
     });
 
     if (refreshResponse.ok) {

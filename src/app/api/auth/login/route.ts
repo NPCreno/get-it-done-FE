@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getClientIp } from "@/app/utils/clientIp";
 
 const REFRESH_COOKIE_DAYS = 7;
 const REFRESH_COOKIE_DAYS_REMEMBER_ME = 30;
@@ -7,7 +8,6 @@ interface LoginBody {
   usernameOrEmail: string;
   password: string;
   rememberMe: boolean;
-  ipAddress: string;
 }
 
 interface LoginApiResponse {
@@ -21,15 +21,14 @@ interface LoginApiResponse {
 
 function parseBody(body: unknown): LoginBody | null {
   if (typeof body !== "object" || body === null) return null;
-  const { usernameOrEmail, password, rememberMe, ipAddress } = body as Record<string, unknown>;
+  const { usernameOrEmail, password, rememberMe } = body as Record<string, unknown>;
   if (
     typeof usernameOrEmail !== "string" || usernameOrEmail.length === 0 ||
-    typeof password !== "string" || password.length === 0 ||
-    typeof ipAddress !== "string"
+    typeof password !== "string" || password.length === 0
   ) {
     return null;
   }
-  return { usernameOrEmail, password, rememberMe: rememberMe === true, ipAddress };
+  return { usernameOrEmail, password, rememberMe: rememberMe === true };
 }
 
 export async function POST(req: NextRequest) {
@@ -51,14 +50,16 @@ export async function POST(req: NextRequest) {
     ...(isEmail ? { email: body.usernameOrEmail } : { username: body.usernameOrEmail }),
     password: body.password,
     rememberMe: body.rememberMe,
-    ipAddress: body.ipAddress,
   };
 
   let apiResponse: Response;
   try {
     apiResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${endpoint}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Client-IP": getClientIp(req.headers),
+      },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(10000),
     });
