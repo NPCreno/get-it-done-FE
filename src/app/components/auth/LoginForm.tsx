@@ -2,10 +2,8 @@
 import React, { useState } from "react";
 import { useFormik } from "formik";
 import { loginSchema } from "@/app/schemas/loginSchema";
-import { loginEmail, loginUsername } from "@/app/api/userRequests";
 import { Loader2 } from "lucide-react";
 import InputBox from "@/app/components/inputBox";
-import Cookies from 'js-cookie';
 import { getIPAddress } from "@/app/utils/utils";
 
 interface LoginFormValues {
@@ -36,29 +34,21 @@ export default function LoginForm({
         setError('');
 
         const ipAddress = await getIPAddress();
-        let response;
-        if (values.usernameOrEmail.includes('@')) {
-          response = await loginEmail(values.usernameOrEmail, values.password, values.rememberMe, ipAddress);
-        } else {
-          response = await loginUsername(values.usernameOrEmail, values.password, values.rememberMe, ipAddress);
-        }
+        // The route handler sets the auth cookies server-side
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            usernameOrEmail: values.usernameOrEmail,
+            password: values.password,
+            rememberMe: values.rememberMe,
+            ipAddress,
+          }),
+        });
+        const result = await response.json().catch(() => ({}));
 
-        // The API returns { data, error } format
-        if (response.error) {
-          throw new Error(response.error || 'Login failed');
-        }
-
-        // Store the access token in a cookie
-        if (response.data?.data?.access_token) {
-          const cookieOptions = {
-            expires: response.data.data.expires_in,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict' as const,
-            path: '/',
-          };
-          
-          Cookies.set('access_token', response.data.data.access_token, cookieOptions);
-          Cookies.set('refresh_token', response.data.data.refresh_token, cookieOptions);
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Login failed');
         }
 
         // Show success state

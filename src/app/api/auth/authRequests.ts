@@ -44,7 +44,7 @@ export async function refreshAccessToken(refreshToken: string, ipAddress: string
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
           path: '/',
-          httpOnly: true,
+          httpOnly: false,
         });
 
         // console.log("New access token set, continuing to protected route");

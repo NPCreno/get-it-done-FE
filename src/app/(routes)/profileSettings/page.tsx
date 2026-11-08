@@ -8,7 +8,6 @@ import { useEffect, useRef, useState } from "react";
 import { Toast } from "@/app/components/toast";
 import { getAccessToken, parseJwt } from "@/app/utils/utils";
 import ConfirmationModal from "@/app/components/modals/confirmation";
-import Cookies from 'js-cookie';
 import LoadingPage from "@/app/components/loader";
 import InputBox from "@/app/components/inputBox";
 import { useFormState } from "@/app/context/FormProvider";
@@ -140,9 +139,12 @@ export default function ProfileSettingsPage() {
     }, 400);
   };
 
-  const confirmLogout = () => {
-    Cookies.remove('access_token');
-    Cookies.remove('refresh_token');
+  const confirmLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout request failed:', error);
+    }
     localStorage.removeItem('pomodoroTimerState');
     window.location.href = '/';
   };
