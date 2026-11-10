@@ -19,22 +19,19 @@ import {
 import { FormikErrors, useFormik } from "formik";
 import { projectSchema } from "@/app/schemas/projectSchema";
 import { Toast } from "@/app/components/toast";
+import { describeFailure, isUserFacing } from "@/lib/apiClient";
 import ViewProjectModal from "@/app/components/modals/viewProject";
 import { IProject } from "@/app/interface/IProject";
 import { CreateProjectDto } from "@/app/interface/dto/create-project-dto";
-import { ICreateProjectResponse } from "@/app/interface/responses/ICreateProjectResponse";
 import { ITask } from "@/app/interface/ITask";
 import { CreateTaskDto } from "@/app/interface/dto/create-task-dto";
 import { createTaskSchema } from "@/app/schemas/createTaskSchema";
 import TaskModal from "@/app/components/modals/taskModal";
 import { UpdateTaskDto } from "@/app/interface/dto/update-task-dto";
-import { ITaskResponse } from "@/app/interface/responses/ITaskResponse";
 import LoadingPage from "@/app/components/loader";
 import { IProjectOrTaskFormValues } from "@/app/interface/forms/IProjectorTaskFormValues";
 import { IProjectFormErrors } from "@/app/interface/forms/IProjectFormErrors";
 import ProjectModal from "@/app/components/modals/projectModal";
-import { IProjectResponse } from "@/app/interface/responses/IProjectResponse";
-import { IUpdateProjectResponse } from "@/app/interface/responses/IUpdateProjectResponse";
 import { UpdateProjectDto } from "@/app/interface/dto/update-project-dto";
 
 interface ProjectModalState {
@@ -145,11 +142,10 @@ export default function ProjectsPage() {
         console.error("No User data found");
         return;
       }
-      const response: ICreateProjectResponse = await createProject(
+      const response = await createProject(
         values as CreateProjectDto
       );
-      if (response.status === "success") {
-        setIsLoading(false);
+      if (response.ok) {
         setRefreshPage(!refreshPage)
         setIsProjectModalOpen({
           isOpen: false,
@@ -171,9 +167,21 @@ export default function ProjectsPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
+      } else if (isUserFacing(response)) {
+        setToastMessage({
+          ...describeFailure(response),
+          className: "text-error-default",
+        });
+        setShowToast(true);
+        setIsExitingToast(false);
+        setTimeout(() => {
+          setIsExitingToast(true);
+          setTimeout(() => {
+            setShowToast(false);
+          }, 400);
+        }, 10000);
       }
     } catch (error) {
-      setIsLoading(false);
       if (error instanceof Error) {
         setToastMessage({
           title: "Something Went Wrong",
@@ -195,6 +203,8 @@ export default function ProjectsPage() {
           setShowToast(false); // Remove after animation completes
         }, 400); // Must match the toastOut animation duration
       }, 10000); // Toast display duration
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -205,11 +215,10 @@ export default function ProjectsPage() {
         console.error("No User data found");
         return;
       }
-      const response: IUpdateProjectResponse = await updateProject(
+      const response = await updateProject(
         values as UpdateProjectDto
       );
-      if (response.status === "success") {
-        setIsLoading(false);
+      if (response.ok) {
         setRefreshPage(!refreshPage)
         setIsProjectModalOpen({
           isOpen: false,
@@ -231,9 +240,21 @@ export default function ProjectsPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
+      } else if (isUserFacing(response)) {
+        setToastMessage({
+          ...describeFailure(response),
+          className: "text-error-default",
+        });
+        setShowToast(true);
+        setIsExitingToast(false);
+        setTimeout(() => {
+          setIsExitingToast(true);
+          setTimeout(() => {
+            setShowToast(false);
+          }, 400);
+        }, 10000);
       }
     } catch (error) {
-      setIsLoading(false);
       if (error instanceof Error) {
         setToastMessage({
           title: "Something Went Wrong",
@@ -255,6 +276,8 @@ export default function ProjectsPage() {
           setShowToast(false); // Remove after animation completes
         }, 400); // Must match the toastOut animation duration
       }, 10000); // Toast display duration
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -262,9 +285,8 @@ export default function ProjectsPage() {
     if (userData) {
       const fetchProjects = async () => {
         const projects = await getProjectsForUser(userData.user_id);
-        if (projects?.status === "success") {
+        if (projects.ok) {
           setProjectData(projects.data);
-          return;
         } else {
           setProjectData([]);
         }
@@ -296,10 +318,11 @@ export default function ProjectsPage() {
             startDate,
             endDate
           );
-          if (tasks) {
-            setTasks(tasks);
+          if (tasks.ok) {
+            setTasks(tasks.data);
           } else {
             setTasks([]);
+            if (isUserFacing(tasks)) console.error("Failed to fetch tasks by project:", tasks.kind, tasks.message);
           }
         } catch (error) {
           setTasks([]);
@@ -354,8 +377,8 @@ export default function ProjectsPage() {
         end_date: values.end_date || undefined,
         status: values.status || "Pending",
       };
-      const response: ITaskResponse = await createTaskApi(payload);
-      if (response.status === "success") {
+      const response = await createTaskApi(payload);
+      if (response.ok) {
         clearValueAndErrors();
         setUpdateTasksData(!updateTasksData);
         setIsTaskModalOpen(false);
@@ -375,12 +398,13 @@ export default function ProjectsPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
-      } else {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
+      } else if (isUserFacing(response)) {
+        if (response.kind === 'api') {
+          clearValueAndErrors();
+          setIsTaskModalOpen(false);
+        }
         setToastMessage({
-          title: response.message,
-          description: response?.error || "Something Went Wrong",
+          ...describeFailure(response),
           className: "text-error-default",
         });
 
@@ -434,9 +458,8 @@ export default function ProjectsPage() {
         status: values.status || undefined,
         task_id: selectedTaskData ? selectedTaskData.task_id : values.task_id,
       };
-      const response: ITaskResponse = await updateTaskApi(payload);
-      if (response.status === "success") {
-        setIsLoading(false);
+      const response = await updateTaskApi(payload);
+      if (response.ok) {
         clearValueAndErrors();
         setUpdateTasksData(!updateTasksData);
         setIsTaskModalOpen(false);
@@ -456,13 +479,13 @@ export default function ProjectsPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
-      } else {
-        setIsLoading(false);
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
+      } else if (isUserFacing(response)) {
+        if (response.kind === 'api') {
+          clearValueAndErrors();
+          setIsTaskModalOpen(false);
+        }
         setToastMessage({
-          title: response.message,
-          description: response?.error || "Something Went Wrong",
+          ...describeFailure(response),
           className: "text-error-default",
         });
 
@@ -498,13 +521,15 @@ export default function ProjectsPage() {
           setShowToast(false); // Remove after animation completes
         }, 400); // Must match the toastOut animation duration
       }, 10000); // Toast display duration
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const deleteTask = async (taskId: string) => {
     try {
-      const response: ITaskResponse = await deleteTaskApi(taskId);
-      if (response.status === "success") {
+      const response = await deleteTaskApi(taskId);
+      if (response.ok) {
         clearValueAndErrors();
         setUpdateTasksData(!updateTasksData);
         setIsTaskModalOpen(false);
@@ -524,12 +549,13 @@ export default function ProjectsPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
-      } else {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
+      } else if (isUserFacing(response)) {
+        if (response.kind === 'api') {
+          clearValueAndErrors();
+          setIsTaskModalOpen(false);
+        }
         setToastMessage({
-          title: response.message,
-          description: response?.error || "Something Went Wrong",
+          ...describeFailure(response),
           className: "text-error-default",
         });
 
@@ -633,7 +659,7 @@ export default function ProjectsPage() {
         }
         
         const projects = await getProjectsForUser(userData.user_id);
-        if (projects?.status === "success") {
+        if (projects.ok) {
           if (isFirstLoad.current) {
             setIsPageLoading(false);
             isFirstLoad.current = false;
@@ -659,33 +685,38 @@ export default function ProjectsPage() {
   }, [pageLoading]);
 
   useEffect(() => {
+    // Abort on cleanup so a stale project never overwrites the form.
+    const controller = new AbortController();
     const fetchProjectById = async () => {
-      try {
-        if (!userData) return;
-        if (!isProjectModalOpen.projectId) return;
-        const project: IProjectResponse = await getProjectById(isProjectModalOpen.projectId);
-        if (project?.status === "success") {
-          setFieldValue("title", project.data?.title);
-          setFieldValue("description", project.data?.description);
-          setFieldValue("due_date", project.data?.due_date);
-          setFieldValue("colorLabel", project.data?.colorLabel);
-          setFieldValue("color", project.data?.color);
-          setFieldValue("project_id", project.data?.project_id);
-          return;
-        } 
-      } catch (error) {
-        console.error('Error fetching project:', error);
-        throw error;
+      if (!userData) return;
+      if (!isProjectModalOpen.projectId) return;
+      const project = await getProjectById(isProjectModalOpen.projectId, { signal: controller.signal });
+      if (controller.signal.aborted) return;
+      if (project.ok) {
+        setFieldValue("title", project.data?.title);
+        setFieldValue("description", project.data?.description);
+        setFieldValue("due_date", project.data?.due_date);
+        setFieldValue("colorLabel", project.data?.colorLabel);
+        setFieldValue("color", project.data?.color);
+        setFieldValue("project_id", project.data?.project_id);
+      } else if (isUserFacing(project)) {
+        setToastMessage({
+          title: "Could not load project details",
+          description: project.message,
+          className: "text-error-default",
+        });
+        setShowToast(true);
+        setIsExitingToast(false);
       }
-      
     };
     fetchProjectById();
+    return () => controller.abort();
   }, [isProjectModalOpen.projectId, setFieldValue, userData]);
 
   const deleteProject = async (projectId: string) => {
     try {
-      const response: IProjectResponse = await deleteProjectById(projectId);
-      if (response.status === "success") {
+      const response = await deleteProjectById(projectId);
+      if (response.ok) {
         clearValueAndErrors();
         setUpdateTasksData(!updateTasksData);
         setIsTaskModalOpen(false);
@@ -706,12 +737,13 @@ export default function ProjectsPage() {
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
         setRefreshPage(!refreshPage);
-      } else {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
+      } else if (isUserFacing(response)) {
+        if (response.kind === 'api') {
+          clearValueAndErrors();
+          setIsTaskModalOpen(false);
+        }
         setToastMessage({
-          title: response.message,
-          description: response?.error || "Something Went Wrong",
+          ...describeFailure(response),
           className: "text-error-default",
         });
 

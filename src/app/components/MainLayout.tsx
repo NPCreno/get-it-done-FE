@@ -6,6 +6,7 @@ import HamburgerButton from "./HamburgerButton";
 import { useFormState } from "@/app/context/FormProvider";
 import { getAccessToken, parseJwt } from "../utils/utils";
 import { getUser } from "../api/userRequests";
+import { isUserFacing } from "@/lib/apiClient";
 
 export default function MainLayout({
   children,
@@ -80,17 +81,21 @@ export default function MainLayout({
               setUserData(parsedUser);
               const response = await getUser(parsedUser.user_id);
 
-              if (response) {
+              if (response.ok) {
                 setIsDoneFetchingUser(true);
-                setUserData(response);
+                setUserData(response.data);
+              } else if (isUserFacing(response)) {
+                console.error("Failed to fetch user:", response.kind, response.message);
               }
               return;
             }
             // Only fetch updated user info if we have a user
             const response = await getUser(userData.user_id);
-            if (response) {
+            if (response.ok) {
               setIsDoneFetchingUser(true);
-              setUserData(response);
+              setUserData(response.data);
+            } else if (isUserFacing(response)) {
+              console.error("Failed to fetch user:", response.kind, response.message);
             }
           } catch (error) {
             console.error("Failed to fetch user:", error);

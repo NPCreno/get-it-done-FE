@@ -15,12 +15,18 @@ One line per significant source file. Paths are relative to the repo root.
 
 ## Middleware and BFF
 - `src/middleware.ts` — public-route allowlist, `jwtVerify`, proactive and expired-token refresh
-- `src/app/api/auth/authRequests.ts` — `refreshAccessToken(refreshToken, clientIp)`, sets refreshed cookies
+- `src/app/api/auth/session.ts` — edge-safe shared session helpers: `refreshWithBackend` (ok / invalid / unavailable), `setSessionCookies`, `clearSessionCookies`, `revokeWithBackend`, `backendAuthHeaders`, `isSameOrigin`
+- `src/app/api/auth/refresh/route.ts` — `POST /api/auth/refresh`, client-side silent refresh (never clears cookies)
 - `src/app/api/auth/login/route.ts` — BFF login, sets httpOnly refresh cookie and readable access cookie
-- `src/app/api/auth/logout/route.ts` — BFF logout, clears cookies
+- `src/app/api/auth/logout/route.ts` — BFF logout, revokes the token family on the BE, clears cookies
+
+## Browser API client (`src/lib/`)
+- `apiClient.ts` — `apiClient()` never throws, returns `ApiResult<T>`; `apiPath`, `isUserFacing`, `describeFailure`
+- `clientSession.ts` — `refreshSession()` (in-tab singleton + Web Lock `gid-session`), `expireSession()`
 
 ## Request helpers (`src/app/api/`)
-- `userRequests.ts` — `createUser`, `getUser`, `updateUser` (plus unused `loginEmail`, `loginUsername`)
+All return `ApiResult<T>`; callers check `result.ok`.
+- `userRequests.ts` — `createUser`, `getUser`, `updateUser`
 - `projectsRequests.ts` — project create, list, get, update, delete
 - `taskRequests.ts` — task and subtask CRUD, status updates, dashboard, trend, distribution, heatmap, streak
 
