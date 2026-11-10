@@ -1,5 +1,3 @@
-export interface ITaskDistribution {
-    title: string;
-    value: number;
-    fill: string;
-}
+import type { Distribution } from "../contracts/responses";
+
+export type ITaskDistribution = Distribution;

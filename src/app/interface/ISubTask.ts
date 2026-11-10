@@ -1,7 +1,3 @@
-export interface ISubTask {
-    id: string;
-    status: string;
-    taskSubInstance_id: string;
-    title: string;
-    due_date: Date;
-}
+import type { SubTask } from "../contracts/responses";
+
+export type ISubTask = SubTask;

@@ -75,9 +75,19 @@ shadcn (`shadcn/`)
 
 ## Interfaces (`src/app/interface/`)
 - `I*.ts` — entity and response shapes (`IUser`, `IProject`, `ITask`, `ISubTask`, `INotification`, `IDashboardData`, `IHeatmapData`, `ITaskCompletionTrendData`, `ITaskDistribution`)
-- `dto/` — request payloads (create and update for user, project, task, subtask)
-- `forms/` — form value and error types
-- `responses/` — API response wrappers
+- `forms/` — form value and error types (`ITaskFormValues` etc. re-export `contracts/forms.ts`)
+- `I*.ts` response types are aliases of the zod-inferred types in `contracts/responses.ts`
+
+## Contracts (`src/app/contracts/`)
+- `enums.ts` — FE literals (`TASK_PRIORITIES`, `WEEKDAYS`, …) and `narrow()`
+- `common.ts` — `LIMITS`, `PATTERNS`, `ApiDate`, `DateOnly`, `Count`, `NullableText`, `OptionalText`
+- `requests.ts` — zod request schemas (no `user_id`)
+- `responses.ts` — zod response schemas, one per endpoint shape
+- `forms.ts` — form value types (ISO-string dates)
+- `mappers.ts` — `toCreateTaskRequest`, `toUpdateTaskRequest`, `toCreateProjectRequest`, `toUpdateProjectRequest`, `toCreateSubTaskRequest`, `toSignupRequest`, `toProfileUpdateRequest`, `toIso`, `cleanRepeatDays`
+- `api-contract.json` — vendored copy of the BE export; `__fixtures__/` — captured BE responses
+- `__tests__/` — contract, response-fixture and mapper tests
+- `../../../scripts/api-contract.mjs` — `contract:sync` / `contract:check`; `../../../vitest.config.ts`
 
 ## Schemas (`src/app/schemas/`)
 - `loginSchema.tsx`, `signUpSchema.tsx`, `forgotPasswordSchema.tsx`, `updateUserSchema.tsx`, `projectSchema.tsx`, `createTaskSchema.tsx`, `createSubTaskSchema.tsx` — form validation

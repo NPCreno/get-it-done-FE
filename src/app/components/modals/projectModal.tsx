@@ -16,8 +16,7 @@ interface FormValues {
   description: string;
   color: string;
   colorLabel: string;
-  due_date: Date | null;
-  user_id: string;
+  due_date: string | null;
 }
 
 interface FormErrors {
@@ -130,9 +129,9 @@ export default function ProjectModal({
                 type="dropdown"
                 label="Color" 
                 value={{name: formik.values.colorLabel, color: formik.values.color}} 
-                onChange={(e) => {
-                  formik.setFieldValue("color", e.target.value);
-                  formik.setFieldValue("colorLabel", e.target.name);
+                onSelect={(option) => {
+                  formik.setFieldValue("color", option.color ?? "");
+                  formik.setFieldValue("colorLabel", option.name);
                 }} 
                 isLabelVisible={true}
                 placeholder="Select color"
@@ -148,7 +147,7 @@ export default function ProjectModal({
                     ? new Date(formik.values.due_date).toISOString().substring(0, 16) 
                     : "" 
                 }}
-                onChange={(e) => formik.setFieldValue("due_date", new Date(e.target.value))} 
+                onChange={(e) => formik.setFieldValue("due_date", e.target.value ? new Date(e.target.value).toISOString() : null)} 
                 isLabelVisible={true}
                 placeholder="Select due date (optional)"
                 error={errors.due_date}

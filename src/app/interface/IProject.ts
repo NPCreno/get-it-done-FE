@@ -1,14 +1,4 @@
-export interface IProject {
-    title: string;
-    description: string;
-    due_date: Date;
-    tasks: number;
-    project_id?: string;
-    color?: string;
-    task_count?: number;
-    task_completed?: number;
-    completed_tasks?: number; // Keeping for backward compatibility
-    updatedAt?: string;
-    createdAt?: string;
-    colorLabel?: string;
-  }
+import type { Project, ProjectListItem } from "../contracts/responses";
+
+/** `projects/getAll` rows have counts; `projects/:id` does not. */
+export type IProject = Project & Partial<Pick<ProjectListItem, "task_count" | "task_completed">>;

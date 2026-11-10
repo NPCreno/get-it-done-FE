@@ -38,23 +38,29 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `src/app/api/` — request helpers
 - `src/app/components/` — `auth/` (3), `modals/` (5), `shadcn/` (10), top level (22)
 - `src/app/context/` — `FormProvider`
-- `src/app/interface/` — TS interfaces plus `dto/`, `forms/`, `responses/`
+- `src/app/contracts/` — transport contract: `enums.ts`, `common.ts`, `requests.ts` and `responses.ts` (zod), `forms.ts`, `mappers.ts`, vendored `api-contract.json`, `__fixtures__/`, `__tests__/`
+- `src/app/interface/` — component-facing types (derived from the zod response schemas) plus `forms/` re-exports
 - `src/app/schemas/` — form validation schemas (7 files)
 - `src/hooks/` — `useTimer.ts`
 - `src/lib/` — `utils.ts`, `timerService.ts`
 
 ## Conventions
 - Route names are camelCase: `/profileSettings`, not `/profile-settings`
-- Formik and react-hook-form both exist, and so do yup and zod (consolidation pending)
+- Forms use Formik + yup. Transport uses zod (`contracts/`). Form value types are separate from transport types; `mappers.ts` converts one to the other. `react-hook-form` was removed
 - Any new page is protected by default; add it to `publicRoutes` in `middleware.ts` only if it must be open
 - Client IP is derived on the server only. Never fetch it from a third party
 - Data calls use `apiClient` helpers and return `ApiResult<T>`: check `result.ok`, toast only if `isUserFacing(result)`, reset spinners in `finally`
-- No test files exist and `package.json` has no `test` script
+- Mappers never put `user_id` in a create body (the backend takes the owner from the token). Update mappers turn `''` into `null` so a value can be cleared. Dates in forms are ISO strings or null
+- Response schemas: a nullable column is `.nullable()`, never `.optional()`; endpoint-specific shapes get their own schema; check them against fixtures
+- Contract sync: the BE exports `docs/api-contract.json` and fixtures. After a BE contract change run `pnpm contract:sync` (needs the sibling `../get-it-done-BE`), then `pnpm test`. `pnpm contract:check` diffs only. CI cannot see the BE repo, so drift is caught locally and by the BE PR checklist
+- Tests: `pnpm test` (vitest: contract, fixtures, mappers). It does not gate the Vercel build
 
 ## Commands
 - `pnpm dev` — dev server
 - `pnpm build` — production build
 - `pnpm lint` — ESLint (`next lint`)
+- `pnpm test` — vitest (`src/**/__tests__/**/*.test.ts`)
+- `pnpm contract:sync` / `pnpm contract:check` — vendored BE contract and fixtures
 - This repo has its own `pnpm-lock.yaml`. Regenerate it with `pnpm install --lockfile-only --ignore-workspace` because the parent folder is also a pnpm workspace
 
 ## Environment

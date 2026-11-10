@@ -1,4 +1,3 @@
-export interface ITaskCompletionTrendData {
-    day: string;
-    completed: number;
-}
+import type { TrendPoint } from "../contracts/responses";
+
+export type ITaskCompletionTrendData = TrendPoint;

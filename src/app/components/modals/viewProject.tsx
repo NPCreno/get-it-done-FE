@@ -126,10 +126,8 @@ const TaskCard = ({ task, handleUpdateTask, handleTaskStatus, handleDeleteTask }
   const handleCheckToggle = () => {
     const audio = new Audio('/soundfx/3.mp3'); 
     audio.play();
-    const updatedTask = {
-      ...task,
-      status: task.status === "Complete" ? "Pending" : "Complete",
-    };
+    const nextStatus: ITask["status"] = task.status === "Complete" ? "Pending" : "Complete";
+    const updatedTask: ITask = { ...task, status: nextStatus };
     handleTaskStatus(updatedTask);
   };
 

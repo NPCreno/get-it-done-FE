@@ -22,17 +22,19 @@ import { Toast } from "@/app/components/toast";
 import { describeFailure, isUserFacing } from "@/lib/apiClient";
 import ViewProjectModal from "@/app/components/modals/viewProject";
 import { IProject } from "@/app/interface/IProject";
-import { CreateProjectDto } from "@/app/interface/dto/create-project-dto";
+import {
+  toCreateProjectRequest,
+  toCreateTaskRequest,
+  toUpdateProjectRequest,
+  toUpdateTaskRequest,
+} from "@/app/contracts/mappers";
 import { ITask } from "@/app/interface/ITask";
-import { CreateTaskDto } from "@/app/interface/dto/create-task-dto";
 import { createTaskSchema } from "@/app/schemas/createTaskSchema";
 import TaskModal from "@/app/components/modals/taskModal";
-import { UpdateTaskDto } from "@/app/interface/dto/update-task-dto";
 import LoadingPage from "@/app/components/loader";
 import { IProjectOrTaskFormValues } from "@/app/interface/forms/IProjectorTaskFormValues";
 import { IProjectFormErrors } from "@/app/interface/forms/IProjectFormErrors";
 import ProjectModal from "@/app/components/modals/projectModal";
-import { UpdateProjectDto } from "@/app/interface/dto/update-project-dto";
 
 interface ProjectModalState {
   isOpen: boolean;
@@ -81,7 +83,6 @@ export default function ProjectsPage() {
       due_date: null,
       colorLabel: "",
       color: "",
-      user_id: userData?.user_id ?? "",
       project_id: "",
       project_title: "",
       project_color: "",
@@ -90,11 +91,11 @@ export default function ProjectsPage() {
       isRecurring: false,
       repeat_every: "",
       repeat_days: [],
-      start_date: new Date(),
+      start_date: new Date().toISOString(),
       end_date: null,
       project: "",
     }),
-    [userData?.user_id]
+    []
   );
 
   const {
@@ -115,12 +116,7 @@ export default function ProjectsPage() {
     validateOnBlur: false,
     onSubmit: async (values) => {
       if (!userData) return;
-      const withUser = {
-        ...values,
-        user_id: userData.user_id,
-        due_date: values.due_date || null,
-      };
-      handleSubmitForm(withUser as IProjectOrTaskFormValues);
+      handleSubmitForm(values as IProjectOrTaskFormValues);
     },
   });
 
@@ -142,9 +138,7 @@ export default function ProjectsPage() {
         console.error("No User data found");
         return;
       }
-      const response = await createProject(
-        values as CreateProjectDto
-      );
+      const response = await createProject(toCreateProjectRequest(values));
       if (response.ok) {
         setRefreshPage(!refreshPage)
         setIsProjectModalOpen({
@@ -215,9 +209,11 @@ export default function ProjectsPage() {
         console.error("No User data found");
         return;
       }
-      const response = await updateProject(
-        values as UpdateProjectDto
-      );
+      if (!values.project_id) {
+        console.error("No project id to update");
+        return;
+      }
+      const response = await updateProject(values.project_id, toUpdateProjectRequest(values));
       if (response.ok) {
         setRefreshPage(!refreshPage)
         setIsProjectModalOpen({
@@ -361,22 +357,9 @@ export default function ProjectsPage() {
         console.error("No User data found");
         return;
       }
-      const payload: CreateTaskDto = {
-        title: values.title,
-        description: values.description,
-        due_date: values.due_date || undefined,
-        user_id: userData.user_id,
-        project_id: selectedProject
-          ? selectedProject.project_id
-          : values.project_id,
-        priority: values.priority || undefined,
-        isRecurring: values.isRecurring || false,
-        repeat_every: values.repeat_every || undefined,
-        repeat_days: values.repeat_days || undefined,
-        start_date: values.start_date || undefined,
-        end_date: values.end_date || undefined,
-        status: values.status || "Pending",
-      };
+      const payload = toCreateTaskRequest(values, {
+        projectId: selectedProject ? selectedProject.project_id : values.project_id,
+      });
       const response = await createTaskApi(payload);
       if (response.ok) {
         clearValueAndErrors();
@@ -450,15 +433,12 @@ export default function ProjectsPage() {
         console.error("No User data found");
         return;
       }
-      const payload: UpdateTaskDto = {
-        title: values.title,
-        description: values.description,
-        due_date: values.due_date || undefined,
-        priority: values.priority || undefined,
-        status: values.status || undefined,
-        task_id: selectedTaskData ? selectedTaskData.task_id : values.task_id,
-      };
-      const response = await updateTaskApi(payload);
+      const taskId = selectedTaskData ? selectedTaskData.task_id : values.task_id;
+      if (!taskId) {
+        console.error("No task id to update");
+        return;
+      }
+      const response = await updateTaskApi(taskId, toUpdateTaskRequest(values));
       if (response.ok) {
         clearValueAndErrors();
         setUpdateTasksData(!updateTasksData);
@@ -615,8 +595,7 @@ export default function ProjectsPage() {
       due_date: task.due_date ?? null,
       colorLabel: "",
       color: "",
-      user_id: userData?.user_id ?? "",
-      project_id: task.project_id,
+      project_id: task.project_id ?? "",
       project_title: task.project_title ?? "",
       project_color: "",
       priority: task.priority,
@@ -695,7 +674,7 @@ export default function ProjectsPage() {
       if (project.ok) {
         setFieldValue("title", project.data?.title);
         setFieldValue("description", project.data?.description);
-        setFieldValue("due_date", project.data?.due_date);
+        setFieldValue("due_date", project.data?.due_date ?? null);
         setFieldValue("colorLabel", project.data?.colorLabel);
         setFieldValue("color", project.data?.color);
         setFieldValue("project_id", project.data?.project_id);
@@ -1004,10 +983,17 @@ export default function ProjectsPage() {
           onClose={() => setIsViewProjectModalOpen(false)}
           project={
             selectedProject ?? {
+              id: 0,
+              project_id: "",
               title: "",
               description: "",
-              due_date: new Date(),
-              tasks: 0,
+              color: "",
+              colorLabel: "",
+              due_date: null,
+              createdAt: "",
+              updatedAt: "",
+              deletedAt: null,
+              user_id: "",
             }
           }
           handleCreateTask={() => {

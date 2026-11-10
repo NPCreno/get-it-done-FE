@@ -23,13 +23,12 @@ interface FormValues {
   project_title: string;
   project_color: string;
   status: string;
-  due_date: Date | null;
+  due_date: string | null;
   isRecurring: boolean;
   repeat_every: string;
   repeat_days: string[];
-  start_date: Date | null;
-  end_date: Date | null;
-  user_id: string;
+  start_date: string | null;
+  end_date: string | null;
 }
 
 interface FormErrors {
@@ -47,7 +46,6 @@ interface FormErrors {
   repeat_days?: string[] | string;
   start_date?: string;
   end_date?: string;
-  user_id?: string;
 }
 
 interface FormikType {
@@ -65,14 +63,6 @@ interface FormikType {
   setFieldError: (field: keyof FormErrors, message: string) => void;
 }
 
-interface CustomChangeEvent extends React.ChangeEvent<HTMLInputElement> {
-  target: HTMLInputElement & {
-    name: string;
-    value: string;
-    project_id: string;
-    color: string;
-  };
-}
 
 export default function TaskModal({
   onClose,
@@ -118,7 +108,15 @@ export default function TaskModal({
     color: option.color,
   }));
 
-  window.addEventListener("keydown", handleEscapeKey);
+  // Register once per mount and remove on unmount: the old code added a new
+  // listener on every render and never removed it.
+  const escapeRef = useRef(handleEscapeKey);
+  escapeRef.current = handleEscapeKey;
+  useEffect(() => {
+    const listener = (event: KeyboardEvent) => escapeRef.current(event);
+    window.addEventListener("keydown", listener);
+    return () => window.removeEventListener("keydown", listener);
+  }, []);
 
   const clearAllData = () => {
     setSelectedTaskData(null);
@@ -232,8 +230,8 @@ export default function TaskModal({
               type="dropdown"
               label="Priority"
               value={{ name: formik.values.priority }}
-              onChange={(e) => {
-                formik.setFieldValue("priority", e.target.name);
+              onSelect={(option) => {
+                formik.setFieldValue("priority", option.name);
               }}
               isLabelVisible={true}
               placeholder="Select priority"
@@ -255,14 +253,10 @@ export default function TaskModal({
                   ? preselectedProject.project_id
                   : formik.values.project_id,
               }}
-              onChange={(e) => {
-                const customEvent = e as unknown as CustomChangeEvent;
-                formik.setFieldValue("project_title", customEvent.target.name);
-                formik.setFieldValue("project_color", customEvent.target.value);
-                formik.setFieldValue(
-                  "project_id",
-                  customEvent.target.project_id
-                );
+              onSelect={(option) => {
+                formik.setFieldValue("project_title", option.name);
+                formik.setFieldValue("project_color", option.color ?? "");
+                formik.setFieldValue("project_id", option.project_id ?? "");
               }}
               isLabelVisible={true}
               placeholder="Select project (optional)"
@@ -278,8 +272,8 @@ export default function TaskModal({
               type="dropdown"
               label="Status"
               value={{ name: formik.values.status }}
-              onChange={(e) => {
-                formik.setFieldValue("status", e.target.name);
+              onSelect={(option) => {
+                formik.setFieldValue("status", option.name);
               }}
               isLabelVisible={true}
               placeholder="Select status"
@@ -336,8 +330,8 @@ export default function TaskModal({
                         type="dropdown"
                         label="Repeat Every"
                         value={{ name: formik.values.repeat_every }}
-                        onChange={(e) => {
-                          formik.setFieldValue("repeat_every", e.target.name);
+                        onSelect={(option) => {
+                          formik.setFieldValue("repeat_every", option.name);
                         }}
                         isLabelVisible={true}
                         placeholder="Select repeat every"
@@ -351,7 +345,7 @@ export default function TaskModal({
                         onChange={(e) =>
                           formik.setFieldValue(
                             "repeat_days",
-                            e.target.name.split(",")
+                            e.target.name ? e.target.name.split(",").filter(Boolean) : []
                           )
                         }
                         isLabelVisible={true}

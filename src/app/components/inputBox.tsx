@@ -4,6 +4,12 @@ import { CustomDropdownMenu } from "./dropdown";
 import { DatePickerWithTime } from "./datePickerWithTime";
 import WeekdaySelector from "./weekdaySelector";
 import { useFormState } from "../context/FormProvider";
+export interface DropdownOption {
+  name: string;
+  color?: string;
+  project_id?: string;
+}
+
 interface InputBoxProps {
   label?: string;
   placeholder: string;
@@ -12,7 +18,10 @@ interface InputBoxProps {
     color?: string;
     project_id?: string;
   };
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  /** Text, date and weekday inputs. */
+  onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  /** Dropdowns: receives the chosen option directly (no synthetic event). */
+  onSelect?: (option: DropdownOption) => void;
   type?: "text" | "textarea" | "date" | "dropdown" | "weekdayselector" | "datewithtime" | 'password' | 'email';
   error?: string;
   disabled?: boolean;
@@ -32,19 +41,12 @@ interface InputBoxProps {
   ref?: React.RefObject<HTMLInputElement>;
 }
 
-interface CustomDropdownChangeEvent extends React.ChangeEvent<HTMLInputElement>{
-  target: HTMLInputElement & {
-    name: string;
-    value: string;
-    project_id: string;
-  };
-}
-
 export default function InputBox({
   label,
   placeholder,
   value,
   onChange,
+  onSelect,
   type = "text",
   error,
   disabled,
@@ -112,7 +114,7 @@ export default function InputBox({
             const syntheticEvent = {
               target: { value: date.toISOString() },
             } as React.ChangeEvent<HTMLInputElement>;
-            onChange(syntheticEvent);
+            onChange?.(syntheticEvent);
           }}
           placeholder={placeholder}
           customClass={customClass}
@@ -124,7 +126,7 @@ export default function InputBox({
             const syntheticEvent = {
               target: { value: date.toISOString() },
             } as React.ChangeEvent<HTMLInputElement>;
-            onChange(syntheticEvent);
+            onChange?.(syntheticEvent);
           }}
           placeholder={placeholder}
           customClass={customClass}
@@ -135,7 +137,7 @@ export default function InputBox({
             const syntheticEvent = {
               target: { name: days.join(","), value: days.join(",") },
             } as React.ChangeEvent<HTMLInputElement>;
-            onChange(syntheticEvent);
+            onChange?.(syntheticEvent);
           }}
           defaultSelected={value.name ? value.name.split(",") : []}
           isDisabled={disabled}
@@ -146,15 +148,7 @@ export default function InputBox({
           options={dropdownptions ?? []}
           selectedOption={value}
           disabled={disabled}
-          setSelectedOption={(option) =>
-            onChange({
-              target: {
-                name: option.name,
-                value: option.color ?? '',
-                project_id: option.project_id ?? '',
-              },
-            } as CustomDropdownChangeEvent)
-          }
+          setSelectedOption={(option) => onSelect?.(option)}
         />
       ) : (
         <></>

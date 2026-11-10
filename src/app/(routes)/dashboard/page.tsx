@@ -26,10 +26,9 @@ import {
   getWeekRange,
 } from "@/app/utils/utils";
 import { IProject } from "@/app/interface/IProject";
-import { CreateTaskDto } from "@/app/interface/dto/create-task-dto";
+import { toCreateTaskRequest, toUpdateTaskRequest } from "@/app/contracts/mappers";
 import { Toast } from "@/app/components/toast";
 import { ITask } from "@/app/interface/ITask";
-import { UpdateTaskDto } from "@/app/interface/dto/update-task-dto";
 import { ApiResult, describeFailure, isUserFacing } from "@/lib/apiClient";
 import LoadingPage from "@/app/components/loader";
 import { IDashboardData } from "@/app/interface/IDashboardData";
@@ -108,7 +107,6 @@ export default function DashboardPage() {
       title: "",
       description: "",
       due_date: null,
-      user_id: userData?.user_id ?? "",
       project_id: "",
       project_title: "",
       project_color: "",
@@ -121,7 +119,7 @@ export default function DashboardPage() {
       end_date: null,
       project: "",
     }),
-    [userData?.user_id]
+    []
   );
 
   const {
@@ -142,12 +140,7 @@ export default function DashboardPage() {
     validateOnBlur: false,
     onSubmit: async (values) => {
       if (!userData) return;
-      const withUser = {
-        ...values,
-        user_id: userData.user_id,
-        due_date: values.due_date || undefined,
-      };
-      handleSubmitForm(withUser);
+      handleSubmitForm(values);
     },
   });
 
@@ -167,20 +160,7 @@ export default function DashboardPage() {
         console.error("No User data found");
         return;
       }
-      const payload: CreateTaskDto = {
-        title: values.title,
-        description: values.description,
-        due_date: values.due_date || undefined,
-        user_id: userData.user_id,
-        project_id: values.project_id || undefined,
-        priority: values.priority || undefined,
-        isRecurring: values.isRecurring || false,
-        repeat_every: values.repeat_every || undefined,
-        repeat_days: values.repeat_days || undefined,
-        start_date: values.start_date || undefined,
-        end_date: values.end_date || undefined,
-        status: values.status || undefined,
-      };
+      const payload = toCreateTaskRequest(values);
       const response = await createTaskApi(payload);
       if (response.ok) {
         setUpdateTaskDashboard(!updateTaskDashboard);
@@ -374,15 +354,12 @@ export default function DashboardPage() {
         console.error("No User data found");
         return;
       }
-      const payload: UpdateTaskDto = {
-        title: values.title,
-        description: values.description,
-        due_date: values.due_date || undefined,
-        priority: values.priority || undefined,
-        status: values.status || undefined,
-        task_id: selectedTaskData ? selectedTaskData.task_id : values.task_id,
-      };
-      const response = await updateTaskApi(payload);
+      const taskId = selectedTaskData ? selectedTaskData.task_id : values.task_id;
+      if (!taskId) {
+        console.error("No task id to update");
+        return;
+      }
+      const response = await updateTaskApi(taskId, toUpdateTaskRequest(values));
       if (response.ok) {
         setUpdateTaskDashboard(!updateTaskDashboard);
         clearValueAndErrors();

@@ -1,9 +1,11 @@
 import * as yup from "yup";
+import { LIMITS } from "../contracts/common";
 
 export const createTaskSchema = yup.object().shape({
   title: yup
     .string()
-    .min(2, "Title must be at least 2 characters long")
+    .min(LIMITS.titleMin, "Title must be at least 2 characters long")
+    .max(LIMITS.titleMax, `Title must be at most ${LIMITS.titleMax} characters long`)
     .required("Title is required"),
 
   description: yup
@@ -33,10 +35,10 @@ export const createTaskSchema = yup.object().shape({
 
   repeat_days: yup
     .array()
-    .of(yup.string())
+    .of(yup.string().required())
     .when(["isRecurring", "repeat_every"], {
       is: (isRecurring: boolean, repeatEvery: string) =>
-        isRecurring && repeatEvery === "Weekly",
+        isRecurring && repeatEvery === "Week",
       then: (schema) => schema.min(1, "Please select at least one day").required("Repeat days are required"),
       otherwise: (schema) => schema.optional(),
     }),

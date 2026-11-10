@@ -1,7 +1,3 @@
-export interface IDashboardData {
-    all_tasks: number;
-    pending_tasks: number;
-    complete_tasks: number;
-    all_projects: number;
-    streak_count: number;
-  }
+import type { DashboardData } from "../contracts/responses";
+
+export type IDashboardData = DashboardData;

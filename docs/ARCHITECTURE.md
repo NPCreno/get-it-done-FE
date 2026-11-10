@@ -39,5 +39,11 @@ No global store. Component state, `FormProvider` context for form handling, and 
 - `taskRequests.ts` → `TaskController` (`/tasks/*`)
 - Notifications (`/notifications/*`) have no FE consumer yet.
 
+## Transport contract (DATA-02)
+- The backend is the runtime boundary (global ValidationPipe, whitelisted DTOs, server-derived identity). The FE mirrors its contract in `src/app/contracts/` and checks it two ways: request bodies are validated with zod before sending (`requestSchema`, failure kind `invalid_request`, nothing is sent), and unwrapped responses are validated after (`schema`, failure kind `invalid_response`).
+- Forms stay on Formik + yup with their own value types; mappers are the only place form values become requests. Dates in forms are ISO strings or null.
+- Response schemas follow the entities: nullable columns are `.nullable()`; text nulls become `''` (or undefined for user preferences) for display, and update mappers send `null` for `''`. Unknown extra keys are stripped, so a backend addition is not a break.
+- Sync: `docs/api-contract.json` and `test/fixtures/responses/` in the BE are copied by `pnpm contract:sync`. Tests compare the FE literals with the JSON and parse every fixture with every schema.
+
 ## Deployment
 Vercel builds with the pinned pnpm version from `package.json`. `JWT_SECRET` must be set for Preview and Production, or the middleware refuses to start. The Dockerfile builds the same app on Node 22 for local or container use.
