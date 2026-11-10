@@ -17,7 +17,12 @@ interface TaskItemProps {
   handleDeleteTask: (taskId: string) => void;
   handleDeleteSubTask: (taskSubInstance_id: string) => void;
   handleDeleteRecurringTasks: (taskTemplate_id: string, taskId: string) => void;
-  taskUpdateStatus?: (message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => void;
+  /** Toast only. */
+  notify?: (message: string, type: 'info' | 'success' | 'error' | 'warning') => void;
+  /** After a successful task status PATCH, with the explicit new status. */
+  onStatusChanged?: (taskId: string, status: ITask['status']) => void;
+  /** After any other successful server change (subtask create, subtask status, delete). */
+  onDataChanged?: () => void;
   subTasks?: ISubTask[] | null;
   showSubtasks?: boolean;
   onToggleSubtasks?: (taskId: string) => void;
@@ -28,7 +33,9 @@ export function TaskItem({
   handleUpdateTask, 
   handleDeleteTask,
   handleDeleteSubTask,
-  taskUpdateStatus,
+  notify,
+  onStatusChanged,
+  onDataChanged,
   handleDeleteRecurringTasks,
   subTasks,
   showSubtasks = false,
@@ -87,21 +94,21 @@ export function TaskItem({
         
         if (response.ok) {
           // Refresh the task to show the new subtask
-          taskUpdateStatus?.('Subtask added successfully', 'success', task);
+          onDataChanged?.();
+          notify?.('Subtask added successfully', 'success');
           // Clear the input for the next subtask
           setFieldValue('title', '');
           // Keep the input focused for rapid entry
           subtaskInputRef.current?.focus();
         } else if (isUserFacing(response)) {
-          taskUpdateStatus?.(
+          notify?.(
             response.kind === 'api' ? response.message : 'Failed to create subtask',
-            'error',
-            task
+            'error'
           );
         }
       } catch (error) {
         console.error('Error creating subtask:', error);
-        taskUpdateStatus?.('Failed to create subtask', 'error', task);
+        notify?.('Failed to create subtask', 'error');
       }
     }
     setSubmitting(false);
@@ -136,13 +143,13 @@ export function TaskItem({
       await Promise.race([deletePromise, timeoutPromise]);
       
       // If we get here, the delete was successful
-      taskUpdateStatus?.('Task deleted successfully', 'success', task);
+      notify?.('Task deleted successfully', 'success');
       return true;
       
     } catch (error) {
       console.error('Error deleting task:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete task';
-      taskUpdateStatus?.(`Delete failed: ${errorMessage}`, 'error', task);
+      notify?.(`Delete failed: ${errorMessage}`, 'error');
       
       // Re-throw to allow parent component to handle the error if needed
       throw error;
@@ -155,7 +162,7 @@ export function TaskItem({
         return newState;
       });
     }
-  }, [handleDeleteTask, isDeleting, taskUpdateStatus, task]);
+  }, [handleDeleteTask, isDeleting, notify]);
 
   const handleDeleteSub = useCallback(async (taskSubInstance_id: string) => {
     // Prevent multiple delete attempts for the same task
@@ -177,13 +184,13 @@ export function TaskItem({
       await Promise.race([deletePromise, timeoutPromise]);
       
       // If we get here, the delete was successful
-      taskUpdateStatus?.('SubTask deleted successfully', 'success', task);
+      notify?.('SubTask deleted successfully', 'success');
       return true;
       
     } catch (error) {
       console.error('Error deleting task:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete subtask';
-      taskUpdateStatus?.(`Delete failed: ${errorMessage}`, 'error', task);
+      notify?.(`Delete failed: ${errorMessage}`, 'error');
       
       // Re-throw to allow parent component to handle the error if needed
       throw error;
@@ -196,7 +203,7 @@ export function TaskItem({
         return newState;
       });
     }
-  }, [handleDeleteSubTask, isDeleting, taskUpdateStatus, task]);
+  }, [handleDeleteSubTask, isDeleting, notify]);
 
   const handleCheckToggle = useCallback(async (e: React.ChangeEvent<HTMLInputElement>, type: 'task' | 'subtask', subtaskId?: string) => {
     e.stopPropagation();
@@ -207,6 +214,9 @@ export function TaskItem({
     }
 
     let controller: AbortController | null = null;
+    // What the server accepted so far, reported once after the sequence.
+    let serverChanged = false;
+    let parentStatusSet: ITask['status'] | null = null;
 
     try {
       // Set updating state with controller
@@ -229,7 +239,7 @@ export function TaskItem({
       audio.play().catch(error => console.warn('Audio playback failed:', error));
       
       // Show updating message
-      taskUpdateStatus?.(`Updating ${itemType.toLowerCase()} status...`, 'info', task);
+      notify?.(`Updating ${itemType.toLowerCase()} status...`, 'info');
       
       // Optimistic UI update - only update the specific item's status
       setUpdateState(prev => ({
@@ -244,9 +254,10 @@ export function TaskItem({
         // For task updates, just update the task status
         const result = await updateTaskStatus(task.task_id, newStatus, callOpts);
         if (!result.ok) {
-          if (isUserFacing(result)) taskUpdateStatus?.(result.message, 'error', task);
+          if (isUserFacing(result)) notify?.(result.message, 'error');
           return;
         }
+        parentStatusSet = newStatus;
       } else {
         // Handle subtask update
         if (!subtaskId) {
@@ -256,9 +267,10 @@ export function TaskItem({
         // First, update the subtask status; the parent is only touched if this succeeds
         const subResult = await updateSubTaskStatus(subtaskId, newStatus, callOpts);
         if (!subResult.ok) {
-          if (isUserFacing(subResult)) taskUpdateStatus?.(subResult.message, 'error', task);
+          if (isUserFacing(subResult)) notify?.(subResult.message, 'error');
           return;
         }
+        serverChanged = true;
 
         // After successful subtask update, check if we need to update the parent task status
         if (subTasks) {
@@ -277,22 +289,26 @@ export function TaskItem({
             const parentResult = await updateTaskStatus(task.task_id, parentStatus, callOpts);
             if (!parentResult.ok) {
               if (isUserFacing(parentResult)) {
-                taskUpdateStatus?.('Subtask updated, but the task status could not be updated.', 'error', task);
+                notify?.('Subtask updated, but the task status could not be updated.', 'error');
               }
               return;
             }
+            parentStatusSet = parentStatus;
           }
         }
       }
 
       // Show success message
-      taskUpdateStatus?.(`${itemType} ${statusText} successfully!`, 'success', task);
+      notify?.(`${itemType} ${statusText} successfully!`, 'success');
       
     } catch (error) {
       console.error(`Error updating ${type} status:`, error);
       const errorMessage = error instanceof Error ? error.message : `Failed to update ${type} status`;
-      taskUpdateStatus?.(errorMessage, 'error', task);
+      notify?.(errorMessage, 'error');
     } finally {
+      // One report per sequence, even on a partial failure, so exactly one refetch happens.
+      if (parentStatusSet) onStatusChanged?.(task.task_id, parentStatusSet);
+      else if (serverChanged) onDataChanged?.();
       // Clean up controller if it exists
       if (controller) {
         controller.abort();
@@ -305,7 +321,7 @@ export function TaskItem({
         controller: null
       });
     }
-  }, [isUpdating, task, subTasks, taskUpdateStatus]);
+  }, [isUpdating, task, subTasks, notify, onStatusChanged, onDataChanged]);
 
   // Clean up on unmount
   useEffect(() => {

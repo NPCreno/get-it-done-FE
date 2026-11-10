@@ -2,7 +2,7 @@
 import MainLayout from "@/app/components/MainLayout";
 import ProjectCard from "../../components/projectCard";
 import { useFormState } from "@/app/context/FormProvider";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   getTasksByProject,
   createTaskApi,
@@ -61,14 +61,16 @@ export default function ProjectsPage() {
   const [isExitingToast, setIsExitingToast] = useState(false);
   const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
   const [tasks, setTasks] = useState<ITask[]>([]);
-  const [projectOptions, setProjectOptions] = useState<IProject[]>([]);
   const [isUpdateTask, setIsUpdateTask] = useState(false);
-  const [updateTasksData, setUpdateTasksData] = useState(false);
+  // Monotonic counters: each server-changing mutation bumps explicitly, so a
+  // refresh never depends on modal state and overlapping mutations cannot cancel each other.
+  const [projectsRefreshCount, bumpProjects] = useReducer((n: number) => n + 1, 0);
+  const [projectTasksRefreshCount, bumpTasks] = useReducer((n: number) => n + 1, 0);
+  const userId = userData?.user_id;
   const [isLoading, setIsLoading] = useState(false);
   const [pageLoading, setIsPageLoading] = useState(true);
   const [showLoader, setShowLoader] = useState(true);
   const isFirstLoad = useRef(true);
-  const [refreshPage, setRefreshPage] = useState(false)
   const handleToastClose = () => {
     setIsExitingToast(true);
     setTimeout(() => {
@@ -140,7 +142,7 @@ export default function ProjectsPage() {
       }
       const response = await createProject(toCreateProjectRequest(values));
       if (response.ok) {
-        setRefreshPage(!refreshPage)
+        bumpProjects()
         setIsProjectModalOpen({
           isOpen: false,
           projectId: undefined,
@@ -215,7 +217,7 @@ export default function ProjectsPage() {
       }
       const response = await updateProject(values.project_id, toUpdateProjectRequest(values));
       if (response.ok) {
-        setRefreshPage(!refreshPage)
+        bumpProjects()
         setIsProjectModalOpen({
           isOpen: false,
           projectId: undefined,
@@ -277,19 +279,26 @@ export default function ProjectsPage() {
     }
   };
 
+  // The only projects fetch: feeds the grid and the task-modal options.
   useEffect(() => {
-    if (userData) {
-      const fetchProjects = async () => {
-        const projects = await getProjectsForUser(userData.user_id);
-        if (projects.ok) {
-          setProjectData(projects.data);
-        } else {
-          setProjectData([]);
-        }
-      };
-      fetchProjects();
-    }
-  }, [userData, isProjectModalOpen, isTaskModalOpen, refreshPage]);
+    if (!userId) return;
+    let cancelled = false;
+    (async () => {
+      if (isFirstLoad.current) setIsPageLoading(true);
+      const projects = await getProjectsForUser(userId);
+      if (cancelled) return;
+      setProjectData(projects.ok ? projects.data : []);
+      if (isFirstLoad.current) {
+        setIsPageLoading(false);
+        isFirstLoad.current = false;
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, projectsRefreshCount]);
+
+  const projectOptions = projectData;
 
   const clearValueAndErrors = () => {
     setErrors({});
@@ -301,33 +310,26 @@ export default function ProjectsPage() {
     
   };
 
+  const selectedProjectId = selectedProject?.project_id;
   useEffect(() => {
-    const fetchTasksByProj = async () => {
-      if (selectedProject) {
-        try {
-          const startDate = new Date().toISOString();
-          const endDate = new Date(
-            new Date().setDate(new Date().getDate() + 1)
-          ).toISOString(); //tomorrow
-          const tasks = await getTasksByProject(
-            selectedProject?.project_id ?? "",
-            startDate,
-            endDate
-          );
-          if (tasks.ok) {
-            setTasks(tasks.data);
-          } else {
-            setTasks([]);
-            if (isUserFacing(tasks)) console.error("Failed to fetch tasks by project:", tasks.kind, tasks.message);
-          }
-        } catch (error) {
-          setTasks([]);
-          console.error("Failed to fetch tasks by project:", error);
-        }
+    if (!selectedProjectId) return;
+    let cancelled = false;
+    (async () => {
+      const startDate = new Date().toISOString();
+      const endDate = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString(); // tomorrow
+      const result = await getTasksByProject(selectedProjectId, startDate, endDate);
+      if (cancelled) return; // a late response never overwrites a newer project
+      if (result.ok) {
+        setTasks(result.data);
+      } else {
+        setTasks([]);
+        if (isUserFacing(result)) console.error("Failed to fetch tasks by project:", result.kind, result.message);
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-    fetchTasksByProj();
-  }, [selectedProject, updateTasksData]);
+  }, [selectedProjectId, projectTasksRefreshCount]);
 
   useEffect(() => {
     if (!isTaskModalOpen && !isViewProjectModalOpen) {
@@ -363,7 +365,8 @@ export default function ProjectsPage() {
       const response = await createTaskApi(payload);
       if (response.ok) {
         clearValueAndErrors();
-        setUpdateTasksData(!updateTasksData);
+        bumpTasks();
+        bumpProjects(); // project cards show task counts
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Task Created",
@@ -441,7 +444,8 @@ export default function ProjectsPage() {
       const response = await updateTaskApi(taskId, toUpdateTaskRequest(values));
       if (response.ok) {
         clearValueAndErrors();
-        setUpdateTasksData(!updateTasksData);
+        bumpTasks();
+        bumpProjects(); // project cards show task counts
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Task Created",
@@ -511,7 +515,8 @@ export default function ProjectsPage() {
       const response = await deleteTaskApi(taskId);
       if (response.ok) {
         clearValueAndErrors();
-        setUpdateTasksData(!updateTasksData);
+        bumpTasks();
+        bumpProjects(); // project cards show task counts
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Task Deleted",
@@ -630,34 +635,6 @@ export default function ProjectsPage() {
   };
 
   useEffect(() => {
-      const fetchProjects = async () => {
-        if (!userData) return;
-        // Only show loading spinner for first load
-        if (isFirstLoad.current) {
-          setIsPageLoading(true);
-        }
-        
-        const projects = await getProjectsForUser(userData.user_id);
-        if (projects.ok) {
-          if (isFirstLoad.current) {
-            setIsPageLoading(false);
-            isFirstLoad.current = false;
-          }
-          setProjectOptions(projects.data);
-          return;
-        } else {
-          if (isFirstLoad.current) {
-            setIsPageLoading(false);
-            isFirstLoad.current = false;
-          }
-          setProjectOptions([]);
-        }
-
-      };
-      fetchProjects();
-  }, [userData, isTaskModalOpen, refreshPage]);
-
-  useEffect(() => {
     if (!pageLoading) {
       setTimeout(() => setShowLoader(false), 500); // Match transition duration
     }
@@ -697,7 +674,8 @@ export default function ProjectsPage() {
       const response = await deleteProjectById(projectId);
       if (response.ok) {
         clearValueAndErrors();
-        setUpdateTasksData(!updateTasksData);
+        bumpTasks();
+        bumpProjects(); // project cards show task counts
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Project Deleted",
@@ -715,7 +693,7 @@ export default function ProjectsPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
-        setRefreshPage(!refreshPage);
+        bumpProjects();
       } else if (isUserFacing(response)) {
         if (response.kind === 'api') {
           clearValueAndErrors();
