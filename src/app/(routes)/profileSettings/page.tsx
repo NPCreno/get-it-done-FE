@@ -1,5 +1,7 @@
 "use client";
-import { updateUser } from "@/app/api/userRequests";
+import { useUpdateProfile } from "@/lib/query/mutations";
+import { settled } from "@/lib/query/unwrap";
+import { clearQueryCache } from "@/lib/query/client";
 import { toProfileUpdateRequest } from "@/app/contracts/mappers";
 import { describeFailure, isUserFacing } from "@/lib/apiClient";
 import MainLayout from "@/app/components/MainLayout";
@@ -23,6 +25,7 @@ interface profileSettingsFormValues {
 
 export default function ProfileSettingsPage() {
   const { userData } = useFormState();
+  const updateProfile = useUpdateProfile();
   const [isEditEnabled, setIsEditEnabled] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState({
@@ -87,7 +90,7 @@ export default function ProfileSettingsPage() {
 
       const updateData = toProfileUpdateRequest(values, userData);
 
-      const response = await updateUser(userData.user_id, updateData);
+      const response = await settled(updateProfile.mutateAsync({ userId: userData.user_id, body: updateData }));
 
       if (response.ok) {
         setToastMessage({
@@ -101,9 +104,9 @@ export default function ProfileSettingsPage() {
         }, 1000);
         setShowToast(true);
         setIsExitingToast(false);
-      } else if (isUserFacing(response)) {
+      } else if (isUserFacing(response.failure)) {
         setToastMessage({
-          ...describeFailure(response),
+          ...describeFailure(response.failure),
           className: "text-error-default",
         });
         setShowToast(true);
@@ -152,6 +155,7 @@ export default function ProfileSettingsPage() {
     } catch (error) {
       console.error('Logout request failed:', error);
     }
+    clearQueryCache(); // never show this session's data to the next one
     localStorage.removeItem('pomodoroTimerState');
     window.location.href = '/';
   };

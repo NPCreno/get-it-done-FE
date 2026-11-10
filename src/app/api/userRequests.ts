@@ -14,10 +14,11 @@ export const createUser = (payload: CreateUserDraft) =>
   });
 
 // The backend returns the raw user here, not an envelope.
-export const getUser = (userId: string) =>
+export const getUser = (userId: string, opts?: { signal?: AbortSignal }) =>
   apiClient(apiPath`/user/get/${userId}`, {
     expect: "raw",
     schema: UserSchema,
+    signal: opts?.signal,
     fallbackError: "Failed to load user",
   });
 

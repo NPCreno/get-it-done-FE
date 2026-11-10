@@ -45,5 +45,12 @@ No global store. Component state, `FormProvider` context for form handling, and 
 - Response schemas follow the entities: nullable columns are `.nullable()`; text nulls become `''` (or undefined for user preferences) for display, and update mappers send `null` for `''`. Unknown extra keys are stripped, so a backend addition is not a break.
 - Sync: `docs/api-contract.json` and `test/fixtures/responses/` in the BE are copied by `pnpm contract:sync`. Tests compare the FE literals with the JSON and parse every fixture with every schema.
 
+## Server data cache (DATA-03)
+- TanStack Query v5 owns every server resource. Keys are `['u', userId, ...]`, and each key equals the request parameters (a test builds the request from the key). Prefixes `tasks`, `analytics`, `projects`, `profile` are what mutations invalidate; `invalidation.ts` is the single matrix.
+- Task window: `[bucketStart, bucketStart + 24h + 5min]` in absolute instants, a superset of the old `[now, now + 24h]`. A bucket change produces a new key; the previous window's data stays on screen as placeholder until the new one arrives.
+- Cancellation: query functions forward TanStack's `signal` to `apiClient`; an aborted request is a cancellation, never retried, never toasted. Retries: one, only for network or timeout.
+- Mutations: task-domain ones share `mutationKey ['taskData']`; only the last of an overlapping burst invalidates (`isMutating === 1`) and returns the promise, so `isPending` covers the refetch. Status mutations are optimistic with per-entity compare-and-swap rollback and `scope: task:<parentId>` serialization.
+- Session boundaries: logout and session expiry call `clearQueryCache()` before navigating.
+
 ## Deployment
 Vercel builds with the pinned pnpm version from `package.json`. `JWT_SECRET` must be set for Preview and Production, or the middleware refuses to start. The Dockerfile builds the same app on Node 22 for local or container use.

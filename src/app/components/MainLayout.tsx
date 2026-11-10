@@ -5,8 +5,7 @@ import MobileSidebar from "./MobileSidebar";
 import HamburgerButton from "./HamburgerButton";
 import { useFormState } from "@/app/context/FormProvider";
 import { getAccessToken, parseJwt } from "../utils/utils";
-import { getUser } from "../api/userRequests";
-import { isUserFacing } from "@/lib/apiClient";
+import { useProfile } from "@/lib/query/queries";
 import { shallowEqual } from "../utils/shallowEqual";
 
 export default function MainLayout({
@@ -60,34 +59,20 @@ export default function MainLayout({
     }
   };
 
-  // One user fetch per mount. The context user is replaced only when a field
-  // actually changed, so consumers keyed on `userData` do not re-run for nothing.
+  // The profile query owns the fetch (deduplicated and cached across pages). The
+  // context user is replaced only when a field actually changed.
+  const profile = useProfile();
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const token = getAccessToken();
-      if (!token) {
-        console.error("No access_token found in cookies");
-        return;
-      }
-      const jwtUser = parseJwt(token)?.user;
-      if (!jwtUser || !jwtUser.user_id) {
-        console.error("Failed to parse user or missing user_id in token");
-        return;
-      }
-      setUserData((prev) => prev ?? jwtUser);
-      const response = await getUser(jwtUser.user_id);
-      if (cancelled) return;
-      if (response.ok) {
-        setUserData((prev) => (shallowEqual(prev, response.data) ? prev : response.data));
-      } else if (isUserFacing(response)) {
-        console.error("Failed to fetch user:", response.kind, response.message);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    const token = getAccessToken();
+    const jwtUser = token ? parseJwt(token)?.user : null;
+    if (jwtUser && jwtUser.user_id) setUserData((prev) => prev ?? jwtUser);
   }, [setUserData]);
+  useEffect(() => {
+    if (profile.data) {
+      const fresh = profile.data;
+      setUserData((prev) => (shallowEqual(prev, fresh) ? prev : fresh));
+    }
+  }, [profile.data, setUserData]);
 
   return (
     <div className={`flex ${userData?.theme === "dark" ? "bg-background-dark" : "bg-background-light"} h-screen overflow-hidden`}>

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import Image from 'next/image';
-import { updateTaskStatus, updateSubTaskStatus, createSubTaskApi } from "@/app/api/taskRequests";
 import { isUserFacing } from "@/lib/apiClient";
+import { useCreateSubTask, useDeleteSubTask, useSetSubTaskStatus, useSetTaskStatus } from "@/lib/query/mutations";
+import { failureOf } from "@/lib/query/unwrap";
 import { useFormState } from "../context/FormProvider";
 import { ITask } from "../interface/ITask";
 import { ISubTask } from '../interface/ISubTask';
@@ -15,14 +16,9 @@ interface TaskItemProps {
   task: ITask;
   handleUpdateTask: () => void;
   handleDeleteTask: (taskId: string) => void;
-  handleDeleteSubTask: (taskSubInstance_id: string) => void;
   handleDeleteRecurringTasks: (taskTemplate_id: string, taskId: string) => void;
   /** Toast only. */
   notify?: (message: string, type: 'info' | 'success' | 'error' | 'warning') => void;
-  /** After a successful task status PATCH, with the explicit new status. */
-  onStatusChanged?: (taskId: string, status: ITask['status']) => void;
-  /** After any other successful server change (subtask create, subtask status, delete). */
-  onDataChanged?: () => void;
   subTasks?: ISubTask[] | null;
   showSubtasks?: boolean;
   onToggleSubtasks?: (taskId: string) => void;
@@ -32,28 +28,25 @@ export function TaskItem({
   task, 
   handleUpdateTask, 
   handleDeleteTask,
-  handleDeleteSubTask,
   notify,
-  onStatusChanged,
-  onDataChanged,
   handleDeleteRecurringTasks,
   subTasks,
   showSubtasks = false,
   onToggleSubtasks
 }: TaskItemProps) {
   const { setSelectedTaskData, userData } = useFormState();
-  const [updateState, setUpdateState] = useState<{ 
-    status: string | null;
-    isUpdating: boolean;
-    controller: AbortController | null;
-  }>({ status: null, isUpdating: false, controller: null });
+  // Server data goes through mutations: optimistic status, per-parent serialization
+  // (scope) and invalidation live in lib/query. This component keeps no request state.
+  const setTaskStatus = useSetTaskStatus(task.task_id);
+  const setSubTaskStatus = useSetSubTaskStatus(task.task_id);
+  const createSubTask = useCreateSubTask(task.task_id);
+  const deleteSubTask = useDeleteSubTask(task.task_id);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState<{[key: string]: boolean}>({});
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const subtaskInputRef = useRef<HTMLInputElement>(null);
-  const currentStatus = updateState.status || task.status;
-  const isComplete = currentStatus === "Complete";
-  const isUpdating = updateState.isUpdating;
+  const isComplete = task.status === "Complete"; // already optimistic when a toggle is pending
+  const isUpdating = setTaskStatus.isPending || setSubTaskStatus.isPending;
   const hasSubtasks = subTasks && subTasks.length > 0;
 
   const initialValues = useMemo<ISubTaskFormValues>(
@@ -86,35 +79,24 @@ export function TaskItem({
   const handleSubmitForm = async (formValues: ISubTaskFormValues) => {
     const validationErrors: FormikErrors<ISubTaskFormValues> = await validateForm(formValues);
     if (Object.keys(validationErrors).length === 0) {
-      try {
-        // Create a new subtask with proper typing
-        const subTaskData = toCreateSubTaskRequest(formValues);
-
-        const response = await createSubTaskApi(subTaskData);
-        
-        if (response.ok) {
-          // Refresh the task to show the new subtask
-          onDataChanged?.();
+      createSubTask.mutate(toCreateSubTaskRequest(formValues), {
+        onSuccess: () => {
           notify?.('Subtask added successfully', 'success');
-          // Clear the input for the next subtask
+          // Clear the input for the next subtask and keep it focused for rapid entry
           setFieldValue('title', '');
-          // Keep the input focused for rapid entry
           subtaskInputRef.current?.focus();
-        } else if (isUserFacing(response)) {
-          notify?.(
-            response.kind === 'api' ? response.message : 'Failed to create subtask',
-            'error'
-          );
-        }
-      } catch (error) {
-        console.error('Error creating subtask:', error);
-        notify?.('Failed to create subtask', 'error');
-      }
+        },
+        onError: (error) => {
+          const failure = failureOf(error);
+          if (isUserFacing(failure)) {
+            notify?.(failure.kind === 'api' ? failure.message : 'Failed to create subtask', 'error');
+          }
+        },
+      });
     }
     setSubmitting(false);
   };
-  
-    
+
   // Focus the input when adding a new subtask
   useEffect(() => {
     if (isAddingSubtask && subtaskInputRef.current) {
@@ -164,173 +146,48 @@ export function TaskItem({
     }
   }, [handleDeleteTask, isDeleting, notify]);
 
-  const handleDeleteSub = useCallback(async (taskSubInstance_id: string) => {
-    // Prevent multiple delete attempts for the same task
-    if (isDeleting[taskSubInstance_id]) {
-      console.log('Delete already in progress for subtask:', taskSubInstance_id);
-      return;
-    }
-    
-    try {
-      setIsDeleting(prev => ({ ...prev, [taskSubInstance_id]: true }));  // Mark this task as being deleted
-      
-      // Create a promise with a timeout
-      const deletePromise = handleDeleteSubTask(taskSubInstance_id);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Delete operation timed out')), 10000)
-      );
-      
-      // Race between the delete operation and timeout
-      await Promise.race([deletePromise, timeoutPromise]);
-      
-      // If we get here, the delete was successful
-      notify?.('SubTask deleted successfully', 'success');
-      return true;
-      
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete subtask';
-      notify?.(`Delete failed: ${errorMessage}`, 'error');
-      
-      // Re-throw to allow parent component to handle the error if needed
-      throw error;
-      
-    } finally {
-      // Clean up the loading state
-      setIsDeleting(prev => {
-        const newState = { ...prev };
-        delete newState[taskSubInstance_id];
-        return newState;
-      });
-    }
-  }, [handleDeleteSubTask, isDeleting, notify]);
+  const handleDeleteSub = useCallback((taskSubInstance_id: string) => {
+    if (deleteSubTask.isPending) return;
+    deleteSubTask.mutate(taskSubInstance_id, {
+      onSuccess: () => notify?.('SubTask deleted successfully', 'success'),
+      onError: (error) => {
+        const failure = failureOf(error);
+        if (isUserFacing(failure)) notify?.(`Delete failed: ${failure.message}`, 'error');
+      },
+    });
+  }, [deleteSubTask, notify]);
 
-  const handleCheckToggle = useCallback(async (e: React.ChangeEvent<HTMLInputElement>, type: 'task' | 'subtask', subtaskId?: string) => {
+  const handleCheckToggle = useCallback((e: React.ChangeEvent<HTMLInputElement>, type: 'task' | 'subtask', subtaskId?: string) => {
     e.stopPropagation();
-    // Debounce rapid clicks
-    if (isUpdating) {
-      console.log('Update already in progress, ignoring click');
-      return;
-    }
+    // The checkbox is disabled while pending; this guards rapid double clicks.
+    if (isUpdating) return;
 
-    let controller: AbortController | null = null;
-    // What the server accepted so far, reported once after the sequence.
-    let serverChanged = false;
-    let parentStatusSet: ITask['status'] | null = null;
+    const itemType = type === 'task' ? 'Task' : 'Subtask';
+    const newStatus = type === 'task'
+      ? (task.status === "Complete" ? "Pending" : "Complete")
+      : (subTasks?.find(st => st.taskSubInstance_id === subtaskId)?.status === "Complete" ? "Pending" : "Complete");
+    const statusText = newStatus === "Complete" ? "completed" : "marked as pending";
 
-    try {
-      // Set updating state with controller
-      controller = new AbortController();
-      setUpdateState(prev => ({
-        ...prev,
-        isUpdating: true,
-        controller
-      }));
-      
-      const newStatus = type === 'task' 
-        ? (task.status === "Complete" ? "Pending" : "Complete") 
-        : (subTasks?.find(subtask => subtask.taskSubInstance_id === subtaskId)?.status === "Complete" ? "Pending" : "Complete");
-      
-      const statusText = newStatus === "Complete" ? "completed" : "marked as pending";
-      const itemType = type === 'task' ? 'Task' : 'Subtask';
-      
-      // Play sound effect
-      const audio = new Audio('/soundfx/3.mp3');
-      audio.play().catch(error => console.warn('Audio playback failed:', error));
-      
-      // Show updating message
-      notify?.(`Updating ${itemType.toLowerCase()} status...`, 'info');
-      
-      // Optimistic UI update - only update the specific item's status
-      setUpdateState(prev => ({
-        ...prev,
-        status: type === 'task' ? newStatus : prev.status
-      }));
-      
-      // The API client owns the timeout; abort is only for unmount/cleanup.
-      const callOpts = { signal: controller.signal, timeoutMs: 10_000 };
+    const audio = new Audio('/soundfx/3.mp3');
+    audio.play().catch(error => console.warn('Audio playback failed:', error));
 
-      if (type === 'task') {
-        // For task updates, just update the task status
-        const result = await updateTaskStatus(task.task_id, newStatus, callOpts);
-        if (!result.ok) {
-          if (isUserFacing(result)) notify?.(result.message, 'error');
-          return;
-        }
-        parentStatusSet = newStatus;
-      } else {
-        // Handle subtask update
-        if (!subtaskId) {
-          throw new Error('Subtask ID is missing');
-        }
-
-        // First, update the subtask status; the parent is only touched if this succeeds
-        const subResult = await updateSubTaskStatus(subtaskId, newStatus, callOpts);
-        if (!subResult.ok) {
-          if (isUserFacing(subResult)) notify?.(subResult.message, 'error');
-          return;
-        }
-        serverChanged = true;
-
-        // After successful subtask update, check if we need to update the parent task status
-        if (subTasks) {
-          const updatedSubtasks = subTasks.map(st => 
-            st.taskSubInstance_id === subtaskId 
-              ? { ...st, status: newStatus }
-              : st
-          );
-          
-          // Check if all subtasks are now complete
-          const allSubtasksComplete = updatedSubtasks.every(st => st.status === 'Complete');
-          
-          // Only update parent task if all subtasks are complete or if parent is complete but shouldn't be
-          if (allSubtasksComplete || task.status === 'Complete') {
-            const parentStatus = allSubtasksComplete ? 'Complete' : 'Pending';
-            const parentResult = await updateTaskStatus(task.task_id, parentStatus, callOpts);
-            if (!parentResult.ok) {
-              if (isUserFacing(parentResult)) {
-                notify?.('Subtask updated, but the task status could not be updated.', 'error');
-              }
-              return;
-            }
-            parentStatusSet = parentStatus;
-          }
-        }
-      }
-
-      // Show success message
-      notify?.(`${itemType} ${statusText} successfully!`, 'success');
-      
-    } catch (error) {
-      console.error(`Error updating ${type} status:`, error);
-      const errorMessage = error instanceof Error ? error.message : `Failed to update ${type} status`;
-      notify?.(errorMessage, 'error');
-    } finally {
-      // One report per sequence, even on a partial failure, so exactly one refetch happens.
-      if (parentStatusSet) onStatusChanged?.(task.task_id, parentStatusSet);
-      else if (serverChanged) onDataChanged?.();
-      // Clean up controller if it exists
-      if (controller) {
-        controller.abort();
-      }
-      
-      // Reset update state
-      setUpdateState({
-        status: null,
-        isUpdating: false,
-        controller: null
-      });
-    }
-  }, [isUpdating, task, subTasks, notify, onStatusChanged, onDataChanged]);
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      if (updateState.controller) {
-        updateState.controller.abort();
-      }
+    const handlers = {
+      onSuccess: () => notify?.(`${itemType} ${statusText} successfully!`, 'success'),
+      onError: (error: unknown) => {
+        const failure = failureOf(error);
+        if (!isUserFacing(failure)) return;
+        const parentStage = (error as { stage?: string }).stage === 'parent';
+        notify?.(parentStage ? 'Subtask updated, but the task status could not be updated.' : failure.message, 'error');
+      },
     };
-  }, [updateState.controller]);
+
+    if (type === 'task') {
+      setTaskStatus.mutate({ taskId: task.task_id, to: newStatus, from: task.status }, handlers);
+    } else {
+      if (!subtaskId) return;
+      setSubTaskStatus.mutate({ taskId: task.task_id, subtaskId, to: newStatus }, handlers);
+    }
+  }, [isUpdating, task.task_id, task.status, subTasks, notify, setTaskStatus, setSubTaskStatus]);
 
   // Priority color mapping (more subtle)
   const priorityColors = {
