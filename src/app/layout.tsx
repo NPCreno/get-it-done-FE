@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { FormProvider } from "./context/FormProvider";
+import { QueryProvider } from "./providers/QueryProvider";
 import "./globals.css";
 
 export const metadata = {
@@ -11,7 +12,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <FormProvider>{children}</FormProvider>
+        <FormProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </FormProvider>
       </body>
     </html>
   );

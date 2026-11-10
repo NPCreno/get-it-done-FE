@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { IProject } from '@/app/interface/IProject';
 import { ITask } from '@/app/interface/ITask';
 import { useFormState } from '@/app/context/FormProvider';
+import { useSetTaskStatus } from '@/lib/query/mutations';
+import { failureOf } from '@/lib/query/unwrap';
+import { isUserFacing } from '@/lib/apiClient';
 import Image from 'next/image';
 interface ViewProjectModalProps {
   onClose: () => void;
@@ -9,7 +12,7 @@ interface ViewProjectModalProps {
   handleCreateTask: () => void;
   tasks: ITask[];
   handleUpdateTask: () => void;
-  handleTaskStatus: (task: ITask) => void;
+  onStatusError: (message: string) => void;
   handleDeleteTask: (taskId: string) => void;
 }
 
@@ -19,7 +22,7 @@ export default function ViewProjectModal({
   handleCreateTask,
   tasks,
   handleUpdateTask,
-  handleTaskStatus,
+  onStatusError,
   handleDeleteTask,
 }: ViewProjectModalProps) {
  
@@ -64,7 +67,7 @@ export default function ViewProjectModal({
 
         <div className="flex flex-col gap-[10px] max-h-[710px] min-h-[200px] overflow-y-auto scrollbar-hide">
           {tasks.length != 0 ? tasks.map((task, index) => (
-            <TaskCard key={index} task={task} handleUpdateTask={handleUpdateTask} handleTaskStatus={handleTaskStatus} handleDeleteTask={handleDeleteTask} />
+            <TaskCard key={index} task={task} handleUpdateTask={handleUpdateTask} onStatusError={onStatusError} handleDeleteTask={handleDeleteTask} />
           )) : (
             <div className="h-full flex items-center justify-center flex-grow">
               <h1 className={`${isDarkMode ? 'text-white' : 'text-text'} text-[20px] font-bold font-lato text-center`}>
@@ -98,16 +101,17 @@ export default function ViewProjectModal({
 interface TaskCardProps {
   task: ITask;
   handleUpdateTask: () => void;
-  handleTaskStatus: (task: ITask) => void;
+  onStatusError: (message: string) => void;
   handleDeleteTask: (taskId: string) => void;
 }
 
-const TaskCard = ({ task, handleUpdateTask, handleTaskStatus, handleDeleteTask }: TaskCardProps) => {
+const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: TaskCardProps) => {
   const {
     setSelectedTaskData,
     userData
   } = useFormState();
   const isDarkMode = userData?.theme === 'dark';
+  const setStatus = useSetTaskStatus(task.task_id);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   
   // Priority colors for light and dark modes
@@ -124,11 +128,21 @@ const TaskCard = ({ task, handleUpdateTask, handleTaskStatus, handleDeleteTask }
       : isDarkMode ? "text-red-300" : "text-error-500";
 
   const handleCheckToggle = () => {
+    if (setStatus.isPending) return;
     const audio = new Audio('/soundfx/3.mp3'); 
     audio.play();
     const nextStatus: ITask["status"] = task.status === "Complete" ? "Pending" : "Complete";
-    const updatedTask: ITask = { ...task, status: nextStatus };
-    handleTaskStatus(updatedTask);
+    // The status endpoint (not a full task update), so the backend's task.completed
+    // notification fires from the project view too.
+    setStatus.mutate(
+      { taskId: task.task_id, to: nextStatus, from: task.status },
+      {
+        onError: (error) => {
+          const failure = failureOf(error);
+          if (isUserFacing(failure)) onStatusError(failure.message);
+        },
+      }
+    );
   };
 
   return (

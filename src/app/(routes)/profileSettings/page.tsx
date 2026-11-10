@@ -1,5 +1,7 @@
 "use client";
-import { getUser, updateUser } from "@/app/api/userRequests";
+import { useUpdateProfile } from "@/lib/query/mutations";
+import { settled } from "@/lib/query/unwrap";
+import { clearQueryCache } from "@/lib/query/client";
 import { toProfileUpdateRequest } from "@/app/contracts/mappers";
 import { describeFailure, isUserFacing } from "@/lib/apiClient";
 import MainLayout from "@/app/components/MainLayout";
@@ -8,7 +10,6 @@ import { updateUserSchema } from "@/app/schemas/updateUserSchema";
 import { useFormik, FormikErrors } from "formik";
 import { useEffect, useRef, useState } from "react";
 import { Toast } from "@/app/components/toast";
-import { getAccessToken, parseJwt } from "@/app/utils/utils";
 import ConfirmationModal from "@/app/components/modals/confirmation";
 import LoadingPage from "@/app/components/loader";
 import InputBox from "@/app/components/inputBox";
@@ -23,7 +24,8 @@ interface profileSettingsFormValues {
 }
 
 export default function ProfileSettingsPage() {
-  const { userData, setUserData } = useFormState();
+  const { userData } = useFormState();
+  const updateProfile = useUpdateProfile();
   const [isEditEnabled, setIsEditEnabled] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState({
@@ -32,7 +34,6 @@ export default function ProfileSettingsPage() {
     className: "",
   });
   const [isExitingToast, setIsExitingToast] = useState(false);
-  const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [showLoader, setShowLoader] = useState(true);
@@ -89,7 +90,7 @@ export default function ProfileSettingsPage() {
 
       const updateData = toProfileUpdateRequest(values, userData);
 
-      const response = await updateUser(userData.user_id, updateData);
+      const response = await settled(updateProfile.mutateAsync({ userId: userData.user_id, body: updateData }));
 
       if (response.ok) {
         setToastMessage({
@@ -103,9 +104,9 @@ export default function ProfileSettingsPage() {
         }, 1000);
         setShowToast(true);
         setIsExitingToast(false);
-      } else if (isUserFacing(response)) {
+      } else if (isUserFacing(response.failure)) {
         setToastMessage({
-          ...describeFailure(response),
+          ...describeFailure(response.failure),
           className: "text-error-default",
         });
         setShowToast(true);
@@ -154,64 +155,18 @@ export default function ProfileSettingsPage() {
     } catch (error) {
       console.error('Logout request failed:', error);
     }
+    clearQueryCache(); // never show this session's data to the next one
     localStorage.removeItem('pomodoroTimerState');
     window.location.href = '/';
   };
 
+  // MainLayout owns the user fetch; this page only reads the context.
   useEffect(() => {
-    const fetchUser = async () => {
-      // Set loading state
-      if (isFirstLoad.current) {
-        setPageLoading(true);
-      }
-            
-      if (isDoneFetchingUser) return;
-      else {
-        try {
-          if (!userData) {
-            // If no user, try getting one from cookies
-            const token = getAccessToken();
-            if (!token) {
-              console.error("No access_token found in cookies");
-              return;
-            }
-            const parsedUser = parseJwt(token).user;
-            if (!parsedUser || !parsedUser.user_id) {
-              console.error("Failed to parse user or missing user_id in token");
-              return;
-            }
-            setIsDoneFetchingUser(true);
-            setUserData(parsedUser);
-            const response = await getUser(parsedUser.user_id);
-            if (response.ok) {
-              setIsDoneFetchingUser(true);
-              setUserData(response.data);
-            } else if (isUserFacing(response)) {
-              console.error("Failed to fetch user:", response.kind, response.message);
-            }
-            return;
-          }
-          // Only fetch updated user info if we have a user
-          const response = await getUser(userData.user_id);
-          if (response.ok) {
-            setIsDoneFetchingUser(true);
-            setUserData(response.data);
-          } else if (isUserFacing(response)) {
-            console.error("Failed to fetch user:", response.kind, response.message);
-          }
-        } catch (error) {
-          console.error("Failed to fetch user:", error);
-        }
-        finally{
-          if (isFirstLoad.current) {
-            setPageLoading(false);
-            isFirstLoad.current = false;
-          }
-        }
-      }
-    };
-    fetchUser();
-  }, [userData, setUserData, isDoneFetchingUser]);
+    if (userData && isFirstLoad.current) {
+      setPageLoading(false);
+      isFirstLoad.current = false;
+    }
+  }, [userData]);
 
   return (
     <MainLayout>

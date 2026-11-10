@@ -3,33 +3,27 @@ import MainLayout from "@/app/components/MainLayout";
 import ChartCard from "../../components/chartCard";
 import StatsCard from "../../components/statsCard";
 import TaskModal from "@/app/components/modals/taskModal";
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import PomodoroButton from '@/app/components/PomodoroButton';
 import { useFormState } from "@/app/context/FormProvider";
 import { FormikErrors, useFormik } from "formik";
 import { createTaskSchema } from "@/app/schemas/createTaskSchema";
 import {
-  createTaskApi,
-  getTasksByUser,
-  updateTaskApi,
-  getDashboardData,
-  getTaskCompletionTrend,
-  getTaskDistributionData,
-  getCalendarHeatmap,
-  getStreakCount,
-  deleteTaskApi,
-  deleteRecurringTasksApi,
-  deleteSubTaskApi,
-} from "@/app/api/taskRequests";
-import { getProjectsForUser } from "@/app/api/projectsRequests";
-import {
-  getWeekRange,
-} from "@/app/utils/utils";
+  useCalendarHeatmap,
+  useCompletionTrend,
+  useDashboardSummary,
+  useProjects,
+  useStreak,
+  useTaskDistribution,
+  useUpcomingTasks,
+} from "@/lib/query/queries";
+import { useCreateTask, useDeleteRecurringTasks, useDeleteTask, useUpdateTask } from "@/lib/query/mutations";
+import { settled } from "@/lib/query/unwrap";
 import { IProject } from "@/app/interface/IProject";
 import { toCreateTaskRequest, toUpdateTaskRequest } from "@/app/contracts/mappers";
 import { Toast } from "@/app/components/toast";
 import { ITask } from "@/app/interface/ITask";
-import { ApiResult, describeFailure, isUserFacing } from "@/lib/apiClient";
+import { describeFailure, isUserFacing } from "@/lib/apiClient";
 import LoadingPage from "@/app/components/loader";
 import { IDashboardData } from "@/app/interface/IDashboardData";
 import { ITaskCompletionTrendData } from "@/app/interface/ITaskCompletionTrendData";
@@ -40,6 +34,18 @@ import { ITaskDistribution } from "@/app/interface/ITaskDistribution";
 import { IHeatmapData } from "@/app/interface/IHeatmapData";
 import PomodoroModal from "@/app/components/modals/pomodoro";
 import ConfirmationModal from "@/app/components/modals/confirmation";
+
+const NO_PROJECTS: IProject[] = [];
+const NO_TASKS: ITask[] = [];
+const NO_TREND: ITaskCompletionTrendData[] = [];
+const NO_DISTRIBUTION: ITaskDistribution[] = [];
+const NO_HEATMAP: IHeatmapData[] = [];
+const EMPTY_DASHBOARD: IDashboardData = {
+  all_tasks: 0,
+  pending_tasks: 0,
+  complete_tasks: 0,
+  all_projects: 0,
+};
 
 export default function DashboardPage() {
   const { 
@@ -52,7 +58,6 @@ export default function DashboardPage() {
   } = useFormState();
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-  const [projectOptions, setProjectOptions] = useState<IProject[]>([]);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   // Toast
@@ -63,22 +68,35 @@ export default function DashboardPage() {
     className: "",
   });
   const [isExitingToast, setIsExitingToast] = useState(false);
-  const [tasks, setTasks] = useState<ITask[]>([]);
-  const [dashboardData, setDashboardData] = useState<
-    IDashboardData | undefined
-  >();
   const [isUpdateTask, setIsUpdateTask] = useState(false);
-  const [updateTaskDashboard, setUpdateTaskDashboard] = useState(false);
+  // Server data is owned by query hooks (src/lib/query): one key per request
+  // parameter set, cancellation, and invalidation from mutations. Nothing here
+  // refetches because of a toast, a modal or a user-object change.
+  const projectsQuery = useProjects();
+  const upcoming = useUpcomingTasks();
+  const summary = useDashboardSummary();
+  const trend = useCompletionTrend();
+  const distribution = useTaskDistribution(selectedMonth, selectedYear);
+  const heatmap = useCalendarHeatmap(calendarMonthYear.month, calendarMonthYear.year);
+  const streak = useStreak();
+  const projectOptions = projectsQuery.data ?? NO_PROJECTS;
+  const tasks = upcoming.data ?? NO_TASKS;
+  const dashboardData = summary.data ?? EMPTY_DASHBOARD;
+  const taskCompletionData = trend.data ?? NO_TREND;
+  const taskDistributionData = distribution.data ?? NO_DISTRIBUTION;
+  const calendarHeatmapData = heatmap.data ?? NO_HEATMAP;
+  const streakCount = streak.data?.count ?? 0;
+  // First load only: previous data shown while a new key loads is not "loading".
+  const pageLoading =
+    (upcoming.isPending && !upcoming.isPlaceholderData) || (summary.isPending && !summary.isPlaceholderData);
+  const createTaskMutation = useCreateTask();
+  const updateTaskMutation = useUpdateTask();
+  const deleteTaskMutation = useDeleteTask();
+  const deleteRecurringMutation = useDeleteRecurringTasks();
   const [isLoading, setIsLoading] = useState(false);
-  const [pageLoading, setIsPageLoading] = useState(true);
   const [showLoader, setShowLoader] = useState(true);
   const [isPomodoroModalOpen, setIsPomodoroModalOpen] = useState(false);
-  const [taskCompletionData, setTaskCompletionData] = useState<ITaskCompletionTrendData[]>([]);
-  const [taskDistributionData, setTaskDistributionData] = useState<ITaskDistribution[]>([]);
-  const [calendarHeatmapData, setCalendarHeatmapData] = useState<IHeatmapData[]>([]);
-  const [streakCount, setStreakCount] = useState(0);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
-  const isFirstLoad = useRef(true);
   const [taskTemplateIdToDelete, setTaskTemplateIdToDelete] = useState<string>("");
   const [taskIdToDelete, setTaskIdToDelete] = useState<string>("");
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -161,14 +179,13 @@ export default function DashboardPage() {
         return;
       }
       const payload = toCreateTaskRequest(values);
-      const response = await createTaskApi(payload);
+      const response = await settled(createTaskMutation.mutateAsync(payload));
       if (response.ok) {
-        setUpdateTaskDashboard(!updateTaskDashboard);
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Task Created",
           description:
-            response.message || "Your new task has been created successfully",
+            response.data.message || "Your new task has been created successfully",
           className: "text-green-600",
         });
 
@@ -181,10 +198,10 @@ export default function DashboardPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
-      } else if (isUserFacing(response)) {
+      } else if (isUserFacing(response.failure)) {
         // The modal stays open so the user can retry.
         setToastMessage({
-          ...describeFailure(response),
+          ...describeFailure(response.failure),
           className: "text-error-default",
         });
         setShowToast(true);
@@ -224,111 +241,6 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (userData) {
-      const fetchProjects = async () => {
-        const projects = await getProjectsForUser(userData.user_id);
-        if (projects.ok) {
-          setProjectOptions(projects.data);
-        } else {
-          setProjectOptions([]);
-        }
-      };
-      fetchProjects();
-    }
-  }, [userData, isTaskModalOpen]);
-
-  useEffect(() => {
-    const fetchTasks = async () => {
-      if (!userData) return;
-
-      // Set loading state
-      if (isFirstLoad.current) {
-        setIsPageLoading(true);
-      }
-
-      const startDate = new Date().toISOString();
-      const endDate = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString();
-      const range = getWeekRange(new Date().toISOString());
-
-      try {
-        // Run all API calls in parallel
-        const [
-          tasksResponse,
-          dashboardResponse,
-          trendResponse,
-          distributionResponse,
-          heatmapResponse,
-          streakResponse
-        ] = await Promise.allSettled([
-          getTasksByUser(userData.user_id, startDate, endDate),
-          getDashboardData(userData.user_id, startDate, endDate),
-          getTaskCompletionTrend(userData.user_id, range.start, range.end),
-          getTaskDistributionData(userData.user_id, selectedMonth, selectedYear),
-          getCalendarHeatmap(userData.user_id, calendarMonthYear.month, calendarMonthYear.year),
-          getStreakCount(userData.user_id)
-        ]);
-
-        // Failed requests arrive as FULFILLED { ok: false }. A rejected entry
-        // can only come from a programming error.
-        const apply = <T,>(
-          s: PromiseSettledResult<ApiResult<T>>,
-          set: (v: T) => void,
-          fallback: T,
-          label: string
-        ) => {
-          if (s.status === 'rejected') {
-            console.error(`[dashboard] ${label} threw`, s.reason);
-            set(fallback);
-            return;
-          }
-          const r = s.value;
-          if (r.ok) {
-            set(r.data ?? fallback);
-            return;
-          }
-          if (isUserFacing(r)) console.warn(`[dashboard] ${label} failed: ${r.kind} ${r.message}`);
-          set(fallback);
-        };
-
-        apply(tasksResponse, setTasks, [] as ITask[], 'tasks');
-        apply(
-          dashboardResponse,
-          setDashboardData,
-          {
-            all_tasks: 0,
-            pending_tasks: 0,
-            complete_tasks: 0,
-            all_projects: 0,
-            streak_count: 0
-          } as IDashboardData,
-          'dashboard'
-        );
-        apply(trendResponse, setTaskCompletionData, [] as ITaskCompletionTrendData[], 'trend');
-        apply(distributionResponse, setTaskDistributionData, [] as ITaskDistribution[], 'distribution');
-        apply(heatmapResponse, setCalendarHeatmapData, [] as IHeatmapData[], 'heatmap');
-        apply(streakResponse, (d) => setStreakCount(d.count ?? 0), { count: 0 }, 'streak');
-
-      } catch (error) {
-        console.error('Error in fetchTasks:', error);
-        // Optionally show a toast notification for the user
-        setToastMessage({
-          title: 'Error',
-          description: 'Failed to load dashboard data. Please try again later.',
-          className: 'bg-red-500',
-        });
-        setShowToast(true);
-      } finally {
-        if (isFirstLoad.current) {
-          setIsPageLoading(false);
-          isFirstLoad.current = false;
-        }
-      }
-    };
-
-    fetchTasks();
-  }, [userData, updateTaskDashboard, showToast, selectedMonth, selectedYear, calendarMonthYear]);
-
-  useEffect(() => {
     if (isTaskModalOpen && !isUpdateTask) {
       resetForm({
         values: {
@@ -359,15 +271,14 @@ export default function DashboardPage() {
         console.error("No task id to update");
         return;
       }
-      const response = await updateTaskApi(taskId, toUpdateTaskRequest(values));
+      const response = await settled(updateTaskMutation.mutateAsync({ taskId, body: toUpdateTaskRequest(values) }));
       if (response.ok) {
-        setUpdateTaskDashboard(!updateTaskDashboard);
         clearValueAndErrors();
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Task Updated",
           description:
-            response.message || "Your task has been updated successfully",
+            response.data.message || "Your task has been updated successfully",
           className: "text-green-600",
         });
 
@@ -380,14 +291,14 @@ export default function DashboardPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
-      } else if (isUserFacing(response)) {
+      } else if (isUserFacing(response.failure)) {
         // Backend rejected it (kind 'api'): reset and close. Transport failure: keep the modal open.
-        if (response.kind === 'api') {
+        if (response.failure.kind === 'api') {
           clearValueAndErrors();
           setIsTaskModalOpen(false);
         }
         setToastMessage({
-          ...describeFailure(response),
+          ...describeFailure(response.failure),
           className: "text-error-default",
         });
 
@@ -467,10 +378,6 @@ export default function DashboardPage() {
     await deleteTask(taskId);
   };
 
-  const handleDeleteSubTask = async (taskId: string) => {
-    await deleteSubTask(taskId);
-  };
-
   const handleDeleteRecurringTasks = (taskTemplate_id: string, taskId: string) => {
     setTaskTemplateIdToDelete(taskTemplate_id);
     setTaskIdToDelete(taskId);
@@ -481,9 +388,8 @@ export default function DashboardPage() {
     // after confirming to delete
     if (taskTemplateIdToDelete) {
       try {
-        const result = await deleteRecurringTasksApi(taskTemplateIdToDelete);
-        if (!result.ok) throw new Error(result.message);
-        // Optionally refresh tasks or show success message
+        const result = await settled(deleteRecurringMutation.mutateAsync(taskTemplateIdToDelete));
+        if (!result.ok) throw new Error(result.failure.message);
         setToastMessage({
           title: "Success",
           description: "Recurring tasks deleted successfully",
@@ -524,14 +430,14 @@ export default function DashboardPage() {
 
   const deleteTask = async (taskId: string) => {
     try {
-      const response = await deleteTaskApi(taskId);
+      const response = await settled(deleteTaskMutation.mutateAsync(taskId));
       if (response.ok) {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
         setToastMessage({
           title: "Task Deleted",
           description:
-            response.message || "Your task has been deleted successfully",
+            response.data.message || "Your task has been deleted successfully",
           className: "text-green-600",
         });
 
@@ -544,13 +450,13 @@ export default function DashboardPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
-      } else if (isUserFacing(response)) {
-        if (response.kind === 'api') {
+      } else if (isUserFacing(response.failure)) {
+        if (response.failure.kind === 'api') {
           clearValueAndErrors();
           setIsTaskModalOpen(false);
         }
         setToastMessage({
-          ...describeFailure(response),
+          ...describeFailure(response.failure),
           className: "text-error-default",
         });
 
@@ -589,118 +495,14 @@ export default function DashboardPage() {
     }
   };
 
-  const deleteSubTask = async (taskSubInstance_id: string) => {
-    try {
-      const response = await deleteSubTaskApi(taskSubInstance_id);
-      if (response.ok) {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        setToastMessage({
-          title: "Subtask Deleted",
-          description:
-            response.message || "Your subtask has been deleted successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      } else if (isUserFacing(response)) {
-        if (response.kind === 'api') {
-          clearValueAndErrors();
-          setIsTaskModalOpen(false);
-        }
-        setToastMessage({
-          ...describeFailure(response),
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
-    }
-  };
-
-  const handleTaskUpdateStatus = (message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
-    // For backward compatibility, we'll use the message to determine the new status
-    // since the type parameter is used for the toast style
-    const newStatus = message.toLowerCase().includes('completed') ? 'Complete' : 'Pending';
-    
-    // Optimistically update the task status in the local state
-    setTasks(currentTasks => 
-      currentTasks.map(t => 
-        t.task_id === task.task_id 
-          ? { ...t, status: newStatus } 
-          : t
-      )
-    );
-    
-    // Update dashboard data optimistically
-    if (dashboardData) {
-      setDashboardData(prev => {
-        if (!prev) return prev;
-        const newData = { ...prev };
-        
-        // Decrease the count of the old status
-        if (task.status === 'Complete') {
-          newData.complete_tasks = Math.max(0, newData.complete_tasks - 1);
-        } else {
-          newData.pending_tasks = Math.max(0, newData.pending_tasks - 1);
-        }
-        
-        // Increase the count of the new status
-        if (newStatus === 'Complete') {
-          newData.complete_tasks += 1;
-        } else {
-          newData.pending_tasks += 1;
-        }
-        
-        return newData;
-      });
-    }
-
-    // Show toast notification with the provided type
+  // Toast only. Counts and task lists come from the refetch, never from the message text.
+  const notify = (message: string, type: 'info' | 'success' | 'error' | 'warning') => {
     setToastMessage({
-      title: `Task ${newStatus.toLowerCase()}`,
+      title: type === 'error' ? 'Something Went Wrong' : 'Task update',
       description: message,
-      className: type === 'success' 
-        ? 'text-success-default' 
-        : type === 'error' 
+      className: type === 'success'
+        ? 'text-success-default'
+        : type === 'error'
           ? 'text-error-default'
           : type === 'warning'
             ? 'text-warning-default'
@@ -708,8 +510,6 @@ export default function DashboardPage() {
     });
     setShowToast(true);
     setIsExitingToast(false);
-    
-    // Auto-hide toast after delay
     setTimeout(() => {
       setIsExitingToast(true);
       setTimeout(() => setShowToast(false), 400);
@@ -1032,16 +832,13 @@ export default function DashboardPage() {
                             setIsUpdateTask(true);
                           }}
                           handleDeleteTask={(taskId: string) => handleDeleteTask(taskId)}
-                          handleDeleteSubTask={(taskSubInstance_id: string) => handleDeleteSubTask(taskSubInstance_id)}
                           handleDeleteRecurringTasks={
                             (taskTemplate_id: string, taskId: string) => 
                             handleDeleteRecurringTasks(taskTemplate_id, taskId)
                           }
                           showSubtasks={expandedTaskIds.has(task.task_id)}
                           onToggleSubtasks={handleToggleSubtasks}
-                          taskUpdateStatus={(message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
-                            handleTaskUpdateStatus(message, type, task);
-                          }}
+                          notify={notify}
                           subTasks={task.subInstances}
                         />
                       )))
@@ -1091,15 +888,12 @@ export default function DashboardPage() {
                                       setIsUpdateTask(true);
                                     }}
                                     handleDeleteTask={() => handleDeleteTask(task.task_id)}
-                                    handleDeleteSubTask={(taskSubInstance_id: string) => handleDeleteSubTask(taskSubInstance_id)}
                                     handleDeleteRecurringTasks={(taskTemplate_id: string, taskId: string) => 
                                       handleDeleteRecurringTasks(taskTemplate_id, taskId)
                                     }
                                     showSubtasks={expandedTaskIds.has(task.task_id)}
                                     onToggleSubtasks={handleToggleSubtasks}
-                                    taskUpdateStatus={(message: string, type: 'info' | 'success' | 'error' | 'warning', task: ITask) => {
-                                      handleTaskUpdateStatus(message, type, task);
-                                    }}
+                                    notify={notify}
                                     subTasks={task.subInstances}
                                   />
                                 ))}

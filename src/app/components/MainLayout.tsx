@@ -5,8 +5,8 @@ import MobileSidebar from "./MobileSidebar";
 import HamburgerButton from "./HamburgerButton";
 import { useFormState } from "@/app/context/FormProvider";
 import { getAccessToken, parseJwt } from "../utils/utils";
-import { getUser } from "../api/userRequests";
-import { isUserFacing } from "@/lib/apiClient";
+import { useProfile } from "@/lib/query/queries";
+import { shallowEqual } from "../utils/shallowEqual";
 
 export default function MainLayout({
   children,
@@ -22,7 +22,6 @@ export default function MainLayout({
     userData
   } = useFormState();
   const [isMobile, setIsMobile] = useState(false);
-  const [isDoneFetchingUser, setIsDoneFetchingUser] = useState(false);
 
   // Check if the screen is mobile size on mount and on resize with debounce
   useEffect(() => {
@@ -60,50 +59,20 @@ export default function MainLayout({
     }
   };
 
-    useEffect(() => {
-      const fetchUser = async () => {
-        if (isDoneFetchingUser) return;
-        else {
-          try {
-            if (!userData) {
-              // If no user, try getting one from cookies
-              const token = getAccessToken();
-              if (!token) {
-                console.error("No access_token found in cookies");
-                return;
-              }
-              const parsedUser = parseJwt(token).user;
-              if (!parsedUser || !parsedUser.user_id) {
-                console.error("Failed to parse user or missing user_id in token");
-                return;
-              }
-              setIsDoneFetchingUser(true);
-              setUserData(parsedUser);
-              const response = await getUser(parsedUser.user_id);
-
-              if (response.ok) {
-                setIsDoneFetchingUser(true);
-                setUserData(response.data);
-              } else if (isUserFacing(response)) {
-                console.error("Failed to fetch user:", response.kind, response.message);
-              }
-              return;
-            }
-            // Only fetch updated user info if we have a user
-            const response = await getUser(userData.user_id);
-            if (response.ok) {
-              setIsDoneFetchingUser(true);
-              setUserData(response.data);
-            } else if (isUserFacing(response)) {
-              console.error("Failed to fetch user:", response.kind, response.message);
-            }
-          } catch (error) {
-            console.error("Failed to fetch user:", error);
-          }
-        }
-      };
-      fetchUser();
-    }, [userData, setUserData, isDoneFetchingUser]);
+  // The profile query owns the fetch (deduplicated and cached across pages). The
+  // context user is replaced only when a field actually changed.
+  const profile = useProfile();
+  useEffect(() => {
+    const token = getAccessToken();
+    const jwtUser = token ? parseJwt(token)?.user : null;
+    if (jwtUser && jwtUser.user_id) setUserData((prev) => prev ?? jwtUser);
+  }, [setUserData]);
+  useEffect(() => {
+    if (profile.data) {
+      const fresh = profile.data;
+      setUserData((prev) => (shallowEqual(prev, fresh) ? prev : fresh));
+    }
+  }, [profile.data, setUserData]);
 
   return (
     <div className={`flex ${userData?.theme === "dark" ? "bg-background-dark" : "bg-background-light"} h-screen overflow-hidden`}>

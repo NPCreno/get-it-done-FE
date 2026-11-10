@@ -55,53 +55,60 @@ export const deleteRecurringTasksApi = (taskTemplate_id: string) =>
     fallbackError: "Failed to delete recurring tasks",
   });
 
-export const getTasksByUser = (userId: string, startDate: string, endDate: string) =>
+export const getTasksByUser = (userId: string, startDate: string, endDate: string, opts?: { signal?: AbortSignal }) =>
   apiClient(apiPath`/tasks/getTasksByUser/${userId}`, {
     query: { startDate, endDate },
     schema: TaskListItemSchema.array(),
+    signal: opts?.signal,
     fallbackError: "Failed to load tasks",
   });
 
 // The backend returns a raw array here, not an envelope.
-export const getTasksByProject = (project_id: string, startDate: string, endDate: string) =>
+export const getTasksByProject = (project_id: string, startDate: string, endDate: string, opts?: { signal?: AbortSignal }) =>
   apiClient(apiPath`/tasks/getTasksByProj/${project_id}`, {
     query: { startDate, endDate },
     expect: "raw",
     schema: ProjectTaskSchema.array(),
+    signal: opts?.signal,
     fallbackError: "Failed to load project tasks",
   });
 
-export const getDashboardData = (userId: string, startDate: string, endDate: string) =>
+export const getDashboardData = (userId: string, startDate: string, endDate: string, opts?: { signal?: AbortSignal }) =>
   apiClient(apiPath`/tasks/getDashboardData/${userId}`, {
     query: { startDate, endDate },
     schema: DashboardDataSchema,
+    signal: opts?.signal,
     fallbackError: "Failed to load dashboard",
   });
 
-export const getTaskCompletionTrend = (userId: string, startDate: string, endDate: string) =>
+export const getTaskCompletionTrend = (userId: string, startDate: string, endDate: string, opts?: { signal?: AbortSignal }) =>
   apiClient(apiPath`/tasks/completion-trend/${userId}`, {
     query: { startDate, endDate },
     schema: TrendPointSchema.array(),
+    signal: opts?.signal,
     fallbackError: "Failed to load completion trend",
   });
 
-export const getTaskDistributionData = (userId: string, month: string, year: string) =>
+export const getTaskDistributionData = (userId: string, month: string, year: string, opts?: { signal?: AbortSignal }) =>
   apiClient(apiPath`/tasks/task-distribution/${userId}`, {
     query: { month, year },
     schema: DistributionSchema.array(),
+    signal: opts?.signal,
     fallbackError: "Failed to load task distribution",
   });
 
-export const getCalendarHeatmap = (userId: string, month: string, year: string) =>
+export const getCalendarHeatmap = (userId: string, month: string, year: string, opts?: { signal?: AbortSignal }) =>
   apiClient(apiPath`/tasks/calendar-heatmap/${userId}`, {
     query: { month, year },
     schema: HeatmapCellSchema.array(),
+    signal: opts?.signal,
     fallbackError: "Failed to load activity heatmap",
   });
 
-export const getStreakCount = (userId: string) =>
+export const getStreakCount = (userId: string, opts?: { signal?: AbortSignal }) =>
   apiClient(apiPath`/tasks/streak/${userId}`, {
     schema: StreakSchema,
+    signal: opts?.signal,
     fallbackError: "Failed to load streak",
   });
 

@@ -12,9 +12,10 @@ export const createProject = (payload: CreateProjectDraft) =>
     fallbackError: "Failed to create project",
   });
 
-export const getProjectsForUser = (userId: string) =>
+export const getProjectsForUser = (userId: string, opts?: { signal?: AbortSignal }) =>
   apiClient(apiPath`/projects/getAll/${userId}`, {
     schema: ProjectListItemSchema.array(),
+    signal: opts?.signal,
     fallbackError: "Failed to load projects",
   });
 

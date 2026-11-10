@@ -1,3 +1,4 @@
+import { clearQueryCache } from "./query/client";
 import { getAccessToken } from "@/app/utils/utils";
 
 /**
@@ -76,6 +77,7 @@ export async function expireSession(stale: string | null): Promise<"expired" | "
     if (expiring) return "expired";
     expiring = true;
     await postWithTimeout("/api/auth/logout", 5_000);
+    clearQueryCache(); // never show this session's data to the next one
     window.location.assign("/login");
     return "expired";
   });
