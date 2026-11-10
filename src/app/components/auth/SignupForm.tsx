@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import { signUpSchema } from "@/app/schemas/signUpSchema";
 import { createUser } from "@/app/api/userRequests";
+import { toSignupRequest } from "@/app/contracts/mappers";
 import { isUserFacing } from "@/lib/apiClient";
 import InputBox from "@/app/components/inputBox";
 
@@ -37,12 +38,7 @@ export default function SignupForm({
     
     try {
       // Create user payload
-      const userPayload = {
-        username: values.username,
-        email: values.email,
-        password: values.password,
-        fullname: values.fullname
-      };
+      const userPayload = toSignupRequest(values);
 
       // Create user
       const signupResponse = await createUser(userPayload);

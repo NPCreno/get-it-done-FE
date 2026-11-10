@@ -1,42 +1,37 @@
-import { CreateProjectDto } from "../interface/dto/create-project-dto";
-import { UpdateProjectDto } from "../interface/dto/update-project-dto";
-import { IProject } from "../interface/IProject";
 import { apiClient, apiPath } from "@/lib/apiClient";
+import { ProjectListItemSchema, ProjectSchema } from "../contracts/responses";
+import { CreateProjectRequestSchema, UpdateProjectRequestSchema } from "../contracts/requests";
+import type { CreateProjectDraft, UpdateProjectDraft } from "../contracts/mappers";
 
-export const createProject = (payload: CreateProjectDto) =>
+// The owner comes from the token; nothing here takes a user id for writes.
+export const createProject = (payload: CreateProjectDraft) =>
   apiClient("/projects/create", {
     method: "POST",
     body: payload,
+    requestSchema: CreateProjectRequestSchema,
     fallbackError: "Failed to create project",
   });
 
 export const getProjectsForUser = (userId: string) =>
-  apiClient<IProject[]>(apiPath`/projects/getAll/${userId}`, {
+  apiClient(apiPath`/projects/getAll/${userId}`, {
+    schema: ProjectListItemSchema.array(),
     fallbackError: "Failed to load projects",
   });
 
 export const getProjectById = (projectId: string, opts?: { signal?: AbortSignal }) =>
-  apiClient<IProject>(apiPath`/projects/${projectId}`, {
+  apiClient(apiPath`/projects/${projectId}`, {
     signal: opts?.signal,
+    schema: ProjectSchema,
     fallbackError: "Failed to load project",
   });
 
-export const updateProject = (payload: UpdateProjectDto) => {
-  // Only the fields defined in UpdateProjectDto are sent
-  const cleanPayload: Partial<UpdateProjectDto> = {
-    title: payload.title,
-    description: payload.description,
-    due_date: payload.due_date,
-    color: payload.color,
-    project_id: payload.project_id,
-    colorLabel: payload.colorLabel,
-  };
-  return apiClient(apiPath`/projects/${payload.project_id ?? ""}`, {
+export const updateProject = (projectId: string, payload: UpdateProjectDraft) =>
+  apiClient(apiPath`/projects/${projectId}`, {
     method: "PATCH",
-    body: cleanPayload,
+    body: payload,
+    requestSchema: UpdateProjectRequestSchema,
     fallbackError: "Failed to update project",
   });
-};
 
 export const deleteProjectById = (projectId: string) =>
   apiClient(apiPath`/projects/${projectId}`, {

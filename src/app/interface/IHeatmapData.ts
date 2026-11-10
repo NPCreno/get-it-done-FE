@@ -1,4 +1,3 @@
-export interface IHeatmapData {
-    date: string;
-    value: number;
-}
+import type { HeatmapCell } from "../contracts/responses";
+
+export type IHeatmapData = HeatmapCell;

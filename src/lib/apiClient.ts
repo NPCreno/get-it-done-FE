@@ -1,3 +1,4 @@
+import type { ZodTypeAny, ZodTypeDef, ZodType } from "zod";
 import { getAccessToken } from "@/app/utils/utils";
 import { expireSession, refreshSession } from "./clientSession";
 
@@ -9,7 +10,8 @@ export type ApiFailureKind =
   | "forbidden" // 403, or a 401 without a TOKEN_* code (ownership checks)
   | "http" // other non-2xx
   | "api" // 2xx envelope with status !== 'success'
-  | "invalid_response"; // contract violation
+  | "invalid_response" // contract violation
+  | "invalid_request"; // our own payload failed its schema; nothing was sent
 
 export type ApiSuccess<T> = { ok: true; status: number; data: T; message?: string };
 export type ApiFailure = {
@@ -21,7 +23,7 @@ export type ApiFailure = {
 };
 export type ApiResult<T> = ApiSuccess<T> | ApiFailure;
 
-export interface ApiRequestOptions {
+export interface ApiRequestOptions<T = unknown> {
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   body?: unknown;
   query?: Record<string, string | number | undefined>;
@@ -31,6 +33,10 @@ export interface ApiRequestOptions {
   timeoutMs?: number; // default 15000
   signal?: AbortSignal;
   fallbackError: string; // endpoint-specific human message
+  /** Validates the request body before sending; failure is `invalid_request`. */
+  requestSchema?: ZodTypeAny;
+  /** Validates the unwrapped response data; failure is `invalid_response`. */
+  schema?: ZodType<T, ZodTypeDef, unknown>;
 }
 
 const DEFAULT_TIMEOUT_MS = 15_000;
@@ -51,6 +57,9 @@ export function isUserFacing(f: ApiFailure): boolean {
 }
 
 export function describeFailure(f: ApiFailure): { title: string; description: string } {
+  if (f.kind === "invalid_request") {
+    return { title: "Please check the form", description: f.detail ?? f.message };
+  }
   if (f.kind === "api") {
     return { title: f.message, description: f.detail ?? "Something Went Wrong" };
   }
@@ -123,7 +132,7 @@ async function restoreSession(stale: string | null): Promise<ApiFailure | null> 
 function interpretSuccess<T>(
   status: number,
   text: string,
-  opts: ApiRequestOptions
+  opts: ApiRequestOptions<T>
 ): ApiResult<T> {
   const expect = opts.expect ?? "envelope";
   if (expect === "none") return { ok: true, status, data: undefined as T };
@@ -152,13 +161,25 @@ function interpretSuccess<T>(
   return fail(status, "api", message ?? opts.fallbackError, detail);
 }
 
-async function execute<T>(path: string, opts: ApiRequestOptions, isRetry: boolean): Promise<ApiResult<T>> {
+async function execute<T>(path: string, opts: ApiRequestOptions<T>, isRetry: boolean): Promise<ApiResult<T>> {
   if (typeof window === "undefined") {
     console.error("[api] apiClient is browser-only");
     return fail(0, "network", "API client is browser-only");
   }
   const base = process.env.NEXT_PUBLIC_API_URL;
   if (!base) return fail(0, "network", "API URL is not configured");
+
+  let requestBody = opts.body;
+  if (opts.requestSchema && opts.body !== undefined) {
+    const parsed = opts.requestSchema.safeParse(opts.body);
+    if (!parsed.success) {
+      const first = parsed.error.issues[0];
+      const where = first?.path.length ? `${first.path.join(".")}: ` : "";
+      console.warn("[api] invalid_request", path.split("?")[0], parsed.error.issues.map((i) => i.path.join(".")));
+      return fail(0, "invalid_request", "Request failed validation", `${where}${first?.message ?? "Invalid value"}`);
+    }
+    requestBody = parsed.data;
+  }
 
   const method = opts.method ?? "GET";
   const auth = opts.auth !== false;
@@ -184,7 +205,7 @@ async function execute<T>(path: string, opts: ApiRequestOptions, isRetry: boolea
   const pathForLog = path.split("?")[0];
 
   const headers: Record<string, string> = {};
-  const hasBody = opts.body !== undefined;
+  const hasBody = requestBody !== undefined;
   if (hasBody) headers["Content-Type"] = "application/json";
   if (auth && token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -197,7 +218,7 @@ async function execute<T>(path: string, opts: ApiRequestOptions, isRetry: boolea
     const res = await fetch(url, {
       method,
       headers,
-      body: hasBody ? JSON.stringify(opts.body) : undefined,
+      body: hasBody ? JSON.stringify(requestBody) : undefined,
       cache: "no-store",
       credentials: "omit",
       signal: composed.signal,
@@ -217,7 +238,17 @@ async function execute<T>(path: string, opts: ApiRequestOptions, isRetry: boolea
   }
 
   if (status >= 200 && status < 300) {
-    const result = interpretSuccess<T>(status, text, opts);
+    let result = interpretSuccess<T>(status, text, opts);
+    if (result.ok && opts.schema && (opts.expect ?? "envelope") !== "none") {
+      const parsed = opts.schema.safeParse(result.data);
+      if (!parsed.success) {
+        // Paths only: never log response values.
+        console.warn("[api]", method, pathForLog, status, "schema", parsed.error.issues.slice(0, 5).map((i) => i.path.join(".")));
+        result = fail(status, "invalid_response", "Unexpected response from server");
+      } else {
+        result = { ...result, data: parsed.data };
+      }
+    }
     if (!result.ok) console.warn("[api]", method, pathForLog, status, result.kind);
     return result;
   }
@@ -244,6 +275,6 @@ async function execute<T>(path: string, opts: ApiRequestOptions, isRetry: boolea
 }
 
 /** Never throws: only programming errors can reject. */
-export function apiClient<T = unknown>(path: string, opts: ApiRequestOptions): Promise<ApiResult<T>> {
+export function apiClient<T = unknown>(path: string, opts: ApiRequestOptions<T>): Promise<ApiResult<T>> {
   return execute<T>(path, opts, false);
 }

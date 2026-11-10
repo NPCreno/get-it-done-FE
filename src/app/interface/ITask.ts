@@ -1,14 +1,10 @@
-import { ISubTask } from "./ISubTask";
+import type { ProjectTask, SubTask, TaskListItem } from "../contracts/responses";
 
-export interface ITask {
-    project_id: string;
-    task_id: string;
-    title: string;
-    description: string;
-    due_date: Date;
-    status: string;
-    priority: string;
-    project_title?: string;
-    template_id?: string;
-    subInstances?: ISubTask[] | null;
+/** Component-facing task: both the user list and the project list satisfy it. */
+export interface ITask extends Omit<ProjectTask, "project_id"> {
+  project_id: string | null;
+  project_title?: TaskListItem["project_title"];
+  template_id?: TaskListItem["template_id"];
+  subInstances?: SubTask[] | null;
+  user_id?: string;
 }

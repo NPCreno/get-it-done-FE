@@ -1,5 +1,6 @@
 "use client";
 import { getUser, updateUser } from "@/app/api/userRequests";
+import { toProfileUpdateRequest } from "@/app/contracts/mappers";
 import { describeFailure, isUserFacing } from "@/lib/apiClient";
 import MainLayout from "@/app/components/MainLayout";
 import ToggleSwitch from "@/app/components/toggleSwitch";
@@ -86,11 +87,7 @@ export default function ProfileSettingsPage() {
         return;
       }
 
-      const updateData = {
-        ...values,
-        enableNotifications: values.enableNotifications.toString(),
-        soundFx: values.soundFx.toString(),
-      };
+      const updateData = toProfileUpdateRequest(values, userData);
 
       const response = await updateUser(userData.user_id, updateData);
 

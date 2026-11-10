@@ -5,7 +5,7 @@ import { isUserFacing } from "@/lib/apiClient";
 import { useFormState } from "../context/FormProvider";
 import { ITask } from "../interface/ITask";
 import { ISubTask } from '../interface/ISubTask';
-import { CreateSubTaskDto } from '../interface/dto/create-subTask-dto';
+import { toCreateSubTaskRequest } from '../contracts/mappers';
 import { FormikErrors, useFormik } from 'formik';
 import { createSubTaskSchema } from '../schemas/createSubTaskSchema';
 import { ISubTaskFormValues } from '../interface/forms/ISubTaskFormValues';
@@ -51,13 +51,12 @@ export function TaskItem({
 
   const initialValues = useMemo<ISubTaskFormValues>(
     () => ({
-      user_id: userData?.user_id ?? "",
       title: "",
       task_id: task.task_id,
       due_date: null,
       status: "Pending",
     }),
-    [userData?.user_id, task.task_id]
+    [task.task_id]
   );
   
   const {
@@ -82,13 +81,7 @@ export function TaskItem({
     if (Object.keys(validationErrors).length === 0) {
       try {
         // Create a new subtask with proper typing
-        const subTaskData: CreateSubTaskDto = {
-          title: formValues.title,
-          task_id: formValues.task_id,
-          user_id: formValues.user_id,
-          due_date: formValues.due_date || undefined,
-          status: formValues.status,
-        };
+        const subTaskData = toCreateSubTaskRequest(formValues);
 
         const response = await createSubTaskApi(subTaskData);
         
