@@ -30,7 +30,7 @@ import { CreateTaskDto } from "@/app/interface/dto/create-task-dto";
 import { Toast } from "@/app/components/toast";
 import { ITask } from "@/app/interface/ITask";
 import { UpdateTaskDto } from "@/app/interface/dto/update-task-dto";
-import { ITaskResponse } from "@/app/interface/responses/ITaskResponse";
+import { ApiResult, describeFailure, isUserFacing } from "@/lib/apiClient";
 import LoadingPage from "@/app/components/loader";
 import { IDashboardData } from "@/app/interface/IDashboardData";
 import { ITaskCompletionTrendData } from "@/app/interface/ITaskCompletionTrendData";
@@ -181,9 +181,8 @@ export default function DashboardPage() {
         end_date: values.end_date || undefined,
         status: values.status || undefined,
       };
-      const response: ITaskResponse = await createTaskApi(payload);
-      if (response.status === "success") {
-        setIsLoading(false);
+      const response = await createTaskApi(payload);
+      if (response.ok) {
         setUpdateTaskDashboard(!updateTaskDashboard);
         setIsTaskModalOpen(false);
         setToastMessage({
@@ -202,9 +201,22 @@ export default function DashboardPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
+      } else if (isUserFacing(response)) {
+        // The modal stays open so the user can retry.
+        setToastMessage({
+          ...describeFailure(response),
+          className: "text-error-default",
+        });
+        setShowToast(true);
+        setIsExitingToast(false);
+        setTimeout(() => {
+          setIsExitingToast(true);
+          setTimeout(() => {
+            setShowToast(false);
+          }, 400);
+        }, 10000);
       }
     } catch (error) {
-      setIsLoading(false);
       if (error instanceof Error) {
         setToastMessage({
           title: "Something Went Wrong",
@@ -226,6 +238,8 @@ export default function DashboardPage() {
           setShowToast(false); // Remove after animation completes
         }, 400); // Must match the toastOut animation duration
       }, 10000); // Toast display duration
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -233,9 +247,8 @@ export default function DashboardPage() {
     if (userData) {
       const fetchProjects = async () => {
         const projects = await getProjectsForUser(userData.user_id);
-        if (projects?.status === "success") {
+        if (projects.ok) {
           setProjectOptions(projects.data);
-          return;
         } else {
           setProjectOptions([]);
         }
@@ -275,54 +288,45 @@ export default function DashboardPage() {
           getStreakCount(userData.user_id)
         ]);
 
-        // Process each response with error handling
-        type ApiResponse<T> = {
-          status: 'success' | 'error';
-          data: T;
-          error?: string;
-        };
-
-        const processResponse = <T,>(
-          response: PromiseSettledResult<ApiResponse<T>>,
-          successHandler: (data: T) => void,
-          errorValue: T
+        // Failed requests arrive as FULFILLED { ok: false }. A rejected entry
+        // can only come from a programming error.
+        const apply = <T,>(
+          s: PromiseSettledResult<ApiResult<T>>,
+          set: (v: T) => void,
+          fallback: T,
+          label: string
         ) => {
-          if (response.status === 'fulfilled' && response.value?.status === 'success' && response.value.data !== undefined) {
-            successHandler(response.value.data);
-          } else {
-            const error = response.status === 'rejected' 
-              ? response.reason 
-              : response.status === 'fulfilled' 
-                ? response.value?.error 
-                : 'Unknown error';
-            console.error('API Error:', error);
-            successHandler(errorValue);
+          if (s.status === 'rejected') {
+            console.error(`[dashboard] ${label} threw`, s.reason);
+            set(fallback);
+            return;
           }
+          const r = s.value;
+          if (r.ok) {
+            set(r.data ?? fallback);
+            return;
+          }
+          if (isUserFacing(r)) console.warn(`[dashboard] ${label} failed: ${r.kind} ${r.message}`);
+          set(fallback);
         };
 
-        // Update states with responses
-        processResponse<ITask[]>(tasksResponse, setTasks, []);
-        processResponse<IDashboardData>(
-          dashboardResponse, 
-          setDashboardData, 
-          { 
+        apply(tasksResponse, setTasks, [] as ITask[], 'tasks');
+        apply(
+          dashboardResponse,
+          setDashboardData,
+          {
             all_tasks: 0,
             pending_tasks: 0,
             complete_tasks: 0,
             all_projects: 0,
             streak_count: 0
-          }
+          } as IDashboardData,
+          'dashboard'
         );
-        processResponse<ITaskCompletionTrendData[]>(trendResponse, setTaskCompletionData, []);
-        processResponse<ITaskDistribution[]>(distributionResponse, setTaskDistributionData, []);
-        processResponse<IHeatmapData[]>(heatmapResponse, setCalendarHeatmapData, []);
-        
-        // Handle streak count separately since it has a different structure
-        if (streakResponse.status === 'fulfilled' && streakResponse.value?.status === 'success') {
-          setStreakCount(streakResponse.value.data?.count || 0);
-        } else {
-          setStreakCount(0);
-        }
+        apply(trendResponse, setTaskCompletionData, [] as ITaskCompletionTrendData[], 'trend');
+        apply(distributionResponse, setTaskDistributionData, [] as ITaskDistribution[], 'distribution');
+        apply(heatmapResponse, setCalendarHeatmapData, [] as IHeatmapData[], 'heatmap');
+        apply(streakResponse, (d) => setStreakCount(d.count ?? 0), { count: 0 }, 'streak');
 
       } catch (error) {
         console.error('Error in fetchTasks:', error);
@@ -378,9 +382,8 @@ export default function DashboardPage() {
         status: values.status || undefined,
         task_id: selectedTaskData ? selectedTaskData.task_id : values.task_id,
       };
-      const response: ITaskResponse = await updateTaskApi(payload);
-      if (response.status === "success") {
-        setIsLoading(false);
+      const response = await updateTaskApi(payload);
+      if (response.ok) {
         setUpdateTaskDashboard(!updateTaskDashboard);
         clearValueAndErrors();
         setIsTaskModalOpen(false);
@@ -400,13 +403,14 @@ export default function DashboardPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
-      } else {
-        setIsLoading(false);
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
+      } else if (isUserFacing(response)) {
+        // Backend rejected it (kind 'api'): reset and close. Transport failure: keep the modal open.
+        if (response.kind === 'api') {
+          clearValueAndErrors();
+          setIsTaskModalOpen(false);
+        }
         setToastMessage({
-          title: response.message,
-          description: response?.error || "Something Went Wrong",
+          ...describeFailure(response),
           className: "text-error-default",
         });
 
@@ -421,7 +425,6 @@ export default function DashboardPage() {
         }, 10000); // Toast display duration
       }
     } catch (error) {
-      setIsLoading(false);
       if (error instanceof Error) {
         setToastMessage({
           title: "Something Went Wrong",
@@ -443,6 +446,8 @@ export default function DashboardPage() {
           setShowToast(false); // Remove after animation completes
         }, 400); // Must match the toastOut animation duration
       }, 10000); // Toast display duration
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -499,7 +504,8 @@ export default function DashboardPage() {
     // after confirming to delete
     if (taskTemplateIdToDelete) {
       try {
-        await deleteRecurringTasksApi(taskTemplateIdToDelete);
+        const result = await deleteRecurringTasksApi(taskTemplateIdToDelete);
+        if (!result.ok) throw new Error(result.message);
         // Optionally refresh tasks or show success message
         setToastMessage({
           title: "Success",
@@ -541,8 +547,8 @@ export default function DashboardPage() {
 
   const deleteTask = async (taskId: string) => {
     try {
-      const response: ITaskResponse = await deleteTaskApi(taskId);
-      if (response.status === "success") {
+      const response = await deleteTaskApi(taskId);
+      if (response.ok) {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
         setToastMessage({
@@ -561,12 +567,13 @@ export default function DashboardPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
-      } else {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
+      } else if (isUserFacing(response)) {
+        if (response.kind === 'api') {
+          clearValueAndErrors();
+          setIsTaskModalOpen(false);
+        }
         setToastMessage({
-          title: response.message,
-          description: response?.error || "Something Went Wrong",
+          ...describeFailure(response),
           className: "text-error-default",
         });
 
@@ -607,8 +614,8 @@ export default function DashboardPage() {
 
   const deleteSubTask = async (taskSubInstance_id: string) => {
     try {
-      const response: ITaskResponse = await deleteSubTaskApi(taskSubInstance_id);
-      if (response.status === "success") {
+      const response = await deleteSubTaskApi(taskSubInstance_id);
+      if (response.ok) {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
         setToastMessage({
@@ -627,12 +634,13 @@ export default function DashboardPage() {
             setShowToast(false); // Remove after animation completes
           }, 400); // Must match the toastOut animation duration
         }, 10000); // Toast display duration
-      } else {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
+      } else if (isUserFacing(response)) {
+        if (response.kind === 'api') {
+          clearValueAndErrors();
+          setIsTaskModalOpen(false);
+        }
         setToastMessage({
-          title: response.message,
-          description: response?.error || "Something Went Wrong",
+          ...describeFailure(response),
           className: "text-error-default",
         });
 

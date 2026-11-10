@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { updateTaskStatus, updateSubTaskStatus, createSubTaskApi } from "@/app/api/taskRequests";
+import { isUserFacing } from "@/lib/apiClient";
 import { useFormState } from "../context/FormProvider";
 import { ITask } from "../interface/ITask";
 import { ISubTask } from '../interface/ISubTask';
@@ -91,13 +92,19 @@ export function TaskItem({
 
         const response = await createSubTaskApi(subTaskData);
         
-        if (response && response.status === 'success') {
+        if (response.ok) {
           // Refresh the task to show the new subtask
           taskUpdateStatus?.('Subtask added successfully', 'success', task);
           // Clear the input for the next subtask
           setFieldValue('title', '');
           // Keep the input focused for rapid entry
           subtaskInputRef.current?.focus();
+        } else if (isUserFacing(response)) {
+          taskUpdateStatus?.(
+            response.kind === 'api' ? response.message : 'Failed to create subtask',
+            'error',
+            task
+          );
         }
       } catch (error) {
         console.error('Error creating subtask:', error);
@@ -207,7 +214,6 @@ export function TaskItem({
     }
 
     let controller: AbortController | null = null;
-    let timeoutId: NodeJS.Timeout | null = null;
 
     try {
       // Set updating state with controller
@@ -238,41 +244,29 @@ export function TaskItem({
         status: type === 'task' ? newStatus : prev.status
       }));
       
-      // Make API call with timeout
-      timeoutId = setTimeout(() => {
-        if (controller) {
-          controller.abort();
-        }
-      }, 10000);
-      
-      // Check if update was aborted before making API call
-      if (controller?.signal.aborted) {
-        throw new Error('Update was cancelled');
-      }
+      // The API client owns the timeout; abort is only for unmount/cleanup.
+      const callOpts = { signal: controller.signal, timeoutMs: 10_000 };
 
-      let response;
       if (type === 'task') {
         // For task updates, just update the task status
-        response = await Promise.race([
-          updateTaskStatus(task.task_id, newStatus),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000)
-          )
-        ]) as { status: string; message?: string };
+        const result = await updateTaskStatus(task.task_id, newStatus, callOpts);
+        if (!result.ok) {
+          if (isUserFacing(result)) taskUpdateStatus?.(result.message, 'error', task);
+          return;
+        }
       } else {
         // Handle subtask update
         if (!subtaskId) {
           throw new Error('Subtask ID is missing');
         }
-        
-        // First, update the subtask status
-        response = await Promise.race([
-          updateSubTaskStatus(subtaskId, newStatus),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000)
-          )
-        ]) as { status: string; message?: string };
-        
+
+        // First, update the subtask status; the parent is only touched if this succeeds
+        const subResult = await updateSubTaskStatus(subtaskId, newStatus, callOpts);
+        if (!subResult.ok) {
+          if (isUserFacing(subResult)) taskUpdateStatus?.(subResult.message, 'error', task);
+          return;
+        }
+
         // After successful subtask update, check if we need to update the parent task status
         if (subTasks) {
           const updatedSubtasks = subTasks.map(st => 
@@ -287,15 +281,17 @@ export function TaskItem({
           // Only update parent task if all subtasks are complete or if parent is complete but shouldn't be
           if (allSubtasksComplete || task.status === 'Complete') {
             const parentStatus = allSubtasksComplete ? 'Complete' : 'Pending';
-            await updateTaskStatus(task.task_id, parentStatus);
+            const parentResult = await updateTaskStatus(task.task_id, parentStatus, callOpts);
+            if (!parentResult.ok) {
+              if (isUserFacing(parentResult)) {
+                taskUpdateStatus?.('Subtask updated, but the task status could not be updated.', 'error', task);
+              }
+              return;
+            }
           }
         }
       }
-      
-      if (response?.status !== "success") {
-        throw new Error(response?.message || `Failed to update ${itemType.toLowerCase()} status`);
-      }
-      
+
       // Show success message
       taskUpdateStatus?.(`${itemType} ${statusText} successfully!`, 'success', task);
       
@@ -303,15 +299,7 @@ export function TaskItem({
       console.error(`Error updating ${type} status:`, error);
       const errorMessage = error instanceof Error ? error.message : `Failed to update ${type} status`;
       taskUpdateStatus?.(errorMessage, 'error', task);
-      
-      // Re-throw the error to be caught by the outer catch block if needed
-      throw error;
     } finally {
-      // Clear the timeout if it exists
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      
       // Clean up controller if it exists
       if (controller) {
         controller.abort();

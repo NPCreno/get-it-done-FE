@@ -1,5 +1,6 @@
 "use client";
 import { getUser, updateUser } from "@/app/api/userRequests";
+import { describeFailure, isUserFacing } from "@/lib/apiClient";
 import MainLayout from "@/app/components/MainLayout";
 import ToggleSwitch from "@/app/components/toggleSwitch";
 import { updateUserSchema } from "@/app/schemas/updateUserSchema";
@@ -93,7 +94,7 @@ export default function ProfileSettingsPage() {
 
       const response = await updateUser(userData.user_id, updateData);
 
-      if (response) {
+      if (response.ok) {
         setToastMessage({
           title: "Profile Settings Saved",
           description: "Your preferences have been saved",
@@ -105,6 +106,17 @@ export default function ProfileSettingsPage() {
         }, 1000);
         setShowToast(true);
         setIsExitingToast(false);
+      } else if (isUserFacing(response)) {
+        setToastMessage({
+          ...describeFailure(response),
+          className: "text-error-default",
+        });
+        setShowToast(true);
+        setIsExitingToast(false);
+        setTimeout(() => {
+          setIsExitingToast(true);
+          setTimeout(() => setShowToast(false), 400);
+        }, 10000);
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -174,17 +186,21 @@ export default function ProfileSettingsPage() {
             setIsDoneFetchingUser(true);
             setUserData(parsedUser);
             const response = await getUser(parsedUser.user_id);
-            if (response) {
+            if (response.ok) {
               setIsDoneFetchingUser(true);
-              setUserData(response);
+              setUserData(response.data);
+            } else if (isUserFacing(response)) {
+              console.error("Failed to fetch user:", response.kind, response.message);
             }
             return;
           }
           // Only fetch updated user info if we have a user
           const response = await getUser(userData.user_id);
-          if (response) {
+          if (response.ok) {
             setIsDoneFetchingUser(true);
-            setUserData(response);
+            setUserData(response.data);
+          } else if (isUserFacing(response)) {
+            console.error("Failed to fetch user:", response.kind, response.message);
           }
         } catch (error) {
           console.error("Failed to fetch user:", error);

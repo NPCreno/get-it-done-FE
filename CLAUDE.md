@@ -18,13 +18,15 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `/login`, `/signup`, `/forgot-password` — `src/app/(auth)/`
 - `/dashboard`, `/projects`, `/notifications`, `/profileSettings` — `src/app/(routes)/`
 
-## API route handlers (2)
+## API route handlers (3)
+- `POST /api/auth/refresh` — silent refresh from the browser; never clears cookies
 - `POST /api/auth/login` — validates input, calls backend `/user/loginEmail` or `/user/loginUsername`, sets both cookies, forwards the client IP as `X-Client-IP`
-- `POST /api/auth/logout` — clears both cookies
+- `POST /api/auth/logout` — revokes the family on the BE, clears both cookies
 
 ## Key files
 - `src/middleware.ts` — route protection, JWT verification, silent refresh
-- `src/app/api/auth/authRequests.ts` — `refreshAccessToken()` used by the middleware
+- `src/app/api/auth/session.ts` — shared server session helpers (refresh, cookies, revoke); used by middleware and the auth route handlers
+- `src/lib/apiClient.ts`, `src/lib/clientSession.ts` — browser API client (`ApiResult<T>`, never throws) and refresh-and-retry
 - `src/app/utils/clientIp.ts` — `getClientIp(headers)`, audit-only client IP, never throws, no network call
 - `src/app/utils/utils.tsx` — `getAccessToken()`, `parseJwt()`, `base64UrlDecode()`, date helpers
 - `src/app/api/userRequests.ts`, `projectsRequests.ts`, `taskRequests.ts` — backend calls with a Bearer token
@@ -46,6 +48,7 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - Formik and react-hook-form both exist, and so do yup and zod (consolidation pending)
 - Any new page is protected by default; add it to `publicRoutes` in `middleware.ts` only if it must be open
 - Client IP is derived on the server only. Never fetch it from a third party
+- Data calls use `apiClient` helpers and return `ApiResult<T>`: check `result.ok`, toast only if `isUserFacing(result)`, reset spinners in `finally`
 - No test files exist and `package.json` has no `test` script
 
 ## Commands
@@ -57,6 +60,9 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 ## Environment
 - `NEXT_PUBLIC_API_URL` — backend base URL, compiled into browser code
 - `JWT_SECRET` — server-only; the middleware throws at startup if it is missing
+- `INTERNAL_API_SECRET` — server-only, equals the BE value; attests the forwarded client IP
+- `TRUSTED_PROXY=vercel` — Vercel settings only; allows reading Vercel IP headers
+- `next build` fails if `NEXT_PUBLIC_API_URL` is unset or not an absolute http(s) URL
 
 ## CodeGraph
 The repo is indexed (`.codegraph/`). Query with `codegraph_explore` and `projectPath` set to this repo. Auto-sync runs through the file watcher; run `codegraph sync` only if symbols look missing.

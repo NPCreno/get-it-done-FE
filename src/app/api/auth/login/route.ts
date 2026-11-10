@@ -1,22 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClientIp } from "@/app/utils/clientIp";
-
-const REFRESH_COOKIE_DAYS = 7;
-const REFRESH_COOKIE_DAYS_REMEMBER_ME = 30;
+import { backendAuthHeaders, parseSessionTokens, setSessionCookies } from "../session";
 
 interface LoginBody {
   usernameOrEmail: string;
   password: string;
   rememberMe: boolean;
-}
-
-interface LoginApiResponse {
-  message?: string;
-  data?: {
-    access_token: string;
-    refresh_token: string;
-    expires_in: number;
-  };
 }
 
 function parseBody(body: unknown): LoginBody | null {
@@ -56,47 +45,29 @@ export async function POST(req: NextRequest) {
   try {
     apiResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${endpoint}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Client-IP": getClientIp(req.headers),
-      },
+      headers: backendAuthHeaders(getClientIp(req.headers)),
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(10000),
     });
   } catch (error) {
-    console.error("Login request failed:", error);
+    console.error("Login request failed:", error instanceof Error ? error.message : "network");
     return NextResponse.json({ success: false, message: "Login failed" }, { status: 502 });
   }
 
-  const result = (await apiResponse.json().catch(() => ({}))) as LoginApiResponse;
+  const result = (await apiResponse.json().catch(() => ({}))) as {
+    message?: string;
+    data?: unknown;
+  };
+  const tokens = apiResponse.ok ? parseSessionTokens(result.data) : null;
 
-  if (!apiResponse.ok || !result.data?.access_token || !result.data?.refresh_token) {
+  if (!apiResponse.ok || !tokens) {
     return NextResponse.json(
-      { success: false, message: result.message || "Login failed" },
+      { success: false, message: (typeof result.message === "string" && result.message) || "Login failed" },
       { status: apiResponse.ok ? 502 : apiResponse.status }
     );
   }
 
-  const secure = process.env.NODE_ENV === "production";
-  const refreshDays = body.rememberMe ? REFRESH_COOKIE_DAYS_REMEMBER_ME : REFRESH_COOKIE_DAYS;
   const response = NextResponse.json({ success: true });
-
-  // Readable by client JS: getAccessToken() sends it as a Bearer header.
-  response.cookies.set("access_token", result.data.access_token, {
-    maxAge: result.data.expires_in,
-    secure,
-    sameSite: "strict",
-    path: "/",
-    httpOnly: false,
-  });
-  // Never exposed to client JS.
-  response.cookies.set("refresh_token", result.data.refresh_token, {
-    maxAge: refreshDays * 24 * 60 * 60,
-    secure,
-    sameSite: "strict",
-    path: "/",
-    httpOnly: true,
-  });
-
+  setSessionCookies(response, tokens);
   return response;
 }

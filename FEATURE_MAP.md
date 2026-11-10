@@ -7,7 +7,9 @@ Request chains per feature. Backend paths are shown without the `/api` prefix, b
 - Signup: `(auth)/signup/page.tsx` → `SignupForm.tsx` → `createUser()` in `userRequests.ts` → BE `/user/create`, then `POST /api/auth/login` with `rememberMe: true`.
 - Forgot password: `(auth)/forgot-password/page.tsx` → `ForgotPasswordForm.tsx` (UI only, no backend call found).
 - Logout: `profileSettings/page.tsx` `confirmLogout()` → `POST /api/auth/logout` (`logout/route.ts`), then clears `pomodoroTimerState` from `localStorage`.
-- Token refresh: `middleware.ts` → `refreshAccessToken()` in `authRequests.ts` → BE `/auth/refresh`, with `X-Client-IP` header.
+- Token refresh (navigation): `middleware.ts` → `refreshWithBackend()` in `session.ts` → BE `/auth/refresh`. Prefetches skip the proactive refresh.
+- Token refresh (browser calls): `apiClient` gets a TOKEN_INVALID/TOKEN_MISSING 401 → `refreshSession()` → `POST /api/auth/refresh` → BE `/auth/refresh`, then retries once. A definitive invalid result runs `expireSession()` → `POST /api/auth/logout` → `/login`.
+- All data calls go through `apiClient` (`src/lib/apiClient.ts`): envelope unwrapped, `status !== 'success'` becomes `kind:'api'`.
 - Route protection: `middleware.ts` (public-route allowlist, everything else needs a valid token).
 
 ## Dashboard

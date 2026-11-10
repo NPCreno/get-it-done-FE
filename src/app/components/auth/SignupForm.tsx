@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import { signUpSchema } from "@/app/schemas/signUpSchema";
 import { createUser } from "@/app/api/userRequests";
+import { isUserFacing } from "@/lib/apiClient";
 import InputBox from "@/app/components/inputBox";
 
 interface SignupFormValues {
@@ -46,8 +47,9 @@ export default function SignupForm({
       // Create user
       const signupResponse = await createUser(userPayload);
 
-      if (signupResponse.error) {
-        throw new Error(signupResponse.error.message || "Failed to create account");
+      if (!signupResponse.ok) {
+        if (isUserFacing(signupResponse)) setError(signupResponse.message);
+        return;
       }
 
       // Log in the user
@@ -65,6 +67,8 @@ export default function SignupForm({
 
       if (loginResponse.ok && loginResult.success) {
         onChangeView("signedUp");
+      } else {
+        setError("Account created, but sign-in failed. Please log in.");
       }
       
     } catch (error) {

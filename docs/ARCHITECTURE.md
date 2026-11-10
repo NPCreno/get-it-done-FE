@@ -5,7 +5,7 @@ Browser → Vercel edge → Next.js middleware → page or BFF route handler →
 
 - Page loads pass through `src/middleware.ts` first.
 - Login and logout go through the BFF handlers in `src/app/api/auth/`.
-- All other data calls are made from the browser straight to the backend (`NEXT_PUBLIC_API_URL`) with a Bearer token read from the `access_token` cookie by `getAccessToken()`.
+- All other data calls are made from the browser straight to the backend (`NEXT_PUBLIC_API_URL`) through `apiClient` (`src/lib/apiClient.ts`), with a Bearer token read from the `access_token` cookie by `getAccessToken()`. `apiClient` never throws: it returns `ApiResult<T>` and unwraps the backend envelope. A guard 401 with code `TOKEN_INVALID`/`TOKEN_MISSING` triggers one refresh-and-retry; other 401s are ownership errors (`kind:'forbidden'`).
 
 ## Authentication
 - **Tokens:** the backend issues an access token (short-lived, HS256) and a refresh token.
@@ -20,8 +20,15 @@ Browser → Vercel edge → Next.js middleware → page or BFF route handler →
 - **Signing:** the middleware uses `JWT_SECRET` (server-only, required at startup) and `HS256`. The backend signs with the same secret.
 - **Security boundary:** the middleware only decides what to render. The backend `AuthorizeGuard` verifies the Bearer token on every protected endpoint.
 
+## Session refresh (rotation-safe)
+- The backend rotates refresh tokens on every use but replays the same new pair for the old token within a grace window (default 30s), so concurrent refreshes (tabs, middleware, prefetch, client) are idempotent.
+- Cookie `maxAge` always equals the JWT lifetime reported by the backend (`access_expires_in`, `refresh_expires_in`). No FE constants.
+- Cookies are cleared only on a definitive backend verdict (`invalid`). Network errors, timeouts, 5xx, 429 and malformed responses never touch cookies.
+- `POST /api/auth/refresh` is listed in the middleware `authApiRoutes`, otherwise middleware would rotate the cookie first.
+- Client: in-tab singleton plus Web Lock `gid-session`; logout only if the access cookie is unchanged since the attempt began.
+
 ## Client IP
-The client IP is audit data only. `getClientIp()` reads `x-forwarded-for` (Vercel sets the real client IP as the leftmost value), then `x-real-ip`, then returns an empty string. It is sent to the backend in the `X-Client-IP` header, from both the login handler and the middleware refresh. No third-party lookup is used and nothing waits on IP resolution.
+The client IP is audit data only. `getClientIp()` reads `x-real-ip`, then the leftmost `x-forwarded-for`, only when `TRUSTED_PROXY=vercel` (set in Vercel only); otherwise it returns an empty string. It is sent as `X-Client-IP` together with `X-Internal-Secret` (`INTERNAL_API_SECRET`), which lets the backend trust it. Without the secret nothing is sent. No third-party lookup is used and nothing waits on IP resolution.
 
 ## State management
 No global store. Component state, `FormProvider` context for form handling, and direct API calls from pages. The pomodoro timer persists to `localStorage`.
