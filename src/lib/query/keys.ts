@@ -7,6 +7,20 @@ import type { TaskWindow } from "./window";
  */
 const u = (id: string) => ["u", id] as const;
 
+/** Allowlisted log label for a key: never contains a key value (user id, project id, dates, months). */
+export function resourceOf(key: readonly unknown[]): string {
+  if (key[0] !== "u") return "unknown";
+  const [, , area, a, b] = key;
+  if (area === "profile") return "profile";
+  if (area === "projects") return key.length > 3 ? "projects.detail" : "projects";
+  if (area === "tasks") return a === "upcoming" ? "tasks.upcoming" : a === "project" ? "tasks.project" : "unknown";
+  if (area === "analytics" && ["summary", "trend", "distribution", "heatmap", "streak"].includes(a as string)) {
+    return `analytics.${a as string}`;
+  }
+  void b;
+  return "unknown";
+}
+
 export const qk = {
   profile: (id: string) => [...u(id), "profile"] as const,
   projects: (id: string) => [...u(id), "projects"] as const,

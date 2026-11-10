@@ -56,6 +56,30 @@ export function isUserFacing(f: ApiFailure): boolean {
   return f.kind !== "aborted" && f.kind !== "unauthorized";
 }
 
+/**
+ * Copy for a LOAD error. Fixed, client-authored strings chosen by kind/status:
+ * it never reads f.message or f.detail, so server text (SQL fragments, ids) cannot leak.
+ */
+export function describeLoadFailure(f: ApiFailure): string {
+  switch (f.kind) {
+    case "network":
+      return "You seem to be offline, or the server can't be reached.";
+    case "timeout":
+      return "The server took too long to respond.";
+    case "forbidden":
+      return "You don't have access to this data.";
+    case "unauthorized":
+      return "Your session couldn't be verified. Please sign in again.";
+    case "api":
+    case "invalid_response":
+      return "Something went wrong on our side.";
+    case "http":
+      return f.status >= 500 ? "Something went wrong on our side." : "The request couldn't be completed.";
+    default:
+      return "The request couldn't be completed.";
+  }
+}
+
 export function describeFailure(f: ApiFailure): { title: string; description: string } {
   if (f.kind === "invalid_request") {
     return { title: "Please check the form", description: f.detail ?? f.message };

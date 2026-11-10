@@ -73,6 +73,8 @@ interface ChartPieInteractiveProps {
   onMonthChange?: (month: string) => void;
   months?: {value: string; label: string}[];
   noData?: boolean;
+  /** Replaces the chart and the no-data block (loading skeleton or error). The header and month select stay. */
+  statusSlot?: React.ReactNode;
   theme?: string;
 }
 
@@ -109,6 +111,7 @@ export function ChartPieInteractive({
   onMonthChange,
   months = defaultMonths,
   noData,
+  statusSlot,
   theme = "light",
 }: ChartPieInteractiveProps) {
   const id = "pie-interactive";
@@ -166,13 +169,14 @@ export function ChartPieInteractive({
           </SelectContent>
         </Select>
       </CardHeader>
-      {noData && (
+      {statusSlot && <div className="px-4 pb-4 flex-1 flex items-center">{statusSlot}</div>}
+      {!statusSlot && noData && (
         <div className={`w-full h-full flex flex-col items-center justify-center p-4 text-center ${theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"}`}>
           <Database className="h-16 w-16 text-gray-400 mb-2" />
           <p className="text-gray-500 text-sm">No data available</p>
         </div>
       )}
-      {!noData && (
+      {!statusSlot && !noData && (
       <CardContent className="px-4 pt-0 pb-2 flex-1 flex items-center">
         <ChartContainer
           id={id}

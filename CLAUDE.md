@@ -55,6 +55,7 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - Contract sync: the BE exports `docs/api-contract.json` and fixtures. After a BE contract change run `pnpm contract:sync` (needs the sibling `../get-it-done-BE`), then `pnpm test`. `pnpm contract:check` diffs only. CI cannot see the BE repo, so drift is caught locally and by the BE PR checklist
 - Tests: `pnpm test` (vitest: contract, fixtures, mappers, query layer). It does not gate the Vercel build
 - Server data is read and written only through `src/lib/query` (TanStack Query v5). A query key equals its request parameters (`specs.ts` builds both from the same values). Every mutation declares what it invalidates in `invalidation.ts`; only the last task-data mutation of an overlapping burst invalidates. Only task and subtask status are optimistic (per-entity compare-and-swap rollback, per-parent mutation `scope`). Do not fetch in `useEffect` and keep results in `useState`
+- Pages render server data through `loadStateOf(query, isEmpty)`, never `data ?? EMPTY`. Only a successful empty response is "empty"; 404 is never empty. Load errors show `describeLoadFailure()` (fixed copy), never server text; use `LoadError` for every retry
 - The task window is quantized to 5-minute buckets (`window.ts`); a task due up to 5 minutes outside today's exact 24 h window may show
 - Task completion from the project view now uses the status endpoint, so it triggers notifications
 
