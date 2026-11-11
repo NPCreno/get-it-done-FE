@@ -5,12 +5,10 @@ import LoginForm from "@/app/components/auth/LoginForm";
 export default function LoginPage() {
   const router = useRouter();
 
-  // Handle view changes (e.g., switch to signup or forgot password)
+  // Handle view changes (e.g., switch to signup)
   const handleViewChange = (view: string) => {
     if (view === "signup") {
       router.push("/signup");
-    } else if (view === "forgotPassword") {
-      router.push("/forgot-password");
     }
   };
 

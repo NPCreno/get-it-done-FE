@@ -15,7 +15,7 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 
 ## Routes (8 pages)
 - `/` — landing page (`src/app/page.tsx`)
-- `/login`, `/signup`, `/forgot-password` — `src/app/(auth)/`
+- `/login`, `/signup`, `/forgot-password` (placeholder: reset not available yet) — `src/app/(auth)/`
 - `/dashboard`, `/projects`, `/notifications`, `/profileSettings` — `src/app/(routes)/`
 
 ## API route handlers (3)
@@ -32,15 +32,15 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `src/app/api/userRequests.ts`, `projectsRequests.ts`, `taskRequests.ts` — backend calls with a Bearer token
 
 ## Directory layout
-- `src/app/(auth)/` — login, signup, forgot-password pages
+- `src/app/(auth)/` — login, signup, forgot-password (placeholder) pages
 - `src/app/(routes)/` — dashboard, projects, notifications, profileSettings
 - `src/app/api/auth/` — BFF route handlers and `authRequests.ts`
 - `src/app/api/` — request helpers
-- `src/app/components/` — `auth/` (3), `modals/` (5), `shadcn/` (10), top level (22)
+- `src/app/components/` — `auth/` (2), `modals/` (5), `shadcn/` (10), top level (21)
 - `src/app/context/` — `FormProvider`
 - `src/app/contracts/` — transport contract: `enums.ts`, `common.ts`, `requests.ts` and `responses.ts` (zod), `forms.ts`, `mappers.ts`, vendored `api-contract.json`, `__fixtures__/`, `__tests__/`
 - `src/app/interface/` — component-facing types (derived from the zod response schemas) plus `forms/` re-exports
-- `src/app/schemas/` — form validation schemas (7 files)
+- `src/app/schemas/` — form validation schemas (6 files)
 - `src/hooks/` — `useTimer.ts`
 - `src/lib/` — `utils.ts`, `timerService.ts`
 

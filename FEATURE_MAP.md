@@ -5,7 +5,7 @@ Request chains per feature. Backend paths are shown without the `/api` prefix, b
 ## Authentication
 - Login: `(auth)/login/page.tsx` → `LoginForm.tsx` → `POST /api/auth/login` (`login/route.ts`) → BE `/user/loginEmail` or `/user/loginUsername`. The route sets the cookies.
 - Signup: `(auth)/signup/page.tsx` → `SignupForm.tsx` → `createUser()` in `userRequests.ts` → BE `/user/create`, then `POST /api/auth/login` with `rememberMe: true`.
-- Forgot password: `(auth)/forgot-password/page.tsx` → `ForgotPasswordForm.tsx` (UI only, no backend call found).
+- Forgot password: placeholder page only. Self-service reset is not implemented; tracked in FEAT-01 phase 2.
 - Logout: `profileSettings/page.tsx` `confirmLogout()` → `POST /api/auth/logout` (`logout/route.ts`), then clears `pomodoroTimerState` from `localStorage`.
 - Token refresh (navigation): `middleware.ts` → `refreshWithBackend()` in `session.ts` → BE `/auth/refresh`. Prefetches skip the proactive refresh.
 - Token refresh (browser calls): `apiClient` gets a TOKEN_INVALID/TOKEN_MISSING 401 → `refreshSession()` → `POST /api/auth/refresh` → BE `/auth/refresh`, then retries once. A definitive invalid result runs `expireSession()` → `POST /api/auth/logout` → `/login`.
