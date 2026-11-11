@@ -111,8 +111,9 @@ See [Full-Stack Portfolio Roadmap](./FULL_STACK_PORTFOLIO_ROADMAP.md) for cross-
   **Priority:** Medium · **Complexity:** Small  
   **Files:** `taskRequests.ts`, dashboard/charts.
 
-- [ ] **DATA-05 — Correct and test the subtask status route contract**  
-  **Current:** Frontend calls `update-subtask-status`; backend currently declares `update-subTask-status`.  
+- [x] **DATA-05 — Correct and test the subtask status route contract**  
+  **Resolved:** casing fixed in DATA-01; canonical lowercase and contract check in DATA-05.  
+  **Was:** Frontend called `update-subtask-status`; backend declared `update-subTask-status`.  
   **Issue:** Case-sensitive deployments can fail this action.  
   **Recommendation:** Choose a lowercase path, update both repositories, and add an integration test.  
   **Benefit:** Removes a likely environment-specific defect.  

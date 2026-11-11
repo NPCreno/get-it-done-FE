@@ -39,6 +39,7 @@ All return `ApiResult<T>`; callers check `result.ok`.
 - `userRequests.ts` — `createUser`, `getUser`, `updateUser`
 - `projectsRequests.ts` — project create, list, get, update, delete
 - `taskRequests.ts` — task and subtask CRUD, status updates, dashboard, trend, distribution, heatmap, streak
+- `paths.ts` — pure path builders for the status routes; `contracts/__tests__/routes.test.ts` checks them against the vendored contract `routes`
 
 ## Components (`src/app/components/`)
 Auth (`auth/`)

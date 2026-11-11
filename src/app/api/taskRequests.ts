@@ -1,4 +1,6 @@
 import { apiClient, apiPath } from "@/lib/apiClient";
+import type { TaskStatus } from "../contracts/enums";
+import { subTaskStatusPath, taskStatusPath } from "./paths";
 import {
   DashboardDataSchema,
   DistributionSchema,
@@ -112,8 +114,8 @@ export const getStreakCount = (userId: string, opts?: { signal?: AbortSignal }) 
     fallbackError: "Failed to load streak",
   });
 
-export const updateTaskStatus = (taskId: string, status: string, opts?: CallOptions) =>
-  apiClient<void>(apiPath`/tasks/update-task-status/${taskId}/status/${status}`, {
+export const updateTaskStatus = (taskId: string, status: TaskStatus, opts?: CallOptions) =>
+  apiClient<void>(taskStatusPath(taskId, status), {
     method: "PATCH",
     signal: opts?.signal,
     timeoutMs: opts?.timeoutMs,
@@ -121,8 +123,8 @@ export const updateTaskStatus = (taskId: string, status: string, opts?: CallOpti
     fallbackError: "Failed to update task status",
   });
 
-export const updateSubTaskStatus = (taskSubInstance_id: string, status: string, opts?: CallOptions) =>
-  apiClient<void>(apiPath`/tasks/update-subTask-status/${taskSubInstance_id}/status/${status}`, {
+export const updateSubTaskStatus = (taskSubInstance_id: string, status: TaskStatus, opts?: CallOptions) =>
+  apiClient<void>(subTaskStatusPath(taskSubInstance_id, status), {
     method: "PATCH",
     signal: opts?.signal,
     timeoutMs: opts?.timeoutMs,
