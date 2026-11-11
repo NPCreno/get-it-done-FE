@@ -51,6 +51,7 @@ No global store. Component state, `FormProvider` context for form handling, and 
 - Cancellation: query functions forward TanStack's `signal` to `apiClient`; an aborted request is a cancellation, never retried, never toasted. Retries: one, only for network or timeout.
 - Mutations: task-domain ones share `mutationKey ['taskData']`; only the last of an overlapping burst invalidates (`isMutating === 1`) and returns the promise, so `isPending` covers the refetch. Status mutations are optimistic with per-entity compare-and-swap rollback and `scope: task:<parentId>` serialization.
 - Session boundaries: logout and session expiry call `clearQueryCache()` before navigating.
+- Load states: `loadStateOf()` is the only policy. A failure is never shown as empty; cancellations and an ending session are silent; a failed refetch keeps the last good data with a compact retry. Error copy is fixed text from `describeLoadFailure()`, and query errors are logged as `[query] <resource> <kind> <status>` only.
 
 ## Deployment
 Vercel builds with the pinned pnpm version from `package.json`. `JWT_SECRET` must be set for Preview and Production, or the middleware refuses to start. The Dockerfile builds the same app on Node 22 for local or container use.

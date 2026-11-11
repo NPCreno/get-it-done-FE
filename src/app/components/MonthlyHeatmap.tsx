@@ -23,12 +23,15 @@ interface MonthlyHeatmapProps {
   values: HeatmapValue[];
   className?: string;
   theme?: string;
+  /** Replaces the day grid (loading or error). The month navigation above it stays usable. */
+  statusSlot?: React.ReactNode;
 }
 
 export default function MonthlyHeatmap({ 
   values = [], 
   className = '',
-  theme = "light" 
+  theme = "light",
+  statusSlot,
 }: MonthlyHeatmapProps) {
   const { calendarMonthYear, setCalendarMonthYear } = useFormState();
   // Initialize currentMonth from calendarMonthYear if available, otherwise use current date
@@ -174,6 +177,7 @@ export default function MonthlyHeatmap({
         </div>
       </div>
       
+      {statusSlot ? <div className="mt-3">{statusSlot}</div> : (<>
       <div className="grid grid-cols-7 gap-1 mb-1 text-xs text-gray-500 text-center">
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
           <div key={i} className="h-4">{day}</div>
@@ -197,6 +201,7 @@ export default function MonthlyHeatmap({
           <span className="ml-2">More</span>
         </div>
       </div>
+      </>)}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { QueryCache, QueryClient } from "@tanstack/react-query";
-import { isCancellation, isRetryable } from "./unwrap";
+import { resourceOf } from "./keys";
+import { failureOf, isCancellation, isRetryable } from "./unwrap";
 
 let current: QueryClient | null = null;
 
@@ -9,7 +10,8 @@ export function createQueryClient(): QueryClient {
       onError: (error, query) => {
         // A cancelled request is not an error worth reporting.
         if (isCancellation(error)) return;
-        console.warn("[query]", query.queryKey.slice(2), error instanceof Error ? error.message : "failed");
+        const f = failureOf(error);
+        console.warn("[query]", resourceOf(query.queryKey), f.kind, f.status);
       },
     }),
     defaultOptions: {

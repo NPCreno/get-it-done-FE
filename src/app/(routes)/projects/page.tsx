@@ -13,6 +13,9 @@ import {
 } from "@/lib/query/mutations";
 import { useProject, useProjects, useProjectTasks } from "@/lib/query/queries";
 import { failureOf, settled } from "@/lib/query/unwrap";
+import { loadStateOf } from "@/lib/query/loadState";
+import { isEmptyList } from "@/lib/query/emptiness";
+import LoadError from "@/app/components/LoadError";
 import { FormikErrors, useFormik } from "formik";
 import { projectSchema } from "@/app/schemas/projectSchema";
 import { Toast } from "@/app/components/toast";
@@ -67,7 +70,10 @@ export default function ProjectsPage() {
   const projectOptions = projectData; // one list feeds the grid and the task-modal options
   const projectTasksQuery = useProjectTasks(selectedProject?.project_id);
   const tasks: ITask[] = projectTasksQuery.data ?? NO_TASKS;
-  const pageLoading = projectsQuery.isPending && !projectsQuery.isPlaceholderData;
+  // Only a SUCCESSFUL empty list is "No Projects Yet"; a failure shows an error with retry.
+  const projectsState = loadStateOf(projectsQuery, isEmptyList);
+  const tasksState = loadStateOf(projectTasksQuery, isEmptyList);
+  const pageLoading = projectsState.status === "loading";
   const createProjectMutation = useCreateProject();
   const updateProjectMutation = useUpdateProject();
   const deleteProjectMutation = useDeleteProject();
@@ -695,7 +701,7 @@ export default function ProjectsPage() {
           </div>
         )}
 
-        {(projectOptions.length !=0 && !pageLoading) && (
+        {(projectsState.status === "ready" || projectsState.status === "error") && (
           <>
             <div className="flex justify-between">
               {/* Left header */}
@@ -758,8 +764,30 @@ export default function ProjectsPage() {
               </div>
             </div>
 
+            {projectsState.status === "ready" && projectsState.refreshFailure && (
+              <div className="my-3">
+                <LoadError
+                  widget="your projects"
+                  failure={projectsState.refreshFailure}
+                  onRetry={() => void projectsQuery.refetch()}
+                  retrying={projectsQuery.isFetching}
+                  theme={userData?.theme}
+                  variant="compact"
+                />
+              </div>
+            )}
             <div className="grid gap-5 lg:grid-cols-4 md:grid-cols-2">
-              {projectData.length > 0 ? (
+              {projectsState.status === "error" ? (
+                <div className="col-span-full">
+                  <LoadError
+                    widget="your projects"
+                    failure={projectsState.failure}
+                    onRetry={() => void projectsQuery.refetch()}
+                    retrying={projectsQuery.isFetching}
+                    theme={userData?.theme}
+                  />
+                </div>
+              ) : projectData.length > 0 ? (
                 projectData.map((project, index) => {
                   // Calculate column index (0-3) based on the card's position
                   const columnIndex = index % 4;
@@ -803,7 +831,7 @@ export default function ProjectsPage() {
           </>
         )}
           
-        {(projectOptions.length === 0 && !pageLoading) && (
+        {projectsState.status === "empty" && (
           <>
             <div className="w-full h-full flex items-center justify-center py-16 px-4">
               <div className={`flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 ${
@@ -894,6 +922,11 @@ export default function ProjectsPage() {
       {isViewProjectModalOpen && (
         <ViewProjectModal
           onClose={() => setIsViewProjectModalOpen(false)}
+          tasksLoad={{
+            state: tasksState,
+            onRetry: () => void projectTasksQuery.refetch(),
+            retrying: projectTasksQuery.isFetching,
+          }}
           project={
             selectedProject ?? {
               id: 0,

@@ -19,6 +19,10 @@ import {
 } from "@/lib/query/queries";
 import { useCreateTask, useDeleteRecurringTasks, useDeleteTask, useUpdateTask } from "@/lib/query/mutations";
 import { settled } from "@/lib/query/unwrap";
+import { loadStateOf } from "@/lib/query/loadState";
+import { isEmptyDistribution, isEmptyList, never } from "@/lib/query/emptiness";
+import LoadError from "@/app/components/LoadError";
+import type { ChartLoad } from "@/app/components/chartCard";
 import { IProject } from "@/app/interface/IProject";
 import { toCreateTaskRequest, toUpdateTaskRequest } from "@/app/contracts/mappers";
 import { Toast } from "@/app/components/toast";
@@ -79,16 +83,27 @@ export default function DashboardPage() {
   const distribution = useTaskDistribution(selectedMonth, selectedYear);
   const heatmap = useCalendarHeatmap(calendarMonthYear.month, calendarMonthYear.year);
   const streak = useStreak();
-  const projectOptions = projectsQuery.data ?? NO_PROJECTS;
+  const projectOptions = projectsQuery.data ?? NO_PROJECTS; // options only: errors here are not shown as empty UI
+  // One policy decides what every widget shows (never `data ?? EMPTY`).
+  const upcomingState = loadStateOf(upcoming, isEmptyList);
+  const summaryState = loadStateOf(summary, never);
+  const trendState = loadStateOf(trend, isEmptyList);
+  const distributionState = loadStateOf(distribution, isEmptyDistribution);
+  const heatmapState = loadStateOf(heatmap, never);
+  const streakState = loadStateOf(streak, never);
   const tasks = upcoming.data ?? NO_TASKS;
   const dashboardData = summary.data ?? EMPTY_DASHBOARD;
   const taskCompletionData = trend.data ?? NO_TREND;
   const taskDistributionData = distribution.data ?? NO_DISTRIBUTION;
   const calendarHeatmapData = heatmap.data ?? NO_HEATMAP;
   const streakCount = streak.data?.count ?? 0;
-  // First load only: previous data shown while a new key loads is not "loading".
-  const pageLoading =
-    (upcoming.isPending && !upcoming.isPlaceholderData) || (summary.isPending && !summary.isPlaceholderData);
+  const loadOf = (state: ChartLoad["state"], q: { refetch: () => unknown; isFetching: boolean }): ChartLoad => ({
+    state,
+    onRetry: () => void q.refetch(),
+    retrying: q.isFetching,
+  });
+  // First load only. On error the page never waits: the shell renders with the error widgets.
+  const pageLoading = upcomingState.status === "loading" || summaryState.status === "loading";
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
@@ -540,7 +555,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {tasks.length != 0 && !pageLoading && (
+          {!pageLoading && (
             <>
               {/* Header */}
               <div className="relative flex flex-col md:flex-row justify-between gap-4 mb-2">
@@ -685,15 +700,33 @@ export default function DashboardPage() {
                 </div>
               </div>
 
+              {summaryState.status === "error" && (
+                <LoadError
+                  widget="task summary"
+                  failure={summaryState.failure}
+                  onRetry={() => void summary.refetch()}
+                  retrying={summary.isFetching}
+                  theme={userData?.theme}
+                />
+              )}
+              {summaryState.status === "ready" && summaryState.refreshFailure && (
+                <LoadError
+                  widget="task summary"
+                  failure={summaryState.refreshFailure}
+                  onRetry={() => void summary.refetch()}
+                  retrying={summary.isFetching}
+                  theme={userData?.theme}
+                  variant="compact"
+                />
+              )}
+
               {/* first row cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 w-full fade-in-delay-2 group/cards">
                 <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary-100/30">
                   <StatsCard
                     icon="/svgs/list-outline.svg"
                     header="All Tasks"
-                    content={String(
-                      dashboardData ? dashboardData.all_tasks : 0
-                    )}
+                    content={summaryState.status === "error" ? "—" : String(dashboardData.all_tasks)}
                     delay="fade-in-left-delay-1"
                     className="h-full hover:bg-gradient-to-br from-white to-gray-50 transition-all duration-300"
                     theme={userData?.theme}
@@ -703,9 +736,7 @@ export default function DashboardPage() {
                   <StatsCard
                     icon="/svgs/timer-outline.svg"
                     header="To Do"
-                    content={String(
-                      dashboardData ? dashboardData.pending_tasks : 0
-                    )}
+                    content={summaryState.status === "error" ? "—" : String(dashboardData.pending_tasks)}
                     delay="fade-in-left-delay-2"
                     className="h-full hover:bg-gradient-to-br from-white to-amber-50/30 transition-all duration-300"
                     theme={userData?.theme}
@@ -715,9 +746,7 @@ export default function DashboardPage() {
                   <StatsCard
                     icon="/svgs/folder-open-outline.svg"
                     header="All Projects"
-                    content={String(
-                      dashboardData ? dashboardData.all_projects : 0
-                    )}
+                    content={summaryState.status === "error" ? "—" : String(dashboardData.all_projects)}
                     delay="fade-in-left-delay-3"
                     className="h-full hover:bg-gradient-to-br from-white to-blue-50/30 transition-all duration-300"
                     theme={userData?.theme}
@@ -727,9 +756,7 @@ export default function DashboardPage() {
                   <StatsCard
                     icon="/svgs/checkbox-outline.svg"
                     header="Complete"
-                    content={String(
-                      dashboardData ? dashboardData.complete_tasks : 0
-                    )}
+                    content={summaryState.status === "error" ? "—" : String(dashboardData.complete_tasks)}
                     delay="fade-in-left-delay-4"
                     className="h-full hover:bg-gradient-to-br from-white to-green-50/30 transition-all duration-300"
                     theme={userData?.theme}
@@ -819,7 +846,43 @@ export default function DashboardPage() {
                   <div className="flex flex-col h-full">
                     {/* Active Tasks - Centered */}
                     <div className={`flex-grow flex flex-col ${tasks.filter(task => task.status !== 'Complete').length > 0 ? 'justify-start mt-5' : 'justify-center'}`}>
-                      {tasks.filter(task => task.status !== 'Complete').length > 0 ? (
+                      {upcomingState.status === "ready" && upcomingState.refreshFailure && (
+                        <div className="mb-3">
+                          <LoadError
+                            widget="your tasks"
+                            failure={upcomingState.refreshFailure}
+                            onRetry={() => void upcoming.refetch()}
+                            retrying={upcoming.isFetching}
+                            theme={userData?.theme}
+                            variant="compact"
+                          />
+                        </div>
+                      )}
+                      {upcomingState.status === "error" ? (
+                        <LoadError
+                          widget="your tasks"
+                          failure={upcomingState.failure}
+                          onRetry={() => void upcoming.refetch()}
+                          retrying={upcoming.isFetching}
+                          theme={userData?.theme}
+                        />
+                      ) : upcomingState.status === "empty" ? (
+                        <div className="flex flex-col items-center justify-center text-center gap-3">
+                          <h3 className={`text-xl font-semibold mb-1 ${userData?.theme === "dark" ? "text-white" : "text-gray-800"}`}>Nothing due right now</h3>
+                          <p className="text-gray-500 max-w-md">No tasks are overdue or due in the next 24 hours.</p>
+                          <button
+                            type="button"
+                            className="rounded-xl px-5 py-2 font-lato font-medium text-white bg-primary-default hover:opacity-90"
+                            onClick={() => {
+                              setIsTaskModalOpen(true);
+                              clearValueAndErrors();
+                              setIsUpdateTask(false);
+                            }}
+                          >
+                            New Task
+                          </button>
+                        </div>
+                      ) : tasks.filter(task => task.status !== 'Complete').length > 0 ? (
                       tasks
                         .filter(task => task.status !== 'Complete')
                         .map((task) => (
@@ -912,6 +975,7 @@ export default function DashboardPage() {
                       header="Task Completion Trend"
                       delay="fade-in-left-delay-1"
                       taskCompletionData={taskCompletionData}
+                      load={loadOf(trendState, trend)}
                     />
                   </div>
                   <div className="transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg hover:shadow-amber-100/20">
@@ -919,6 +983,7 @@ export default function DashboardPage() {
                       header="Task Distribution by project"
                       delay="fade-in-left-delay-2"
                       taskDistributionData={taskDistributionData}
+                      load={loadOf(distributionState, distribution)}
                     />
                   </div>
                   <div className="transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg hover:shadow-blue-100/20">
@@ -926,13 +991,15 @@ export default function DashboardPage() {
                       header="Productivity Streak"
                       delay="fade-in-left-delay-3"
                       streakCount={streakCount}
+                      load={loadOf(streakState, streak)}
                     />
                   </div>
                   <div className="transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg hover:shadow-green-100/20">
                     <ChartCard
                       header="Calendar Heat map"
                       delay="fade-in-left-delay-4"
-                      calendarHeatmapData={calendarHeatmapData || []}
+                      calendarHeatmapData={calendarHeatmapData}
+                      load={loadOf(heatmapState, heatmap)}
                     />
                   </div>
                 </div>
@@ -941,130 +1008,6 @@ export default function DashboardPage() {
             </>
           )}
 
-          {tasks.length === 0 && !pageLoading && (
-            <>
-              <div className="w-full h-full flex items-center justify-center py-16 px-4">
-                <div className={`flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 ${
-                  userData?.theme === "dark" 
-                    ? "bg-foreground-dark border border-gray-800" 
-                    : "bg-white border border-gray-100"
-                } rounded-2xl shadow-sm transform transition-all hover:shadow-md`}>
-                  <svg
-                    width="100"
-                    height="100"
-                    viewBox="0 0 100 100"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="fade-in"
-                  >
-                    <path
-                      d="M87.5 50.0093C87.5 29.3062 70.7031 12.5093 50 12.5093C29.2969 12.5093 12.5 29.3062 12.5 50.0093C12.5 70.7124 29.2969 87.5093 50 87.5093C70.7031 87.5093 87.5 70.7124 87.5 50.0093Z"
-                      stroke="#FEAD03"
-                      stroke-width="7"
-                      stroke-miterlimit="10"
-                    />
-                    <g filter="url(#filter0_d_1156_894)">
-                      <path
-                        d="M71.875 37.5054L50.0254 62.5054L40.6602 53.1304M37.4902 62.5054L28.125 53.1304M59.709 37.5054L49.6406 49.0288"
-                        stroke="#FEAD03"
-                        stroke-width="6"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        shape-rendering="crispEdges"
-                      />
-                    </g>
-                    <defs>
-                      <filter
-                        id="filter0_d_1156_894"
-                        x="21.125"
-                        y="34.5054"
-                        width="57.75"
-                        height="39"
-                        filterUnits="userSpaceOnUse"
-                        color-interpolation-filters="sRGB"
-                      >
-                        <feFlood
-                          flood-opacity="0"
-                          result="BackgroundImageFix"
-                        />
-                        <feColorMatrix
-                          in="SourceAlpha"
-                          type="matrix"
-                          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                          result="hardAlpha"
-                        />
-                        <feOffset dy="4" />
-                        <feGaussianBlur stdDeviation="2" />
-                        <feComposite in2="hardAlpha" operator="out" />
-                        <feColorMatrix
-                          type="matrix"
-                          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-                        />
-                        <feBlend
-                          mode="normal"
-                          in2="BackgroundImageFix"
-                          result="effect1_dropShadow_1156_894"
-                        />
-                        <feBlend
-                          mode="normal"
-                          in="SourceGraphic"
-                          in2="effect1_dropShadow_1156_894"
-                          result="shape"
-                        />
-                      </filter>
-                    </defs>
-                  </svg>
-                  <div className="space-y-2">
-                    <h1 className={`font-lato text-2xl md:text-3xl font-bold fade-in-delay-1 bg-gradient-to-r ${
-                      userData?.theme === 'dark' 
-                        ? 'from-amber-400 to-yellow-500' 
-                        : 'from-primary-default to-yellow-400'
-                    } bg-clip-text text-transparent`}>
-                      Welcome to Your Dashboard ✨
-                    </h1>
-                    <p className={`font-lato fade-in-delay-2 max-w-md leading-relaxed ${
-                      userData?.theme === "dark" ? "text-gray-300" : "text-gray-600"
-                    }`}>
-                      Start organizing your life by creating your first task.
-                      <br />
-                      Every great journey begins with a single step!
-                    </p>
-                  </div>
-                  <button
-                    className={`px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato rounded-xl 
-                    hover:shadow-lg transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5
-                    ${
-                      userData?.theme === 'dark'
-                        ? 'bg-gradient-to-r from-amber-600 to-yellow-500 hover:shadow-amber-500/20'
-                        : 'bg-gradient-to-r from-primary-default to-yellow-400 hover:shadow-primary-default/20'
-                    }`}
-                    onClick={() => {
-                      setIsTaskModalOpen(true);
-                      clearValueAndErrors();
-                      setIsUpdateTask(false);
-                    }}
-                  >
-                    <svg
-                      width="25"
-                      height="25"
-                      viewBox="0 0 25 25"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M18.7501 12.499H5.25012M12.0001 5.74902V19.249V5.74902Z"
-                        stroke="white"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-                    Add Your First Task
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
         </div>
       </div>
 

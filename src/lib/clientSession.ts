@@ -69,6 +69,11 @@ export function refreshSession(stale: string | null): Promise<RefreshOutcome> {
  * If the access cookie changed meanwhile, another tab holds a newer session
  * and we do not log out.
  */
+/** Read-only: true while this tab is navigating to /login after a session ended. */
+export function isSessionEnding(): boolean {
+  return expiring;
+}
+
 export async function expireSession(stale: string | null): Promise<"expired" | "refreshed"> {
   if (expiring) return "expired";
   return withLock<"expired" | "refreshed">(async () => {

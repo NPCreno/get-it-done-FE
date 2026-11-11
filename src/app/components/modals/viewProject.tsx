@@ -5,12 +5,15 @@ import { useFormState } from '@/app/context/FormProvider';
 import { useSetTaskStatus } from '@/lib/query/mutations';
 import { failureOf } from '@/lib/query/unwrap';
 import { isUserFacing } from '@/lib/apiClient';
+import LoadError from '../LoadError';
+import type { LoadState } from '@/lib/query/loadState';
 import Image from 'next/image';
 interface ViewProjectModalProps {
   onClose: () => void;
   project: IProject;
   handleCreateTask: () => void;
   tasks: ITask[];
+  tasksLoad: { state: LoadState<unknown>; onRetry: () => void; retrying: boolean };
   handleUpdateTask: () => void;
   onStatusError: (message: string) => void;
   handleDeleteTask: (taskId: string) => void;
@@ -21,6 +24,7 @@ export default function ViewProjectModal({
   project, 
   handleCreateTask,
   tasks,
+  tasksLoad,
   handleUpdateTask,
   onStatusError,
   handleDeleteTask,
@@ -66,7 +70,19 @@ export default function ViewProjectModal({
         </div>
 
         <div className="flex flex-col gap-[10px] max-h-[710px] min-h-[200px] overflow-y-auto scrollbar-hide">
-          {tasks.length != 0 ? tasks.map((task, index) => (
+          {tasksLoad.state.status === "loading" ? (
+            <div className="h-full flex items-center justify-center flex-grow" role="status">
+              <span className={`${isDarkMode ? 'text-gray-300' : 'text-[#676767]'} text-sm font-lato`}>Loading tasks…</span>
+            </div>
+          ) : tasksLoad.state.status === "error" ? (
+            <LoadError
+              widget="this project's tasks"
+              failure={tasksLoad.state.failure}
+              onRetry={tasksLoad.onRetry}
+              retrying={tasksLoad.retrying}
+              theme={userData?.theme}
+            />
+          ) : tasks.length != 0 ? tasks.map((task, index) => (
             <TaskCard key={index} task={task} handleUpdateTask={handleUpdateTask} onStatusError={onStatusError} handleDeleteTask={handleDeleteTask} />
           )) : (
             <div className="h-full flex items-center justify-center flex-grow">
