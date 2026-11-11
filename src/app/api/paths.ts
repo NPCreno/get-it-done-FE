@@ -7,4 +7,4 @@ export const taskStatusPath = (taskId: string, status: TaskStatus) =>
   apiPath`/tasks/update-task-status/${taskId}/status/${status}`;
 
 export const subTaskStatusPath = (taskSubInstanceId: string, status: TaskStatus) =>
-  apiPath`/tasks/update-subtask-status/${taskSubInstanceId}/status/${status}`;
+  apiPath`/tasks/update-subTask-status/${taskSubInstanceId}/status/${status}`;
