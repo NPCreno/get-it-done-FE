@@ -14,7 +14,7 @@ interface LoginFormValues {
 export default function LoginForm({
   onChangeView,
 }: {
-  onChangeView: (view: "signup" | "forgotPassword") => void;
+  onChangeView: (view: "signup") => void;
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -153,17 +153,6 @@ export default function LoginForm({
                 Remember me
               </label>
             </div>
-
-            <div className="text-right">
-                <button
-                  type="button"
-                  onClick={() => onChangeView("forgotPassword")}
-                  disabled={isLoading}
-                  className="text-sm font-medium text-primary-default hover:text-primary-hover transition-colors items-center"
-                >
-                  Forgot password?
-                </button>
-              </div>
           </div>
         </div>
         

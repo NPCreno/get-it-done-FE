@@ -7,7 +7,7 @@ One line per significant source file. Paths are relative to the repo root.
 - `src/app/page.tsx` — landing page
 - `src/app/(auth)/login/page.tsx` — login page, hosts `LoginForm`
 - `src/app/(auth)/signup/page.tsx` — signup page, hosts `SignupForm`
-- `src/app/(auth)/forgot-password/page.tsx` — forgot-password page, hosts `ForgotPasswordForm`
+- `src/app/(auth)/forgot-password/page.tsx` — forgot-password page, a static placeholder (self-service reset is not available yet)
 - `src/app/(routes)/dashboard/page.tsx` — dashboard: stats, charts, heatmap, streak, tasks, projects
 - `src/app/(routes)/projects/page.tsx` — project list and tasks per project
 - `src/app/(routes)/notifications/page.tsx` — notifications list
@@ -44,7 +44,6 @@ All return `ApiResult<T>`; callers check `result.ok`.
 Auth (`auth/`)
 - `LoginForm.tsx` — login form, posts to `/api/auth/login`
 - `SignupForm.tsx` — signup form, creates user then logs in through `/api/auth/login`
-- `ForgotPasswordForm.tsx` — forgot-password flow
 
 Modals (`modals/`)
 - `taskModal.tsx` — create and edit tasks and subtasks
@@ -67,7 +66,7 @@ Dashboard and data display
 - `notificationCard.tsx` — single notification
 
 Inputs and small UI
-- `inputBox.tsx`, `dropdown.tsx`, `datePicker.tsx`, `datePickerWithTime.tsx`, `weekdaySelector.tsx`, `toggleSwitch.tsx`, `OTPinput.tsx` — form controls
+- `inputBox.tsx`, `dropdown.tsx`, `datePicker.tsx`, `datePickerWithTime.tsx`, `weekdaySelector.tsx`, `toggleSwitch.tsx` — form controls
 - `toast.tsx`, `loader.tsx` — feedback
 - `PomodoroButton.tsx` — opens the pomodoro modal
 
@@ -100,7 +99,7 @@ shadcn (`shadcn/`)
 - `../../../scripts/api-contract.mjs` — `contract:sync` / `contract:check`; `../../../vitest.config.ts`
 
 ## Schemas (`src/app/schemas/`)
-- `loginSchema.tsx`, `signUpSchema.tsx`, `forgotPasswordSchema.tsx`, `updateUserSchema.tsx`, `projectSchema.tsx`, `createTaskSchema.tsx`, `createSubTaskSchema.tsx` — form validation
+- `loginSchema.tsx`, `signUpSchema.tsx`, `updateUserSchema.tsx`, `projectSchema.tsx`, `createTaskSchema.tsx`, `createSubTaskSchema.tsx` — form validation
 
 ## CI
 - `.github/workflows/ci.yml` — lint, typecheck, test on every PR and on pushes to `main`

@@ -1,16 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
-import ForgotPasswordForm from "@/app/components/auth/ForgotPasswordForm";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-
-  // Handle view changes (e.g., switch to login)
-  const handleViewChange = (view: string) => {
-    if (view === "login") {
-      router.push("/login");
-    }
-  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -58,16 +50,22 @@ export default function ForgotPasswordPage() {
           {/* Right side - Form */}
           <div className="lg:p-8">
             <div className="mx-auto flex w-full flex-col justify-center items-center space-y-6 sm:w-[400px]">
-              <ForgotPasswordForm onChangeView={handleViewChange} />
-              <p className="px-8 text-center text-sm text-muted-foreground">
-                Remember your password?{" "}
+              <div className="w-full flex flex-col items-center gap-4 text-center">
+                <h1 className="text-2xl font-semibold tracking-tight">
+                  Password reset isn&apos;t available yet
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Self-service password reset is coming soon. Until then, this
+                  page can&apos;t reset your password, and no email will be sent.
+                </p>
                 <button
+                  type="button"
                   onClick={() => router.push("/login")}
-                  className="underline underline-offset-4 hover:text-primary"
+                  className="w-full px-6 py-2.5 rounded-sm h-10 font-lato font-medium text-white bg-primary-default hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2"
                 >
-                  Sign in
+                  Back to sign in
                 </button>
-              </p>
+              </div>
             </div>
           </div>
         </div>
