@@ -102,5 +102,8 @@ shadcn (`shadcn/`)
 ## Schemas (`src/app/schemas/`)
 - `loginSchema.tsx`, `signUpSchema.tsx`, `forgotPasswordSchema.tsx`, `updateUserSchema.tsx`, `projectSchema.tsx`, `createTaskSchema.tsx`, `createSubTaskSchema.tsx` — form validation
 
+## CI
+- `.github/workflows/ci.yml` — lint, typecheck, test on every PR and on pushes to `main`
+
 ## Root config
 - `package.json`, `pnpm-lock.yaml`, `next.config.*`, `tailwind.config.*`, `tsconfig.json`, `Dockerfile`, `.env.example`, `codegraph.json`

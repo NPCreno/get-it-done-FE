@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit --incremental false",
     "test": "vitest run",
     "contract:sync": "node scripts/api-contract.mjs sync",
     "contract:check": "node scripts/api-contract.mjs check"

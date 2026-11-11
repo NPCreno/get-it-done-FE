@@ -63,9 +63,14 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `pnpm dev` — dev server
 - `pnpm build` — production build
 - `pnpm lint` — ESLint (`next lint`)
+- `pnpm typecheck` — `tsc --noEmit`
 - `pnpm test` — vitest (`src/**/__tests__/**/*.test.ts`)
 - `pnpm contract:sync` / `pnpm contract:check` — vendored BE contract and fixtures
 - This repo has its own `pnpm-lock.yaml`. Regenerate it with `pnpm install --lockfile-only --ignore-workspace` because the parent folder is also a pnpm workspace
+
+## CI
+- GitHub Actions `.github/workflows/ci.yml` runs `pnpm lint`, `pnpm typecheck` and `pnpm test` on every PR and on pushes to `main`. The build is covered by Vercel preview deployments; `contract:check` needs the sibling BE checkout, so it stays local.
+- Test pyramid: pure units (mappers, load-state policy, query layer) in vitest with a node environment. There is no DOM or e2e layer. New features add tests at the lowest level that covers them.
 
 ## Environment
 - `NEXT_PUBLIC_API_URL` — backend base URL, compiled into browser code
