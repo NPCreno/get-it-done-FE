@@ -1,8 +1,9 @@
-import React, { useEffect, useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTimer } from '@/hooks/useTimer';
 import type { TimerType } from '@/lib/timerService';
 import ConfirmationModal from './confirmation';
 import { useFormState } from '@/app/context/FormProvider';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/app/components/shadcn/dialog';
 
 interface PomodoroModalProps {
   onClose: () => void;
@@ -73,17 +74,6 @@ export default function PomodoroModal({
   const safeTimerType = useMemo(() => 
     (activeTimer in TIMER_CONFIG ? activeTimer : 'pomodoro') as TimerType
   , [activeTimer]);
-
-  useEffect(() => {
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-    
-    window.addEventListener("keydown", handleEscapeKey);
-    return () => window.removeEventListener("keydown", handleEscapeKey);
-  }, [onClose]);
 
   const handleTimerChange = useCallback((timerType: TimerType) => {
     // Only change timer type if it's different from current and valid
@@ -162,17 +152,15 @@ export default function PomodoroModal({
   }, [showConfirm, pendingTimerType, handleCancelChange, handleConfirmChange]);
 
   return (
-    <div>
+    <>
       {renderConfirmationModal}
-      <div
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 transition-all duration-300"
-        onClick={onClose}
-      >
-        <div
+      <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+        <DialogContent
+          overlayClassName="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 transition-all duration-300"
           className={`relative ${userData?.theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'} dark:bg-gray-900 w-[500px] max-w-[95vw] rounded-2xl shadow-xl dark:shadow-2xl flex flex-col items-center justify-center p-8 transition-all duration-300 ease-out overflow-hidden border border-gray-200 dark:border-gray-700`}
-          onClick={(e) => e.stopPropagation()}
         >
-          
+          <DialogTitle className="sr-only">Pomodoro timer</DialogTitle>
+          <DialogDescription className="sr-only">Start, pause or reset a focus or break timer.</DialogDescription>
           {/* Timer type selector */}
           <div className='w-full max-w-xs mb-8 mx-auto'>
             <div className={`relative flex flex-row justify-between items-center rounded-full border ${currentTimer.borderColor} h-12 p-1 transition-colors duration-300 overflow-hidden ${userData?.theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-gray-100 dark:bg-gray-800/50'}`}>
@@ -209,9 +197,9 @@ export default function PomodoroModal({
           
           {/* Timer display */}
           <div className='relative mb-10'>
-            <h1 className={`${currentTimer.textColor} text-7xl md:text-8xl font-bold font-mono tracking-tighter text-center mb-2`}>
+            <p className={`${currentTimer.textColor} text-7xl md:text-8xl font-bold font-mono tracking-tighter text-center mb-2`}>
               {displayTime}
-            </h1>
+            </p>
             {isActive && (
               <span className='absolute -bottom-6 left-1/2 transform -translate-x-1/2 -translate-y-4 text-gray-600 dark:text-white/70 text-sm font-medium tracking-wide'>
                 {activeTimer === 'pomodoro' ? 'Time to focus! 💪' : 'Take a break! ☕'}
@@ -267,8 +255,8 @@ export default function PomodoroModal({
               </button>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };

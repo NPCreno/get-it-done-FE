@@ -2,7 +2,8 @@
 import MainLayout from "@/app/components/MainLayout";
 import ProjectCard from "../../components/projectCard";
 import { useFormState } from "@/app/context/FormProvider";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { focusFallback } from "@/lib/focusFallback";
 import {
   useCreateProject,
   useCreateTask,
@@ -77,6 +78,8 @@ export default function ProjectsPage() {
   const createProjectMutation = useCreateProject();
   const updateProjectMutation = useUpdateProject();
   const deleteProjectMutation = useDeleteProject();
+  // Where focus goes if the delete removes the button that opened the dialog.
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
@@ -490,6 +493,7 @@ export default function ProjectsPage() {
       if (response.ok) {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
+        focusFallback(headingRef);
         setToastMessage({
           title: "Task Deleted",
           description:
@@ -619,6 +623,7 @@ export default function ProjectsPage() {
       if (response.ok) {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
+        focusFallback(headingRef);
         setToastMessage({
           title: "Project Deleted",
           description:
@@ -709,7 +714,7 @@ export default function ProjectsPage() {
               <div className="flex items-center gap-3">
                 <div className="w-1 h-8 bg-primary-default rounded-full"></div>
                 <div>
-                  <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
+                  <h1 ref={headingRef} tabIndex={-1} className={`outline-none text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
                         userData?.theme === "dark" 
                           ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
                           : "bg-gradient-to-r from-gray-800 to-gray-600"
@@ -846,7 +851,8 @@ export default function ProjectsPage() {
                   <path d="M36 61H64" stroke="#FEAD03" strokeWidth="7" strokeLinecap="round"/>
                 </svg>
                 <div className="space-y-2">
-                  <h1 className={`font-lato text-2xl md:text-3xl font-bold fade-in-delay-1 bg-gradient-to-r ${
+                  {/* Same ref as the "Projects" heading: only one of the two is mounted, and deleting the last project swaps them. */}
+                  <h1 ref={headingRef} tabIndex={-1} className={`outline-none font-lato text-2xl md:text-3xl font-bold fade-in-delay-1 bg-gradient-to-r ${
                     userData?.theme === 'dark' 
                       ? 'from-amber-400 to-yellow-500' 
                       : 'from-primary-default to-yellow-400'

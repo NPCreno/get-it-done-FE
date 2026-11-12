@@ -3,7 +3,8 @@ import MainLayout from "@/app/components/MainLayout";
 import ChartCard from "../../components/chartCard";
 import StatsCard from "../../components/statsCard";
 import TaskModal from "@/app/components/modals/taskModal";
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { focusFallback } from '@/lib/focusFallback';
 import PomodoroButton from '@/app/components/PomodoroButton';
 import { useFormState } from "@/app/context/FormProvider";
 import { FormikErrors, useFormik } from "formik";
@@ -108,6 +109,8 @@ export default function DashboardPage() {
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
   const deleteRecurringMutation = useDeleteRecurringTasks();
+  // Where focus goes if the delete removes the button that opened the dialog.
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
   const [isPomodoroModalOpen, setIsPomodoroModalOpen] = useState(false);
@@ -405,6 +408,7 @@ export default function DashboardPage() {
       try {
         const result = await settled(deleteRecurringMutation.mutateAsync(taskTemplateIdToDelete));
         if (!result.ok) throw new Error(result.failure.message);
+        focusFallback(headingRef);
         setToastMessage({
           title: "Success",
           description: "Recurring tasks deleted successfully",
@@ -449,6 +453,7 @@ export default function DashboardPage() {
       if (response.ok) {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
+        focusFallback(headingRef);
         setToastMessage({
           title: "Task Deleted",
           description:
@@ -775,7 +780,7 @@ export default function DashboardPage() {
                   ${userData?.theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}
                   `}>
                     <div>
-                      <h1 className={`text-xl font-lato font-bold text-start ${
+                      <h1 ref={headingRef} tabIndex={-1} className={`outline-none text-xl font-lato font-bold text-start ${
                         userData?.theme === 'dark' ? 'text-white' : 'text-gray-800'
                       }`}>
                         Recent Tasks
