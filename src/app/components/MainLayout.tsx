@@ -90,7 +90,9 @@ export default function MainLayout({
       <MobileSidebar />
 
       {/* Main Content */}
+      {/* Click-away convenience for the mobile menu; keyboard users close it with Esc or its close button. */}
       <div 
+        role="presentation"
         className="flex-1 transition-all duration-300 h-screen overflow-auto"
         onClick={handleMainContentClick}
       >

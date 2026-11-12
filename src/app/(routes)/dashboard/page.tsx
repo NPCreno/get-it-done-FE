@@ -64,6 +64,11 @@ export default function DashboardPage() {
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  // Focus the search box when the user expands it (instead of autoFocus).
+  useEffect(() => {
+    if (isSearchExpanded) searchInputRef.current?.focus();
+  }, [isSearchExpanded]);
   const [searchQuery, setSearchQuery] = useState("");
   // Toast
   const [showToast, setShowToast] = useState(false);
@@ -610,6 +615,7 @@ export default function DashboardPage() {
                       }}
                     >
                       <input
+                        ref={searchInputRef}
                         type="text"
                         placeholder={isSearchExpanded ? "Search tasks..." : ""}
                         className={`bg-transparent border-0 focus:ring-0 focus:outline-none h-full pl-4 pr-10 ${
@@ -641,7 +647,6 @@ export default function DashboardPage() {
                             }
                           }
                         }}
-                        autoFocus={isSearchExpanded}
                       />
                       <button
                         className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all duration-200 ${

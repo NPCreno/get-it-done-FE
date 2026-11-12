@@ -85,6 +85,12 @@ export default function MobileSidebar() {
           isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={handleBackdropClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            closeMobileSidebar();
+          }
+        }}
         aria-hidden={!isMobileSidebarOpen}
         aria-label="Close menu"
         role="button"
@@ -104,6 +110,7 @@ export default function MobileSidebar() {
         <div 
           className="h-full flex flex-col py-5 px-4 overflow-y-auto w-full"
           role="menu"
+          tabIndex={-1}
           aria-label="Main menu"
           aria-orientation="vertical"
           onKeyDown={(e) => {

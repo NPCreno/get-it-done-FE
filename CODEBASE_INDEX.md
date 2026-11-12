@@ -70,6 +70,8 @@ Inputs and small UI
 - `inputBox.tsx`, `dropdown.tsx`, `datePicker.tsx`, `datePickerWithTime.tsx`, `weekdaySelector.tsx`, `toggleSwitch.tsx` — form controls
 - `toast.tsx`, `loader.tsx` — feedback
 - `PomodoroButton.tsx` — opens the pomodoro modal
+- `ChartDataTable.tsx` — screen-reader-only table (caption, columns, rows) that accompanies each chart
+- `chartRows.ts` — pure row builders (`trendRows`, `distributionRows`, `heatmapRows`) with vitest cases in `components/__tests__/chartRows.test.ts`
 
 shadcn (`shadcn/`)
 - `areaChart.tsx`, `pieChart.tsx`, `chart.tsx` — charts

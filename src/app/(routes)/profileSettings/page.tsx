@@ -269,14 +269,15 @@ export default function ProfileSettingsPage() {
                       />
                     </svg>
 
-                    <p
+                    <button
+                      type="button"
                       className="font-lato text-base font-bold text-primary-default fade-in-delay-1 hover:cursor-pointer"
                       onClick={() => {
                         setIsEditEnabled(true);
                       }}
                     >
                       Edit
-                    </p>
+                    </button>
                   </div>
                 </div>
 

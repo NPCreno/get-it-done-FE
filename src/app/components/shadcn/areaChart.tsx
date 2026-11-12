@@ -17,6 +17,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/app/components/shadcn/chart"
+import ChartDataTable from "@/app/components/ChartDataTable"
+import { TREND_COLUMNS, trendRows } from "@/app/components/chartRows"
 
 export const description = "An area chart with gradient fill"
 
@@ -49,9 +51,10 @@ export function ChartAreaGradient({ data, colors, className }: AreaChartProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="px-4 pt-0 pb-2 flex-1">
+        {/* The table below carries the data for assistive tech; the SVG is decorative. No accessibilityLayer: it makes the SVG focusable. */}
+        <div aria-hidden="true">
         <ChartContainer config={chartConfig}>
           <AreaChart
-            accessibilityLayer
             data={data}
             margin={{
               left: 16,
@@ -101,6 +104,8 @@ export function ChartAreaGradient({ data, colors, className }: AreaChartProps) {
             />
           </AreaChart>
         </ChartContainer>
+        </div>
+        <ChartDataTable caption="Tasks completed per day this week" columns={TREND_COLUMNS} rows={trendRows(data)} />
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <div className="flex w-full justify-between items-center text-xs">

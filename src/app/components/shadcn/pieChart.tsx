@@ -25,6 +25,8 @@ import {
   SelectValue,
 } from "@/app/components/shadcn/select"
 import { useFormState } from "@/app/context/FormProvider"
+import ChartDataTable from "@/app/components/ChartDataTable"
+import { DISTRIBUTION_COLUMNS, distributionRows } from "@/app/components/chartRows"
 import { Database } from "lucide-react"
 
 export interface PieChartData {
@@ -178,6 +180,8 @@ export function ChartPieInteractive({
       )}
       {!statusSlot && !noData && (
       <CardContent className="px-4 pt-0 pb-2 flex-1 flex items-center">
+        {/* The table below carries the data for assistive tech; the SVG is decorative. */}
+        <div aria-hidden="true" className="w-full h-full max-h-[200px]">
         <ChartContainer
           id={id}
           config={chartConfig}
@@ -241,6 +245,12 @@ export function ChartPieInteractive({
             </Pie>
           </PieChart>
         </ChartContainer>
+        </div>
+        <ChartDataTable
+          caption={`Completed tasks by project in ${months.find((m) => m.value === selectedMonth)?.label ?? "the selected month"}`}
+          columns={DISTRIBUTION_COLUMNS}
+          rows={distributionRows(data)}
+        />
       </CardContent>)}
     </Card>
     

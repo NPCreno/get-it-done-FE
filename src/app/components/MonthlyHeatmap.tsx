@@ -13,6 +13,8 @@ import {
 } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFormState } from '../context/FormProvider';
+import ChartDataTable from './ChartDataTable';
+import { HEATMAP_COLUMNS, heatmapRows } from './chartRows';
 
 interface HeatmapValue {
   date: string;
@@ -178,6 +180,13 @@ export default function MonthlyHeatmap({
       </div>
       
       {statusSlot ? <div className="mt-3">{statusSlot}</div> : (<>
+      {/* The table lists every day of the month for assistive tech; the grid is decorative (title tooltips stay for the mouse). */}
+      <ChartDataTable
+        caption={`Tasks completed per day in ${format(currentMonth, 'MMMM yyyy')}`}
+        columns={HEATMAP_COLUMNS}
+        rows={heatmapRows(values.map(({ date, count }) => ({ date, count })), currentMonth)}
+      />
+      <div aria-hidden="true">
       <div className="grid grid-cols-7 gap-1 mb-1 text-xs text-gray-500 text-center">
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
           <div key={i} className="h-4">{day}</div>
@@ -200,6 +209,7 @@ export default function MonthlyHeatmap({
           </div>
           <span className="ml-2">More</span>
         </div>
+      </div>
       </div>
       </>)}
     </div>
