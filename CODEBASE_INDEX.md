@@ -56,6 +56,7 @@ Modals (`modals/`)
 Layout and navigation
 - `MainLayout.tsx` — page shell with sidebar
 - `Sidebar.tsx`, `MobileSidebar.tsx`, `sidebarLink.tsx`, `HamburgerButton.tsx` — navigation
+- `DashboardSearch.tsx` — expandable search box with its own state, so typing does not re-render the dashboard page (it filters nothing yet)
 
 Dashboard and data display
 - `statsCard.tsx` — summary stat card
