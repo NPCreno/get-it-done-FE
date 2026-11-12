@@ -18,9 +18,14 @@ interface DatePickerProps {
   setDate: (date: Date) => void
   customClass?: string
   placeholder?: string
+  /** Control wiring from InputBox: id of the trigger, label and error elements. */
+  id?: string
+  labelId?: string
+  errorId?: string
+  invalid?: boolean
 }
 
-export function DatePicker({ date, setDate, customClass, placeholder }: DatePickerProps) {
+export function DatePicker({ date, setDate, customClass, placeholder, id, labelId, errorId, invalid }: DatePickerProps) {
   const [open, setOpen] = React.useState(false)
   const { userData } = useFormState();
   const handleDateSelect = (day: Date | undefined) => {
@@ -34,6 +39,10 @@ export function DatePicker({ date, setDate, customClass, placeholder }: DatePick
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={id}
+          aria-labelledby={labelId && id ? `${labelId} ${id}` : undefined}
+          aria-describedby={errorId}
+          aria-invalid={invalid || undefined}
           variant={"outline"}
           className={cn(
             "w-full justify-between text-left font-normal h-[40px] rounded-[10px]",

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 import { DatePicker } from "./datePicker";
 import { CustomDropdownMenu } from "./dropdown";
 import { DatePickerWithTime } from "./datePickerWithTime";
@@ -61,17 +61,28 @@ export default function InputBox({
   ref
 }: InputBoxProps) {
   const { userData } = useFormState();
+  // Programmatic label and error wiring. Additive: value, handlers and ref are unchanged.
+  const id = useId();
+  const labelId = `${id}-label`;
+  const errorId = `${id}-error`;
+  const isNativeControl = type === "text" || type === "password" || type === "email" || type === "textarea";
+  const labelClass = `${userData?.theme === 'dark' ? 'text-white' : 'text-text'} text-base font-normal font-lato 
+              ${error ? "text-error-default" : (isLanding ? "text-primary-default" : "text-text")}`;
+  const describedBy = error ? errorId : undefined;
   return (
     <div className="w-full">
       <div className={`${error ? "shake" : ""} ${labelCustomClass}`}>
-        {isLabelVisible && (
-          <label
-            htmlFor={label}
-            className={`${userData?.theme === 'dark' ? 'text-white' : 'text-text'} text-base font-normal font-lato 
-              ${error ? "text-error-default" : (isLanding ? "text-primary-default" : "text-text")}`}
-          >
-            {label}
-          </label>
+        {label && (
+          isNativeControl ? (
+            <label id={labelId} htmlFor={id} className={`${isLabelVisible ? "" : "sr-only "}${labelClass}`}>
+              {label}
+            </label>
+          ) : (
+            // Buttons and groups have no native label association; the control points back here with aria-labelledby.
+            <span id={labelId} className={`${isLabelVisible ? "" : "sr-only "}${labelClass}`}>
+              {label}
+            </span>
+          )
         )}
       </div>
 
@@ -80,7 +91,9 @@ export default function InputBox({
           value={value.name ?? ""}
           onChange={onChange}
           type={type}
-          id={label}
+          id={id}
+          aria-invalid={!!error}
+          aria-describedby={describedBy}
           onBlur={onBlur}
           className={`rounded-md border w-full h-[40px] py-2 px-2
             outline-none transition-all duration-200 ${isLanding ? "text-primary-default" : "text-text"}
@@ -97,7 +110,9 @@ export default function InputBox({
         <textarea
           value={value.name ?? ""}
           onChange={onChange}
-          id={label}
+          id={id}
+          aria-invalid={!!error}
+          aria-describedby={describedBy}
           onBlur={onBlur}
           className={`resize-y rounded-md border w-full min-h-[70px] max-h-[200px] py-2 px-2
             outline-none transition-all duration-200 text-text
@@ -118,6 +133,10 @@ export default function InputBox({
           }}
           placeholder={placeholder}
           customClass={customClass}
+          id={id}
+          labelId={labelId}
+          errorId={describedBy}
+          invalid={!!error}
         />
       ) : type === "datewithtime" ? (
         <DatePickerWithTime
@@ -130,6 +149,10 @@ export default function InputBox({
           }}
           placeholder={placeholder}
           customClass={customClass}
+          id={id}
+          labelId={labelId}
+          errorId={describedBy}
+          invalid={!!error}
         />
       ) : type === "weekdayselector" ? (
         <WeekdaySelector
@@ -141,6 +164,8 @@ export default function InputBox({
           }}
           defaultSelected={value.name ? value.name.split(",") : []}
           isDisabled={disabled}
+          labelId={labelId}
+          errorId={describedBy}
         />
       ) : type === "dropdown" ? (
         <CustomDropdownMenu 
@@ -149,13 +174,17 @@ export default function InputBox({
           selectedOption={value}
           disabled={disabled}
           setSelectedOption={(option) => onSelect?.(option)}
+          id={id}
+          labelId={labelId}
+          errorId={describedBy}
+          invalid={!!error}
         />
       ) : (
         <></>
       )}
 
       {error && (
-        <span className="text-error-default font-lato text-xs">{error}</span>
+        <span id={errorId} className="text-error-default font-lato text-xs">{error}</span>
       )}
     </div>
   );

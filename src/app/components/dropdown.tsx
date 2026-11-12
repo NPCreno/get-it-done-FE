@@ -25,6 +25,11 @@ interface CustomDropdownMenuProps {
   setSelectedOption: (option: {name: string, color?: string, project_id?: string}) => void
   placeholder: string;
   disabled?: boolean;
+  /** Control wiring from InputBox: id of the trigger, label and error elements. */
+  id?: string;
+  labelId?: string;
+  errorId?: string;
+  invalid?: boolean;
 }
 
 export function CustomDropdownMenu({
@@ -33,6 +38,10 @@ export function CustomDropdownMenu({
   setSelectedOption,
   placeholder,
   disabled,
+  id,
+  labelId,
+  errorId,
+  invalid,
 }: CustomDropdownMenuProps) {
   const { userData } = useFormState();
   const currentSelectedColor = options.find(option => option.name === selectedOption.name)?.color;
@@ -42,6 +51,10 @@ export function CustomDropdownMenu({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
+          id={id}
+          aria-labelledby={labelId && id ? `${labelId} ${id}` : undefined}
+          aria-describedby={errorId}
+          aria-invalid={invalid || undefined}
           variant="outline"
           className={userData?.theme === 'dark' ? 'w-full h-[40px] rounded-[10px] justify-between text-white border border-gray-800' : 'w-full h-[40px] rounded-[10px] justify-between text-text border border-gray-800'}
           disabled={disabled}
@@ -80,9 +93,8 @@ export function CustomDropdownMenu({
           }}
         >
           {options.map((option) => (
-            <>
+            <React.Fragment key={option.name}>
               <DropdownMenuRadioItem 
-                key={option.name} 
                 value={option.name} 
                 className={`${userData?.theme === 'dark' ? 'bg-foreground-dark hover:bg-gray-800' : 'bg-white hover:bg-gray-100'}`} 
                 theme={userData?.theme === 'dark' ? 'dark' : 'light'}
@@ -101,7 +113,7 @@ export function CustomDropdownMenu({
                   </>
                 )}
               </DropdownMenuRadioItem>
-            </>
+            </React.Fragment>
           ))}
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
