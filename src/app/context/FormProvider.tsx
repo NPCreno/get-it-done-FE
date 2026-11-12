@@ -60,7 +60,7 @@ export const FormProvider = ({ children }: { children: ReactNode }) => {
   const [calendarMonthYear, setCalendarMonthYear] = useState<{month: string, year: string}>({month: selectedMonth, year: selectedYear});
   // Mobile sidebar actions
   const toggleMobileSidebar = () => {
-    setIsMobileSidebarOpen(!isMobileSidebarOpen);
+    setIsMobileSidebarOpen((v) => !v);
   };
 
   const closeMobileSidebar = () => {
