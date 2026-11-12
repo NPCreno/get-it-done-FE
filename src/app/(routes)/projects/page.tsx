@@ -241,6 +241,7 @@ export default function ProjectsPage() {
         updateProjectMutation.mutateAsync({ projectId: values.project_id, body: toUpdateProjectRequest(values) })
       );
       if (response.ok) {
+        clearValueAndErrors();
         setIsProjectModalOpen({
           isOpen: false,
           projectId: undefined,
@@ -595,15 +596,17 @@ export default function ProjectsPage() {
   // The project modal's form is filled from the cached project query.
   const projectQuery = useProject(isProjectModalOpen.projectId);
   const loadedProject = projectQuery.data;
+  // Only while the modal is open: a refetch after saving would otherwise refill the shared form,
+  // and the next "Add Task" would open with the project's title and description already in it.
   useEffect(() => {
-    if (!loadedProject) return;
+    if (!loadedProject || !isProjectModalOpen.isOpen) return;
     setFieldValue("title", loadedProject.title);
     setFieldValue("description", loadedProject.description);
     setFieldValue("due_date", loadedProject.due_date ?? null);
     setFieldValue("colorLabel", loadedProject.colorLabel);
     setFieldValue("color", loadedProject.color);
     setFieldValue("project_id", loadedProject.project_id);
-  }, [loadedProject, setFieldValue]);
+  }, [loadedProject, isProjectModalOpen.isOpen, setFieldValue]);
   const projectLoadFailure = projectQuery.isError ? failureOf(projectQuery.error) : null;
   useEffect(() => {
     if (projectLoadFailure && isUserFacing(projectLoadFailure)) {
@@ -912,11 +915,15 @@ export default function ProjectsPage() {
         <ProjectModal
           errors={errors}
           isOpen={isProjectModalOpen.isOpen}
-          onClose={() => setIsProjectModalOpen({
-            isOpen: false,
-            projectId: undefined,
-            isEdit: false,
-          })}
+          onClose={() => {
+            // The project and task modals share one form: leave it empty for the next modal.
+            clearValueAndErrors();
+            setIsProjectModalOpen({
+              isOpen: false,
+              projectId: undefined,
+              isEdit: false,
+            });
+          }}
           formik={{ values, errors, handleChange, setFieldValue }}
           submitForm={()=>{
             submitForm()
