@@ -115,9 +115,10 @@ export default function LoginForm({
         
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {/* Visual heading only: the password field carries its own (screen-reader) label. */}
+            <span aria-hidden="true" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Password
-            </label>
+            </span>
 
           </div>
           <div>

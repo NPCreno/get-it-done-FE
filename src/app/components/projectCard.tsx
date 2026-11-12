@@ -95,8 +95,10 @@ const getGradientClass = (color: string = 'gray') => {
 
   return (
     <>
+    {/* The whole card is clickable for the mouse; the title button below is the keyboard and screen-reader control. */}
     <div
       ref={cardRef}
+      role="presentation"
       onClick={handleCardClick}
       className={`group relative p-5 rounded-2xl bg-gradient-to-br ${gradientClass} 
          shadow-lg hover:shadow-xl transition-all duration-300 
@@ -130,7 +132,12 @@ const getGradientClass = (color: string = 'gray') => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h2 className={`text-lg font-semibold ${userData?.theme === 'dark' ? 'text-white' : 'text-gray-900'} truncate`}>
-              {project.title}
+              <button type="button" className="max-w-full truncate text-left" onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+              }}>
+                {project.title}
+              </button>
             </h2>
             {priority !== 'none' && (
               <span 

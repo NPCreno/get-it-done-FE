@@ -103,6 +103,7 @@ export default function InputBox({
           placeholder={placeholder}
           disabled={disabled}
           onKeyDown={onKeyDown}
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- pass-through; callers opt in only right after a user action
           autoFocus={autoFocus}
           ref={ref}
         />

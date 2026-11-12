@@ -154,8 +154,14 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
         className="flex flex-row justify-between w-full" 
         onMouseEnter={() => setShowDeleteModal(true)} 
         onMouseLeave={() => setShowDeleteModal(false)}
+        onFocus={() => setShowDeleteModal(true)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setShowDeleteModal(false);
+        }}
       >
+        {/* Mouse convenience; the title button below is the keyboard and screen-reader control. */}
         <div 
+          role="presentation"
           className="flex flex-row gap-[10px] items-center w-full" 
           onClick={() => {
             setSelectedTaskData(task)
@@ -178,7 +184,17 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
                     : isDarkMode ? 'text-white' : 'text-text'
                 }`}
               >
-                {task.title}
+                <button
+                  type="button"
+                  className="text-left"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedTaskData(task)
+                    handleUpdateTask()
+                  }}
+                >
+                  {task.title}
+                </button>
               </h1>
               <div 
                 className={`${priorityColor} flex items-center px-[6px] h-[20px] rounded-full ${priorityTextColor} text-[11px] font-lato font-bold ${
@@ -200,7 +216,9 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
 
         <div className="h-full flex items-center w-[60px] gap-[10px] justify-end">
           {showDeleteModal && (
-            <div 
+            <button
+              type="button"
+              aria-label={`Delete task ${task.title}`}
               className="cursor-pointer hover:opacity-80 transition-opacity" 
               onClick={(e) => {
                 e.stopPropagation();
@@ -209,11 +227,11 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
             >
               <Image 
                 src="/svgs/trash-outline.svg" 
-                alt="Delete" 
+                alt="" 
                 width={20} 
                 height={20} 
               />
-            </div>
+            </button>
           )}
           <div className="group min-w-5 h-5 relative">
             <input

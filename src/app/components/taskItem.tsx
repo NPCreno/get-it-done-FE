@@ -47,7 +47,7 @@ export function TaskItem({
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const subtaskInputRef = useRef<HTMLInputElement>(null);
   // Focus lands here if deleting a subtask removes the button that was focused.
-  const titleRef = useRef<HTMLSpanElement>(null);
+  const titleRef = useRef<HTMLButtonElement>(null);
   const isComplete = task.status === "Complete"; // already optimistic when a toggle is pending
   const isUpdating = setTaskStatus.isPending || setSubTaskStatus.isPending;
   const hasSubtasks = subTasks && subTasks.length > 0;
@@ -205,9 +205,19 @@ export function TaskItem({
   // Get priority color class
   const priorityColor = priorityColors[task.priority as keyof typeof priorityColors] || '';
 
+  // Visible text next to the title so priority never depends on colour alone.
+  const priorityChipColors: Record<string, string> = {
+    Low: userData?.theme === 'dark' ? 'text-blue-300 border-blue-400' : 'text-blue-700 border-blue-400',
+    Medium: userData?.theme === 'dark' ? 'text-orange-300 border-orange-400' : 'text-orange-700 border-orange-400',
+    High: userData?.theme === 'dark' ? 'text-red-300 border-red-400' : 'text-red-700 border-red-400',
+  };
+  const priorityChipColor = priorityChipColors[task.priority as string];
+
   return (
     <div className="w-full">
+      {/* The row is clickable for the mouse; the title button is the keyboard and screen-reader control. */}
       <div 
+        role="presentation"
         className={`flex flex-row w-full h-[46px] items-center rounded-[10px] ${userData?.theme === "dark" ? "hover:bg-gray-900" : "hover:bg-[#FAFAFA] "} 
           cursor-pointer gap-3 pr-4 pl-3 mb-1 ${isComplete ? 'opacity-70' : ''} ${priorityColor}`}
         onClick={() => {
@@ -216,6 +226,10 @@ export function TaskItem({
         }}
         onMouseEnter={() => setShowDeleteModal(true)} 
         onMouseLeave={() => setShowDeleteModal(false)}
+        onFocus={() => setShowDeleteModal(true)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setShowDeleteModal(false);
+        }}
       >
         <div className="flex items-center justify-center">
           <div className="group w-6 h-6 relative">
@@ -244,11 +258,26 @@ export function TaskItem({
         <div className="flex flex-col flex-1 min-w-0">
           <div className="flex items-center justify-between w-full">
             <div className="flex flex-col items-start">
-              <span ref={titleRef} tabIndex={-1} className={`outline-none flex-1 font-lato text-4 ${task.status === 'Complete' 
+              <div className="flex items-center gap-2 max-w-full">
+              <button
+                type="button"
+                ref={titleRef}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedTaskData(task);
+                  handleUpdateTask();
+                }}
+                className={`flex-1 font-lato text-4 ${task.status === 'Complete' 
                 ? 'line-through text-start text-gray-400' 
                 : `text-start ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}`}>
                 {task.title}
-              </span>
+              </button>
+              {priorityChipColor && (
+                <span className={`shrink-0 px-1.5 py-px rounded border text-[10px] leading-4 font-lato ${priorityChipColor}`}>
+                  {task.priority}
+                </span>
+              )}
+              </div>
               {task.description && (
                 <p className="text-xs text-gray-400 truncate">
                   {task.description}
@@ -257,7 +286,9 @@ export function TaskItem({
             </div>
             <div className="flex flex-row gap-2">            
               {showDeleteModal && (
-                <div 
+                <button
+                  type="button"
+                  aria-label={isDeleting[task.task_id] ? 'Deleting task' : `Delete task ${task.title}`}
                   className={`cursor-pointer ${isDeleting ? 'opacity-50' : ''}`} 
                   onClick={(e) => {
                     e.stopPropagation();
@@ -272,12 +303,12 @@ export function TaskItem({
                 >
                   <Image 
                     src="/svgs/trash-outline.svg" 
-                    alt={isDeleting ? 'Deleting...' : 'Delete'} 
+                    alt=""
                     width={20} 
                     height={20} 
                     className={isDeleting ? 'animate-pulse' : ''}
                   />
-                </div>
+                </button>
               )}
               <div className="flex items-center space-x-2 ml-2">
                 <button 
@@ -393,7 +424,6 @@ export function TaskItem({
                     setIsAddingSubtask(false);
                   }
                 }}
-                autoFocus={isAddingSubtask}
               />
               {isAddingSubtask && (
                 <button
