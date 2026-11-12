@@ -27,11 +27,16 @@ const WEEKDAYS = [
 export default function WeekdaySelector({
   onChange,
   defaultSelected = [],
-  isDisabled = false
+  isDisabled = false,
+  labelId,
+  errorId,
 }: {
   onChange?: (days: string[]) => void
   defaultSelected?: string[]
   isDisabled?: boolean
+  /** Control wiring from InputBox: ids of the label and error elements. */
+  labelId?: string
+  errorId?: string
 }) {
   const [selected, setSelected] = useState<string[]>(defaultSelected)
 
@@ -46,10 +51,19 @@ export default function WeekdaySelector({
   }
 
   return (
-    <div className={`flex gap-[6px] justify-start items-center h-[40px] ${isDisabled ? 'opacity-50' : ''}`}>
+    <div
+      role="group"
+      aria-labelledby={labelId}
+      aria-describedby={errorId}
+      className={`flex gap-[6px] justify-start items-center h-[40px] ${isDisabled ? 'opacity-50' : ''}`}
+    >
       {WEEKDAYS.map(day => (
         <button
           key={day.value}
+          type="button"
+          aria-pressed={selected.includes(day.value)}
+          aria-label={day.value}
+          disabled={isDisabled}
           onClick={() => {
             if (!isDisabled) {
               toggleDay(day.value)
