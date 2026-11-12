@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import InputBox from "../inputBox";
 import { IProject } from "@/app/interface/IProject";
 import { useFormState } from "@/app/context/FormProvider";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/app/components/shadcn/dialog";
 
 interface taskModalProps {
   onClose: () => void;
@@ -78,13 +79,6 @@ export default function TaskModal({
   const [height, setHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
-  const handleEscapeKey = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      clearAllData();
-      onClose();
-    }
-  };
-
   const priorityOptions = [
     { name: "Low", color: "#219EBC" },
     { name: "Medium", color: "#FF7A25" },
@@ -107,16 +101,6 @@ export default function TaskModal({
     project_id: option.project_id,
     color: option.color,
   }));
-
-  // Register once per mount and remove on unmount: the old code added a new
-  // listener on every render and never removed it.
-  const escapeRef = useRef(handleEscapeKey);
-  escapeRef.current = handleEscapeKey;
-  useEffect(() => {
-    const listener = (event: KeyboardEvent) => escapeRef.current(event);
-    window.addEventListener("keydown", listener);
-    return () => window.removeEventListener("keydown", listener);
-  }, []);
 
   const clearAllData = () => {
     setSelectedTaskData(null);
@@ -150,32 +134,34 @@ export default function TaskModal({
   }, [formik.values.isRecurring, formik.errors]);
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
-      onClick={() => {
-        clearAllData();
-        onClose();
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) {
+          clearAllData();
+          onClose();
+        }
       }}
     >
-      <div
+      <DialogContent
+        overlayClassName="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
         className={`modal-popup ${userData?.theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'} dark:bg-gray-900 w-[550px] rounded-[10px] p-5 shadow-lg overflow-hidden transition-all duration-200 ease-in-out`}
-        onClick={(e) => e.stopPropagation()}
         style={{ height }}
       >
         <div ref={ref} className="h-auto flex flex-col gap-5 ">
           <div className="flex flex-col">
             <div className="flex flex-row justify-between items-center">
-              <h1 className={`${userData?.theme === 'dark' ? 'text-white' : 'text-text'} text-[20px] font-bold font-lato`}>
+              <DialogTitle className={`${userData?.theme === 'dark' ? 'text-white' : 'text-text'} text-[20px] font-bold font-lato`}>
                 {isUpdate ? "Task" : "Add New Task"}
-              </h1>
+              </DialogTitle>
+              <DialogClose asChild>
               <button
+                type="button"
                 className="cursor-pointer"
-                onClick={() => {
-                  clearAllData();
-                  onClose();
-                }}
+                aria-label="Close"
               >
                 <svg
+                  aria-hidden="true"
                   width="20"
                   height="20"
                   viewBox="0 0 20 20"
@@ -185,18 +171,19 @@ export default function TaskModal({
                   <path
                     d="M11.5 4.50098L4.5 11.501M11.5 11.501L4.5 4.50098L11.5 11.501Z"
                     stroke="#666666"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
                 </svg>
               </button>
+              </DialogClose>
             </div>
-            <h2 className="text-[#676767] text-sm font-lato">
+            <DialogDescription className="text-[#676767] text-sm font-lato">
               {isUpdate
                 ? "View or update task"
                 : "Create a new task to track your work"}
-            </h2>
+            </DialogDescription>
           </div>
 
           <InputBox
@@ -410,16 +397,15 @@ export default function TaskModal({
           <div className="flex flex-row justify-end gap-4 w-full">
             <div className="w-full"></div>
             <div className="flex flex-row gap-[10px]">
+              <DialogClose asChild>
               <button
+                type="button"
                 className="border border-primary-200 rounded-[5px] flex justify-center items-center text-primary-default 
                 font-lato text-[13px] font-bold p-[10px]"
-                onClick={() => {
-                  clearAllData();
-                  onClose();
-                }}
               >
                 Cancel
               </button>
+              </DialogClose>
               <button
                 disabled={isLoading}
                 className="bg-primary-default rounded-[5px] w-[60px] flex justify-center items-center text-white font-lato 
@@ -436,7 +422,7 @@ export default function TaskModal({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { IProject } from '@/app/interface/IProject';
 import { ITask } from '@/app/interface/ITask';
 import { useFormState } from '@/app/context/FormProvider';
@@ -8,6 +8,7 @@ import { isUserFacing } from '@/lib/apiClient';
 import LoadError from '../LoadError';
 import type { LoadState } from '@/lib/query/loadState';
 import Image from 'next/image';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/app/components/shadcn/dialog';
 interface ViewProjectModalProps {
   onClose: () => void;
   project: IProject;
@@ -30,43 +31,29 @@ export default function ViewProjectModal({
   handleDeleteTask,
 }: ViewProjectModalProps) {
  
-  const handleEscapeKey = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      onClose();  
-    } 
-  }, [onClose]);
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleEscapeKey);
-    return () => {
-      window.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, [handleEscapeKey]);
-
   const { userData } = useFormState();
   const isDarkMode = userData?.theme === 'dark';
 
   return (
-    <div
-      className={`fixed inset-0 ${isDarkMode ? 'bg-black/60' : 'bg-black/40'} flex justify-center items-center z-50`}
-      onClick={onClose}
-    >
-      <div
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent
+        overlayClassName={`fixed inset-0 ${isDarkMode ? 'bg-black/60' : 'bg-black/40'} flex justify-center items-center z-50`}
         className={`modal-popup ${isDarkMode ? 'bg-foreground-dark' : 'bg-white'} w-[550px] h-auto rounded-[10px] p-5 shadow-lg flex flex-col gap-5`}
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col">
           <div className="flex flex-row justify-between items-center">
-            <h1 className={`${isDarkMode ? 'text-white' : 'text-text'} text-[20px] font-bold font-lato`}>{project.title}</h1>
-            <button className="cursor-pointer" onClick={onClose}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <DialogTitle className={`${isDarkMode ? 'text-white' : 'text-text'} text-[20px] font-bold font-lato`}>{project.title}</DialogTitle>
+            <DialogClose asChild>
+            <button type="button" className="cursor-pointer" aria-label="Close">
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M11.5 4.50098L4.5 11.501M11.5 11.501L4.5 4.50098L11.5 11.501Z" stroke={isDarkMode ? '#9ca3af' : '#666666'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
+            </DialogClose>
           </div>
-          <h2 className={`${isDarkMode ? 'text-gray-300' : 'text-[#676767]'} text-sm font-lato`}>
+          <DialogDescription className={`${isDarkMode ? 'text-gray-300' : 'text-[#676767]'} text-sm font-lato`}>
             {project.description ? project.description : "View and manage tasks in this project"}
-          </h2>
+          </DialogDescription>
         </div>
 
         <div className="flex flex-col gap-[10px] max-h-[710px] min-h-[200px] overflow-y-auto scrollbar-hide">
@@ -109,8 +96,8 @@ export default function ViewProjectModal({
             Cancel
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

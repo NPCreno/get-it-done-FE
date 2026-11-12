@@ -36,7 +36,7 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `src/app/(routes)/` — dashboard, projects, notifications, profileSettings
 - `src/app/api/auth/` — BFF route handlers and `authRequests.ts`
 - `src/app/api/` — request helpers
-- `src/app/components/` — `auth/` (2), `modals/` (5), `shadcn/` (10), top level (21)
+- `src/app/components/` — `auth/` (2), `modals/` (5), `shadcn/` (11), top level (21)
 - `src/app/context/` — `FormProvider`
 - `src/app/contracts/` — transport contract: `enums.ts`, `common.ts`, `requests.ts` and `responses.ts` (zod), `forms.ts`, `mappers.ts`, vendored `api-contract.json`, `__fixtures__/`, `__tests__/`
 - `src/app/interface/` — component-facing types (derived from the zod response schemas) plus `forms/` re-exports
@@ -45,6 +45,7 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `src/lib/` — `utils.ts`, `timerService.ts`
 
 ## Conventions
+- Modals use `shadcn/dialog` (Radix): `<Dialog open onOpenChange>` with `DialogContent`, `DialogTitle` and `DialogDescription`. Close buttons are `DialogClose asChild` with `aria-label="Close"`. Never add a window Esc listener or a backdrop onClick. A delete that removes the opener calls `focusFallback(headingRef)` in its success handler. Keep `@radix-ui/*` versions on one `react-dismissable-layer` copy (two copies break layered Esc)
 - Route names are camelCase: `/profileSettings`, not `/profile-settings`
 - Forms use Formik + yup. Transport uses zod (`contracts/`). Form value types are separate from transport types; `mappers.ts` converts one to the other. `react-hook-form` was removed
 - Any new page is protected by default; add it to `publicRoutes` in `middleware.ts` only if it must be open

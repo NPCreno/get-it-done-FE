@@ -1,5 +1,5 @@
 import { IProject } from "../interface/IProject";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useFormState } from "@/app/context/FormProvider";
 import ConfirmationModal from "./modals/confirmation";
 import { Pencil2Icon } from "@radix-ui/react-icons"
@@ -22,6 +22,8 @@ export default function ProjectCard({
   const projectColor = project.colorLabel?.toLowerCase() || 'gray';
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  // Portal target for the delete confirmation: the card is relative + overflow-hidden, so it clips the dialog.
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Helper functions for colors and gradients
 const getGradientClass = (color: string = 'gray') => {
@@ -94,6 +96,7 @@ const getGradientClass = (color: string = 'gray') => {
   return (
     <>
     <div
+      ref={cardRef}
       onClick={handleCardClick}
       className={`group relative p-5 rounded-2xl bg-gradient-to-br ${gradientClass} 
          shadow-lg hover:shadow-xl transition-all duration-300 
@@ -272,7 +275,6 @@ const getGradientClass = (color: string = 'gray') => {
     </div>
 
     {showDeleteConfirm && (
-        <div className="absolute inset-0 z-10 rounded-2xl overflow-hidden">
           <ConfirmationModal
           onClose={() => setShowDeleteConfirm(false)}
           title="Delete Project"
@@ -290,8 +292,8 @@ const getGradientClass = (color: string = 'gray') => {
             }
           ]}
           fullScreen={true}
+          container={cardRef.current}
         />
-        </div>
     )}
     </>
   );

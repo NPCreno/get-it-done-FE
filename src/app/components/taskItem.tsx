@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { isUserFacing } from "@/lib/apiClient";
+import { focusFallback } from "@/lib/focusFallback";
 import { useCreateSubTask, useDeleteSubTask, useSetSubTaskStatus, useSetTaskStatus } from "@/lib/query/mutations";
 import { failureOf } from "@/lib/query/unwrap";
 import { useFormState } from "../context/FormProvider";
@@ -45,6 +46,8 @@ export function TaskItem({
   const [isDeleting, setIsDeleting] = useState<{[key: string]: boolean}>({});
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const subtaskInputRef = useRef<HTMLInputElement>(null);
+  // Focus lands here if deleting a subtask removes the button that was focused.
+  const titleRef = useRef<HTMLSpanElement>(null);
   const isComplete = task.status === "Complete"; // already optimistic when a toggle is pending
   const isUpdating = setTaskStatus.isPending || setSubTaskStatus.isPending;
   const hasSubtasks = subTasks && subTasks.length > 0;
@@ -149,7 +152,10 @@ export function TaskItem({
   const handleDeleteSub = useCallback((taskSubInstance_id: string) => {
     if (deleteSubTask.isPending) return;
     deleteSubTask.mutate(taskSubInstance_id, {
-      onSuccess: () => notify?.('SubTask deleted successfully', 'success'),
+      onSuccess: () => {
+        focusFallback(titleRef);
+        notify?.('SubTask deleted successfully', 'success');
+      },
       onError: (error) => {
         const failure = failureOf(error);
         if (isUserFacing(failure)) notify?.(`Delete failed: ${failure.message}`, 'error');
@@ -238,7 +244,7 @@ export function TaskItem({
         <div className="flex flex-col flex-1 min-w-0">
           <div className="flex items-center justify-between w-full">
             <div className="flex flex-col items-start">
-              <span className={`flex-1 font-lato text-4 ${task.status === 'Complete' 
+              <span ref={titleRef} tabIndex={-1} className={`outline-none flex-1 font-lato text-4 ${task.status === 'Complete' 
                 ? 'line-through text-start text-gray-400' 
                 : `text-start ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}`}>
                 {task.title}

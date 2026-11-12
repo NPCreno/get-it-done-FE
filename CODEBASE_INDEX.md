@@ -73,6 +73,7 @@ Inputs and small UI
 
 shadcn (`shadcn/`)
 - `areaChart.tsx`, `pieChart.tsx`, `chart.tsx` — charts
+- `dialog.tsx` — Radix Dialog wrapper used by every modal (role, title/description, focus trap, layered Esc, focus return to the opener)
 - `button.tsx`, `card.tsx`, `calendar.tsx`, `popover.tsx`, `scroll-area.tsx`, `select.tsx`, `dropdown-menu.tsx` — primitives
 
 ## State, hooks, lib, utils
@@ -80,6 +81,7 @@ shadcn (`shadcn/`)
 - `src/hooks/useTimer.ts` — timer hook
 - `src/lib/timerService.ts` — pomodoro timer state, persisted in `localStorage` key `pomodoroTimerState`
 - `src/lib/utils.ts` — shadcn class-name helper
+- `src/lib/focusFallback.ts` — `focusFallback(ref)`: after a delete removes the focused opener, moves focus to a page heading
 - `src/app/utils/utils.tsx` — `getAccessToken`, `parseJwt`, `base64UrlDecode`, week-range helper
 - `src/app/utils/clientIp.ts` — `getClientIp(headers)`
 
