@@ -19,8 +19,9 @@ import { isEmptyList } from "@/lib/query/emptiness";
 import LoadError from "@/app/components/LoadError";
 import { FormikErrors, useFormik } from "formik";
 import { projectSchema } from "@/app/schemas/projectSchema";
-import { Toast } from "@/app/components/toast";
-import { describeFailure, isUserFacing } from "@/lib/apiClient";
+import ToastHost from "@/app/components/ToastHost";
+import { useToastController } from "@/hooks/useToastController";
+import { isUserFacing } from "@/lib/apiClient";
 import ViewProjectModal from "@/app/components/modals/viewProject";
 import { IProject } from "@/app/interface/IProject";
 import {
@@ -55,13 +56,8 @@ export default function ProjectsPage() {
   });
   const [isViewProjectModalOpen, setIsViewProjectModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState({
-    title: "",
-    description: "",
-    className: "",
-  });
-  const [isExitingToast, setIsExitingToast] = useState(false);
+  // One toast controller for the page: the host and every handler below share it.
+  const toast = useToastController();
   const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
   const [isUpdateTask, setIsUpdateTask] = useState(false);
   // Server data is owned by query hooks (src/lib/query). Mutations declare what they
@@ -83,23 +79,10 @@ export default function ProjectsPage() {
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
-  const setStatusError = (message: string) => {
-    setToastMessage({ title: "Something Went Wrong", description: message, className: "text-error-default" });
-    setShowToast(true);
-    setIsExitingToast(false);
-    setTimeout(() => {
-      setIsExitingToast(true);
-      setTimeout(() => setShowToast(false), 400);
-    }, 10000);
-  };
+  // Same title, description and class as before; only the timers moved into the controller.
+  const setStatusError = (message: string) => toast.error("Something Went Wrong", message);
   const [isLoading, setIsLoading] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
-  const handleToastClose = () => {
-    setIsExitingToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 400);
-  };
 
   const initialValues = useMemo(
     () => ({
@@ -170,57 +153,12 @@ export default function ProjectsPage() {
           projectId: undefined,
           isEdit: false,
         });
-        setToastMessage({
-          title: "Project Created",
-          description: "Your new project has been created successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.success("Project Created", "Your new project has been created successfully");
       } else if (isUserFacing(response.failure)) {
-        setToastMessage({
-          ...describeFailure(response.failure),
-          className: "text-error-default",
-        });
-        setShowToast(true);
-        setIsExitingToast(false);
-        setTimeout(() => {
-          setIsExitingToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-          }, 400);
-        }, 10000);
+        toast.failure(response.failure);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
+      toast.unexpected(error);
     } finally {
       setIsLoading(false);
     }
@@ -247,57 +185,12 @@ export default function ProjectsPage() {
           projectId: undefined,
           isEdit: false,
         });
-        setToastMessage({
-          title: "Project Updated",
-          description: "Your project has been updated successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.success("Project Updated", "Your project has been updated successfully");
       } else if (isUserFacing(response.failure)) {
-        setToastMessage({
-          ...describeFailure(response.failure),
-          className: "text-error-default",
-        });
-        setShowToast(true);
-        setIsExitingToast(false);
-        setTimeout(() => {
-          setIsExitingToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-          }, 400);
-        }, 10000);
+        toast.failure(response.failure);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
+      toast.unexpected(error);
     } finally {
       setIsLoading(false);
     }
@@ -348,64 +241,16 @@ export default function ProjectsPage() {
       if (response.ok) {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
-        setToastMessage({
-          title: "Task Created",
-          description:
-            response.data.message || "Your new task has been created successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.success("Task Created", "Your new task has been created successfully", response.data.message);
       } else if (isUserFacing(response.failure)) {
         if (response.failure.kind === 'api') {
           clearValueAndErrors();
           setIsTaskModalOpen(false);
         }
-        setToastMessage({
-          ...describeFailure(response.failure),
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.failure(response.failure);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
+      toast.unexpected(error);
     }
   };
 
@@ -425,64 +270,16 @@ export default function ProjectsPage() {
       if (response.ok) {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
-        setToastMessage({
-          title: "Task Created",
-          description:
-            response.data.message || "Your new task has been created successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.success("Task Created", "Your new task has been created successfully", response.data.message);
       } else if (isUserFacing(response.failure)) {
         if (response.failure.kind === 'api') {
           clearValueAndErrors();
           setIsTaskModalOpen(false);
         }
-        setToastMessage({
-          ...describeFailure(response.failure),
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.failure(response.failure);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
+      toast.unexpected(error);
     } finally {
       setIsLoading(false);
     }
@@ -495,64 +292,16 @@ export default function ProjectsPage() {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
         focusFallback(headingRef);
-        setToastMessage({
-          title: "Task Deleted",
-          description:
-            response.data.message || "Your task has been deleted successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.success("Task Deleted", "Your task has been deleted successfully", response.data.message);
       } else if (isUserFacing(response.failure)) {
         if (response.failure.kind === 'api') {
           clearValueAndErrors();
           setIsTaskModalOpen(false);
         }
-        setToastMessage({
-          ...describeFailure(response.failure),
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.failure(response.failure);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
+      toast.unexpected(error);
     }
   };
 
@@ -610,15 +359,9 @@ export default function ProjectsPage() {
   const projectLoadFailure = projectQuery.isError ? failureOf(projectQuery.error) : null;
   useEffect(() => {
     if (projectLoadFailure && isUserFacing(projectLoadFailure)) {
-      setToastMessage({
-        title: "Could not load project details",
-        description: projectLoadFailure.message,
-        className: "text-error-default",
-      });
-      setShowToast(true);
-      setIsExitingToast(false);
+      toast.error("Could not load project details", projectLoadFailure.message);
     }
-  }, [projectLoadFailure]);
+  }, [projectLoadFailure, toast]);
 
   const deleteProject = async (projectId: string) => {
     try {
@@ -627,78 +370,22 @@ export default function ProjectsPage() {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
         focusFallback(headingRef);
-        setToastMessage({
-          title: "Project Deleted",
-          description:
-            response.data.message || "Your project has been deleted successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.success("Project Deleted", "Your project has been deleted successfully", response.data.message);
       } else if (isUserFacing(response.failure)) {
         if (response.failure.kind === 'api') {
           clearValueAndErrors();
           setIsTaskModalOpen(false);
         }
-        setToastMessage({
-          ...describeFailure(response.failure),
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.failure(response.failure);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
+      toast.unexpected(error);
     }
   };
   
   return (
     <MainLayout>
-      {showToast && (
-        <div
-          className={`fixed bottom-4 right-4 z-50 ${
-            isExitingToast ? "toast-exit" : "toast-enter"
-          }`}
-        >
-          <Toast {...toastMessage} onClose={handleToastClose} />
-        </div>
-      )}
+      <ToastHost controller={toast} />
       <div className="main flex justify-center h-full w-full">
         {/* Main Page */}
         <div className="inside flex flex-col gap-5 max-w-[1440px] w-full mx-auto">

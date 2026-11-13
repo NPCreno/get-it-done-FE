@@ -60,6 +60,7 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - Pages render server data through `loadStateOf(query, isEmpty)`, never `data ?? EMPTY`. Only a successful empty response is "empty"; 404 is never empty. Load errors show `describeLoadFailure()` (fixed copy), never server text; use `LoadError` for every retry
 - The task window is quantized to 5-minute buckets (`window.ts`); a task due up to 5 minutes outside today's exact 24 h window may show
 - Task completion from the project view now uses the status endpoint, so it triggers notifications
+- Toasts: a page calls `useToastController()` once and passes that instance to `<ToastHost controller>` and to every handler (`toast.success/failure/unexpected/error/show`). Never keep `showToast`/`setTimeout` toast state in a page; a new toast cancels the previous one's timers
 
 ## Commands
 - `pnpm dev` — dev server
