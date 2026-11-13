@@ -27,9 +27,10 @@ import LoadError from "@/app/components/LoadError";
 import type { ChartLoad } from "@/app/components/chartCard";
 import { IProject } from "@/app/interface/IProject";
 import { toCreateTaskRequest, toUpdateTaskRequest } from "@/app/contracts/mappers";
-import { Toast } from "@/app/components/toast";
+import ToastHost from "@/app/components/ToastHost";
+import { useToastController } from "@/hooks/useToastController";
 import { ITask } from "@/app/interface/ITask";
-import { describeFailure, isUserFacing } from "@/lib/apiClient";
+import { isUserFacing } from "@/lib/apiClient";
 import LoadingPage from "@/app/components/loader";
 import { IDashboardData } from "@/app/interface/IDashboardData";
 import { ITaskCompletionTrendData } from "@/app/interface/ITaskCompletionTrendData";
@@ -64,14 +65,8 @@ export default function DashboardPage() {
   } = useFormState();
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-  // Toast
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState({
-    title: "",
-    description: "",
-    className: "",
-  });
-  const [isExitingToast, setIsExitingToast] = useState(false);
+  // One toast controller for the page: the host and every handler below share it.
+  const toast = useToastController();
   const [isUpdateTask, setIsUpdateTask] = useState(false);
   // Server data is owned by query hooks (src/lib/query): one key per request
   // parameter set, cancellation, and invalidation from mutations. Nothing here
@@ -118,12 +113,6 @@ export default function DashboardPage() {
   const [taskIdToDelete, setTaskIdToDelete] = useState<string>("");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [expandedTaskIds, setExpandedTaskIds] = useState<Set<string>>(new Set());
-  const handleToastClose = () => {
-    setIsExitingToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 400);
-  };
 
   const handleToggleSubtasks = useCallback((taskId: string) => {
     setExpandedTaskIds(prev => {
@@ -199,59 +188,13 @@ export default function DashboardPage() {
       const response = await settled(createTaskMutation.mutateAsync(payload));
       if (response.ok) {
         setIsTaskModalOpen(false);
-        setToastMessage({
-          title: "Task Created",
-          description:
-            response.data.message || "Your new task has been created successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.success("Task Created", "Your new task has been created successfully", response.data.message);
       } else if (isUserFacing(response.failure)) {
         // The modal stays open so the user can retry.
-        setToastMessage({
-          ...describeFailure(response.failure),
-          className: "text-error-default",
-        });
-        setShowToast(true);
-        setIsExitingToast(false);
-        setTimeout(() => {
-          setIsExitingToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-          }, 400);
-        }, 10000);
+        toast.failure(response.failure);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
+      toast.unexpected(error);
     } finally {
       setIsLoading(false);
     }
@@ -292,65 +235,17 @@ export default function DashboardPage() {
       if (response.ok) {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
-        setToastMessage({
-          title: "Task Updated",
-          description:
-            response.data.message || "Your task has been updated successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.success("Task Updated", "Your task has been updated successfully", response.data.message);
       } else if (isUserFacing(response.failure)) {
         // Backend rejected it (kind 'api'): reset and close. Transport failure: keep the modal open.
         if (response.failure.kind === 'api') {
           clearValueAndErrors();
           setIsTaskModalOpen(false);
         }
-        setToastMessage({
-          ...describeFailure(response.failure),
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.failure(response.failure);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
+      toast.unexpected(error);
     } finally {
       setIsLoading(false);
     }
@@ -408,38 +303,10 @@ export default function DashboardPage() {
         const result = await settled(deleteRecurringMutation.mutateAsync(taskTemplateIdToDelete));
         if (!result.ok) throw new Error(result.failure.message);
         focusFallback(headingRef);
-        setToastMessage({
-          title: "Success",
-          description: "Recurring tasks deleted successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.success("Success", "Recurring tasks deleted successfully");
       } catch (error) {
         console.error('Failed to delete recurring tasks:', error);
-        setToastMessage({
-          title: "Error",
-          description: "Failed to delete recurring tasks",
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.error("Error", "Failed to delete recurring tasks");
       }
       setShowConfirmation(false);
       setTaskTemplateIdToDelete("");
@@ -453,99 +320,40 @@ export default function DashboardPage() {
         clearValueAndErrors();
         setIsTaskModalOpen(false);
         focusFallback(headingRef);
-        setToastMessage({
-          title: "Task Deleted",
-          description:
-            response.data.message || "Your task has been deleted successfully",
-          className: "text-green-600",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.success("Task Deleted", "Your task has been deleted successfully", response.data.message);
       } else if (isUserFacing(response.failure)) {
         if (response.failure.kind === 'api') {
           clearValueAndErrors();
           setIsTaskModalOpen(false);
         }
-        setToastMessage({
-          ...describeFailure(response.failure),
-          className: "text-error-default",
-        });
-
-        setShowToast(true);
-        setIsExitingToast(false);
-
-        setTimeout(() => {
-          setIsExitingToast(true); // Start exit animation
-          setTimeout(() => {
-            setShowToast(false); // Remove after animation completes
-          }, 400); // Must match the toastOut animation duration
-        }, 10000); // Toast display duration
+        toast.failure(response.failure);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: error.message,
-          className: "text-error-default",
-        });
-      } else {
-        setToastMessage({
-          title: "Something Went Wrong",
-          description: "An unknown error occurred",
-          className: "text-error-default",
-        });
-      }
-      setShowToast(true);
-      setIsExitingToast(false);
-      setTimeout(() => {
-        setIsExitingToast(true); // Start exit animation
-        setTimeout(() => {
-          setShowToast(false); // Remove after animation completes
-        }, 400); // Must match the toastOut animation duration
-      }, 10000); // Toast display duration
+      toast.unexpected(error);
     }
   };
 
   // Toast only. Counts and task lists come from the refetch, never from the message text.
   const notify = (message: string, type: 'info' | 'success' | 'error' | 'warning') => {
-    setToastMessage({
-      title: type === 'error' ? 'Something Went Wrong' : 'Task update',
-      description: message,
-      className: type === 'success'
-        ? 'text-success-default'
-        : type === 'error'
-          ? 'text-error-default'
-          : type === 'warning'
-            ? 'text-warning-default'
-            : 'text-accent-default',
-    });
-    setShowToast(true);
-    setIsExitingToast(false);
-    setTimeout(() => {
-      setIsExitingToast(true);
-      setTimeout(() => setShowToast(false), 400);
-    }, 3000);
+    toast.show(
+      {
+        title: type === 'error' ? 'Something Went Wrong' : 'Task update',
+        description: message,
+        className: type === 'success'
+          ? 'text-success-default'
+          : type === 'error'
+            ? 'text-error-default'
+            : type === 'warning'
+              ? 'text-warning-default'
+              : 'text-accent-default',
+      },
+      { displayMs: 3000 }
+    );
   };
 
   return (
     <MainLayout>
-      {showToast && (
-        <div
-          className={`fixed bottom-4 right-4 z-50 ${
-            isExitingToast ? "toast-exit" : "toast-enter"
-          }`}
-        >
-          <Toast {...toastMessage} onClose={handleToastClose} />
-        </div>
-      )}
+      <ToastHost controller={toast} />
       <div className="main flex justify-center w-full h-full">
         {/* Main Page */}
         <div className="inside max-w-[1440px] w-full mx-auto gap-5 flex flex-col">

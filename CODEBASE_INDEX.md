@@ -70,6 +70,7 @@ Dashboard and data display
 Inputs and small UI
 - `inputBox.tsx`, `dropdown.tsx`, `datePicker.tsx`, `datePickerWithTime.tsx`, `weekdaySelector.tsx`, `toggleSwitch.tsx` — form controls
 - `toast.tsx`, `loader.tsx` — feedback
+- `ToastHost.tsx` — renders a page's toast from its controller
 - `PomodoroButton.tsx` — opens the pomodoro modal
 - `ChartDataTable.tsx` — screen-reader-only table (caption, columns, rows) that accompanies each chart
 - `chartRows.ts` — pure row builders (`trendRows`, `distributionRows`, `heatmapRows`) with vitest cases in `components/__tests__/chartRows.test.ts`
@@ -82,6 +83,7 @@ shadcn (`shadcn/`)
 ## State, hooks, lib, utils
 - `src/app/context/FormProvider.tsx` — shared form context
 - `src/hooks/useTimer.ts` — timer hook
+- `src/hooks/toastController.ts` (framework-independent, owns timers), `useToastController.ts` (one per page, disposed on unmount) — toast state; tests in `src/hooks/__tests__/`
 - `src/lib/timerService.ts` — pomodoro timer state, persisted in `localStorage` key `pomodoroTimerState`
 - `src/lib/utils.ts` — shadcn class-name helper
 - `src/lib/focusFallback.ts` — `focusFallback(ref)`: after a delete removes the focused opener, moves focus to a page heading
