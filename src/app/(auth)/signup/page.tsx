@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import SignupForm from "@/app/components/auth/SignupForm";
@@ -94,6 +95,12 @@ export default function SignupPage() {
           <div className="lg:p-8">
             <div className="mx-auto flex w-full flex-col justify-center items-center space-y-6 sm:w-[450px]">
               <SignupForm onChangeView={handleViewChange} />
+              <p className="text-center text-sm text-muted-foreground">
+                Just looking around?{" "}
+                <Link href="/demo" className="underline underline-offset-4 hover:text-primary">
+                  Try the demo
+                </Link>
+              </p>
               <p className="px-8 text-center text-sm text-muted-foreground">
                 By clicking continue, you agree to our{" "}
                 <a
