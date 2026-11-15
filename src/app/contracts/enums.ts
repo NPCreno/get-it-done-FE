@@ -19,6 +19,8 @@ export const WEEKDAYS = [
 ] as const;
 export const THEMES = ["light", "dark"] as const;
 export const BOOLEAN_STRINGS = ["true", "false"] as const;
+export const NOTIFICATION_TYPES = ["achievement", "milestone", "streak", "levelUp", "reward", "taskDue"] as const;
+export const NOTIFICATION_ACTION_TYPES = ["acknowledge", "complete", "claim"] as const;
 
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 export type TaskStatus = (typeof TASK_STATUSES)[number];
@@ -26,6 +28,8 @@ export type NewTaskStatus = (typeof NEW_TASK_STATUSES)[number];
 export type RepeatEvery = (typeof REPEAT_EVERY)[number];
 export type Weekday = (typeof WEEKDAYS)[number];
 export type Theme = (typeof THEMES)[number];
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+export type NotificationActionType = (typeof NOTIFICATION_ACTION_TYPES)[number];
 export type BooleanString = (typeof BOOLEAN_STRINGS)[number];
 
 /** Narrow an arbitrary string to a member of a literal list, or undefined. */

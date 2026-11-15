@@ -11,6 +11,7 @@ export const LIMITS = {
   titleMax: 100,
   descriptionMax: 500,
   colorLabelMax: 50,
+  notificationsPageMax: 100,
 } as const;
 
 /** Regex sources, compared with the contract JSON by a test. */

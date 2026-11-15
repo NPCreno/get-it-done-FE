@@ -4,6 +4,7 @@ import { LIMITS, PATTERNS } from "../common";
 import {
   BOOLEAN_STRINGS,
   NEW_TASK_STATUSES,
+  NOTIFICATION_TYPES,
   REPEAT_EVERY,
   TASK_PRIORITIES,
   TASK_STATUSES,
@@ -20,6 +21,7 @@ describe("FE literals match the vendored BE contract (src/app/contracts/api-cont
     expect([...WEEKDAYS]).toEqual(contract.weekdays);
     expect([...THEMES]).toEqual(contract.themes);
     expect([...BOOLEAN_STRINGS]).toEqual(contract.booleanStrings);
+    expect([...NOTIFICATION_TYPES]).toEqual(contract.notificationTypes);
   });
 
   it("limits", () => {

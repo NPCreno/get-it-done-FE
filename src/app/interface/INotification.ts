@@ -1,16 +1,10 @@
+import type { Notification } from "@/app/contracts/responses";
+
+/** The notification card's props: the zod-derived item plus display and handlers. */
 export interface INotificationProps {
-  type: 
-    | "achievement"
-    | "milestone"
-    | "streak"
-    | "levelUp"
-    | "bigReward"
-    | "dueTomorrow"
-    | "taskCompleted"
-    | "smallReward";
-  title: string;
-  message: string;
+  notification: Notification;
+  /** Relative time, already formatted. */
   time: string;
-  status: 'read' | 'unread';
-  onAcknowledge?: () => void; 
+  onMarkRead: (notifId: string) => void;
+  pending?: boolean;
 }

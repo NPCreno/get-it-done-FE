@@ -6,6 +6,7 @@ import {
   DashboardDataSchema,
   DistributionSchema,
   HeatmapCellSchema,
+  NotificationsPageSchema,
   ProjectListItemSchema,
   ProjectSchema,
   ProjectTaskSchema,
@@ -38,6 +39,8 @@ const CASES: [string, ZodTypeAny, "envelope" | "raw"][] = [
   ["trend-week", TrendPointSchema.array(), "envelope"],
   ["distribution", DistributionSchema.array(), "envelope"],
   ["streak", StreakSchema, "envelope"],
+  ["notifications-list", NotificationsPageSchema, "envelope"],
+  ["notifications-empty", NotificationsPageSchema, "envelope"],
 ];
 
 const payload = (name: string) => {

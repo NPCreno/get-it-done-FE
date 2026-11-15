@@ -8,7 +8,8 @@ export type DataEvent =
   | "subtask-status"
   | "project-saved" // created or updated
   | "project-deleted"
-  | "profile";
+  | "profile"
+  | "notifications"; // read state changed, or cleared
 
 export function invalidationsFor(event: DataEvent, userId: string): QueryKey[] {
   switch (event) {
@@ -23,6 +24,8 @@ export function invalidationsFor(event: DataEvent, userId: string): QueryKey[] {
       return [qk.projects(userId), qk.tasks(userId), qk.analytics(userId)];
     case "profile":
       return [qk.profile(userId)];
+    case "notifications":
+      return [qk.notifications(userId)];
   }
 }
 

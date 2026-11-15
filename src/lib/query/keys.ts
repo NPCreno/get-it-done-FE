@@ -12,6 +12,7 @@ export function resourceOf(key: readonly unknown[]): string {
   if (key[0] !== "u") return "unknown";
   const [, , area, a, b] = key;
   if (area === "profile") return "profile";
+  if (area === "notifications") return "notifications";
   if (area === "projects") return key.length > 3 ? "projects.detail" : "projects";
   if (area === "tasks") return a === "upcoming" ? "tasks.upcoming" : a === "project" ? "tasks.project" : "unknown";
   if (area === "analytics" && ["summary", "trend", "distribution", "heatmap", "streak"].includes(a as string)) {
@@ -29,6 +30,8 @@ export const qk = {
   upcoming: (id: string, w: TaskWindow) => [...u(id), "tasks", "upcoming", w.start, w.end] as const,
   projectTasks: (id: string, projectId: string, w: TaskWindow) =>
     [...u(id), "tasks", "project", projectId, w.start, w.end] as const,
+  /** One infinite list per user; the cursor is a page param, not part of the key. */
+  notifications: (id: string) => [...u(id), "notifications"] as const,
   analytics: (id: string) => [...u(id), "analytics"] as const, // prefix
   summary: (id: string, w: TaskWindow) => [...u(id), "analytics", "summary", w.start, w.end] as const,
   trend: (id: string, r: { start: string; end: string }) =>
