@@ -14,7 +14,7 @@ One line per significant source file. Paths are relative to the repo root.
 - `src/app/(routes)/profileSettings/page.tsx` — profile editing and logout
 
 ## Middleware and BFF
-- `src/middleware.ts` — public-route allowlist, `jwtVerify`, proactive and expired-token refresh
+- `src/middleware.ts` — open routes first (`isOpenRoute`), then the public-route allowlist, `jwtVerify`, proactive and expired-token refresh
 - `src/app/api/auth/session.ts` — edge-safe shared session helpers: `refreshWithBackend` (ok / invalid / unavailable), `setSessionCookies`, `clearSessionCookies`, `revokeWithBackend`, `backendAuthHeaders`, `isSameOrigin`
 - `src/app/api/auth/refresh/route.ts` — `POST /api/auth/refresh`, client-side silent refresh (never clears cookies)
 - `src/app/api/auth/login/route.ts` — BFF login, sets httpOnly refresh cookie and readable access cookie
@@ -22,7 +22,15 @@ One line per significant source file. Paths are relative to the repo root.
 
 ## Browser API client (`src/lib/`)
 - `apiClient.ts` — `apiClient()` never throws, returns `ApiResult<T>`; `apiPath`, `isUserFacing`, `describeFailure`
+- `apiTransport.ts` — `installApiTransport(transport) → release`, `getActiveApiTransport()`: optional seam that replaces the network (one owner, ownership-checked idempotent release); used only by the demo
+- `openRoutes.ts` — `openRoutes = ["/demo"]`, pure `isOpenRoute(pathname)` used by the middleware
+- `__tests__/` — `apiClient` characterization and transport tests (`apiClient.test.ts`, `apiTransport.test.ts`), `openRoutes.test.ts`
 - `clientSession.ts` — `refreshSession()` (in-tab singleton + Web Lock `gid-session`), `expireSession()`
+
+## Demo infrastructure (`src/app/demo/`, DEMO-01a; no page or UI yet)
+- `runtime.ts` — `createDemoRuntime({clock}) → { store, transport, queryClient, reset(), start(), stop() }`, framework-free; its `QueryClient` is never registered with `registerQueryClient`
+- `fake/clock.ts`, `seed.ts` (relative to `clock.now()`, id `demo-user`, `demo@example.invalid`), `store.ts` (instance state, `generation`, `retire()`), `crud.ts` (validates with the real request schemas), `analytics.ts` (demo-only simplified rules), `router.ts` (15 routes by method + anchored path, 501 otherwise, optional hit log)
+- `__tests__/` — `fake.test.ts` (seed invariants, schema conformance, semantics, router), `runtime.test.ts` (lifecycle, isolation, concurrency, reset), `endpoints.test.ts` (D8 drift guard over `specs.ts`, `taskRequests.ts`, `projectsRequests.ts`)
 
 ## Query layer (`src/lib/query/`)
 - `client.ts` — `createQueryClient()` defaults, `clearQueryCache()` (called on logout/expiry); `../../app/providers/QueryProvider.tsx` mounts it

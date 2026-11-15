@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify, errors } from "jose";
 import { getClientIp } from "./app/utils/clientIp";
 import { refreshWithBackend, setSessionCookies } from "./app/api/auth/session";
+import { isOpenRoute } from "./lib/openRoutes";
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_ALGORITHM = 'HS256';
 
@@ -61,6 +62,10 @@ async function refreshAndContinue(req: NextRequest, refreshToken: string) {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Open routes (the demo): no token check, no cookie change, no redirect, even when signed in.
+  if (isOpenRoute(pathname)) return NextResponse.next();
+
   const token = req.cookies.get("access_token")?.value;
   const refreshToken = req.cookies.get("refresh_token")?.value;
 
