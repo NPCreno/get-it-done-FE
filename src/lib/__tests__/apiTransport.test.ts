@@ -36,6 +36,7 @@ function expectUntouched() {
 
 describe("D1: apiClient transport branch", () => {
   it("serves requests with no window, no base URL, no token, no fetch", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const t = vi.fn(async (_r: ApiTransportRequest) => ok({ n: "7" }));
     install(t);
     const schema = z.object({ n: z.coerce.number() });
@@ -48,6 +49,7 @@ describe("D1: apiClient transport branch", () => {
   });
 
   it("passes the validated body and rejects an invalid one before the transport", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const t = vi.fn(async (_r: ApiTransportRequest) => ok(null));
     install(t);
     const requestSchema = z.object({ n: z.coerce.number() });
