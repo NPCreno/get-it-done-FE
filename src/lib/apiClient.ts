@@ -1,6 +1,7 @@
 import type { ZodTypeAny, ZodTypeDef, ZodType } from "zod";
 import { getAccessToken } from "@/app/utils/utils";
 import { expireSession, refreshSession } from "./clientSession";
+import { getActiveApiTransport, type ApiTransport } from "./apiTransport";
 
 export type ApiFailureKind =
   | "network"
@@ -185,15 +186,8 @@ function interpretSuccess<T>(
   return fail(status, "api", message ?? opts.fallbackError, detail);
 }
 
-async function execute<T>(path: string, opts: ApiRequestOptions<T>, isRetry: boolean): Promise<ApiResult<T>> {
-  if (typeof window === "undefined") {
-    console.error("[api] apiClient is browser-only");
-    return fail(0, "network", "API client is browser-only");
-  }
-  const base = process.env.NEXT_PUBLIC_API_URL;
-  if (!base) return fail(0, "network", "API URL is not configured");
-
-  let requestBody = opts.body;
+/** Validates the request body; failure is `invalid_request` and nothing is sent. */
+function validateRequest<T>(path: string, opts: ApiRequestOptions<T>): { body: unknown } | ApiFailure {
   if (opts.requestSchema && opts.body !== undefined) {
     const parsed = opts.requestSchema.safeParse(opts.body);
     if (!parsed.success) {
@@ -202,8 +196,103 @@ async function execute<T>(path: string, opts: ApiRequestOptions<T>, isRetry: boo
       console.warn("[api] invalid_request", path.split("?")[0], parsed.error.issues.map((i) => i.path.join(".")));
       return fail(0, "invalid_request", "Request failed validation", `${where}${first?.message ?? "Invalid value"}`);
     }
-    requestBody = parsed.data;
+    return { body: parsed.data };
   }
+  return { body: opts.body };
+}
+
+/** status + text to ApiResult for everything except the TOKEN_* refresh-and-replay branch. */
+function toResult<T>(
+  status: number,
+  text: string,
+  opts: ApiRequestOptions<T>,
+  method: string,
+  pathForLog: string
+): ApiResult<T> {
+  if (status >= 200 && status < 300) {
+    let result = interpretSuccess<T>(status, text, opts);
+    if (result.ok && opts.schema && (opts.expect ?? "envelope") !== "none") {
+      const parsed = opts.schema.safeParse(result.data);
+      if (!parsed.success) {
+        // Paths only: never log response values.
+        console.warn("[api]", method, pathForLog, status, "schema", parsed.error.issues.slice(0, 5).map((i) => i.path.join(".")));
+        result = fail(status, "invalid_response", "Unexpected response from server");
+      } else {
+        result = { ...result, data: parsed.data };
+      }
+    }
+    if (!result.ok) console.warn("[api]", method, pathForLog, status, result.kind);
+    return result;
+  }
+  const kind: ApiFailureKind = status === 401 || status === 403 ? "forbidden" : "http";
+  console.warn("[api]", method, pathForLog, status, kind);
+  return fail(status, kind, errorMessage(tryParse(text), opts.fallbackError));
+}
+
+/** Runs the request through the installed transport. No token, no refresh, no fetch. */
+async function executeViaTransport<T>(
+  transport: ApiTransport,
+  path: string,
+  opts: ApiRequestOptions<T>
+): Promise<ApiResult<T>> {
+  const validated = validateRequest(path, opts);
+  if ("ok" in validated) return validated;
+
+  const method = opts.method ?? "GET";
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const pathForLog = path.split("?")[0];
+  const composed = composeSignals(timeoutMs, opts.signal);
+  if (composed.preAborted) return fail(0, "aborted", "Request aborted");
+
+  let status: number;
+  let text: string;
+  try {
+    const pending = transport({
+      method,
+      path,
+      query: opts.query,
+      body: validated.body,
+      signal: composed.signal,
+      timeoutMs,
+    });
+    // Race the composed signal so a transport that ignores it still times out / aborts,
+    // and its late result is discarded.
+    const out = await new Promise<{ status: number; text: string }>((resolve, reject) => {
+      const onAbort = () => reject(new Error("aborted"));
+      if (composed.signal.aborted) return onAbort();
+      composed.signal.addEventListener("abort", onAbort, { once: true });
+      pending.then(resolve, reject).finally(() => composed.signal.removeEventListener("abort", onAbort));
+    });
+    status = out.status;
+    text = out.text;
+  } catch {
+    if (composed.state.timedOut) {
+      console.warn("[api]", method, pathForLog, 0, "timeout");
+      return fail(0, "timeout", "Request timed out");
+    }
+    if (opts.signal?.aborted) return fail(0, "aborted", "Request aborted");
+    console.warn("[api]", method, pathForLog, 0, "network");
+    return fail(0, "network", "Network error. Check your connection and try again.");
+  } finally {
+    composed.cleanup();
+  }
+  return toResult<T>(status, text, opts, method, pathForLog);
+}
+
+async function execute<T>(path: string, opts: ApiRequestOptions<T>, isRetry: boolean): Promise<ApiResult<T>> {
+  const transport = getActiveApiTransport();
+  if (transport) return executeViaTransport<T>(transport, path, opts);
+
+  if (typeof window === "undefined") {
+    console.error("[api] apiClient is browser-only");
+    return fail(0, "network", "API client is browser-only");
+  }
+  const base = process.env.NEXT_PUBLIC_API_URL;
+  if (!base) return fail(0, "network", "API URL is not configured");
+
+  const validated = validateRequest(path, opts);
+  if ("ok" in validated) return validated;
+  const requestBody = validated.body;
 
   const method = opts.method ?? "GET";
   const auth = opts.auth !== false;
@@ -261,21 +350,7 @@ async function execute<T>(path: string, opts: ApiRequestOptions<T>, isRetry: boo
     composed.cleanup();
   }
 
-  if (status >= 200 && status < 300) {
-    let result = interpretSuccess<T>(status, text, opts);
-    if (result.ok && opts.schema && (opts.expect ?? "envelope") !== "none") {
-      const parsed = opts.schema.safeParse(result.data);
-      if (!parsed.success) {
-        // Paths only: never log response values.
-        console.warn("[api]", method, pathForLog, status, "schema", parsed.error.issues.slice(0, 5).map((i) => i.path.join(".")));
-        result = fail(status, "invalid_response", "Unexpected response from server");
-      } else {
-        result = { ...result, data: parsed.data };
-      }
-    }
-    if (!result.ok) console.warn("[api]", method, pathForLog, status, result.kind);
-    return result;
-  }
+  if (status >= 200 && status < 300) return toResult<T>(status, text, opts, method, pathForLog);
 
   const json = tryParse(text);
   const code = asRecord(json)?.code;
@@ -293,9 +368,7 @@ async function execute<T>(path: string, opts: ApiRequestOptions<T>, isRetry: boo
     return execute<T>(path, opts, true);
   }
 
-  const kind: ApiFailureKind = status === 401 || status === 403 ? "forbidden" : "http";
-  console.warn("[api]", method, pathForLog, status, kind);
-  return fail(status, kind, errorMessage(json, opts.fallbackError));
+  return toResult<T>(status, text, opts, method, pathForLog);
 }
 
 /** Never throws: only programming errors can reject. */
