@@ -259,9 +259,9 @@ async function executeViaTransport<T>(
     // and its late result is discarded.
     const out = await new Promise<{ status: number; text: string }>((resolve, reject) => {
       const onAbort = () => reject(new Error("aborted"));
+      pending.then(resolve, reject).finally(() => composed.signal.removeEventListener("abort", onAbort));
       if (composed.signal.aborted) return onAbort();
       composed.signal.addEventListener("abort", onAbort, { once: true });
-      pending.then(resolve, reject).finally(() => composed.signal.removeEventListener("abort", onAbort));
     });
     status = out.status;
     text = out.text;
