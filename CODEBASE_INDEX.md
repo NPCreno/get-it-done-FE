@@ -65,7 +65,8 @@ Dashboard and data display
 - `streakCounter.tsx` — streak display
 - `projectCard.tsx` — project summary card
 - `taskItem.tsx` — task row with status and subtasks
-- `notificationCard.tsx` — single notification
+- `notificationCard.tsx` — single notification (mark-as-read)
+- `src/lib/notificationStream.ts`, `useNotificationStream.ts` — the managed SSE stream; `notificationRoutes.ts` — action-route allowlist; `relativeTime.ts`; `src/lib/query/notifications.ts`, `notificationsOptimistic.ts` — list, read-state and clear hooks; `src/app/api/notificationsRequests.ts`
 
 Inputs and small UI
 - `inputBox.tsx`, `dropdown.tsx`, `datePicker.tsx`, `datePickerWithTime.tsx`, `weekdaySelector.tsx`, `toggleSwitch.tsx` — form controls

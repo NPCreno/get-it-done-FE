@@ -36,7 +36,8 @@ Request chains per feature. Backend paths are shown without the `/api` prefix, b
 
 ## Notifications
 - List: `notifications/page.tsx` → `notificationCard.tsx`
-- The backend exposes an SSE stream at `/notifications/sse` and `DELETE /notifications/clear/:user_id`. No FE code that opens an `EventSource` or calls these was found.
+- Data: `GET /notifications` (paged, `unread_count`), `PATCH /notifications/:id/read`, `PATCH /notifications/read-all`, `DELETE /notifications/clear/:user_id` through `notificationsRequests.ts` and `src/lib/query/notifications.ts`. Page actions: mark one read (card or button), Mark all as read, Clear all (confirmation dialog), Load more.
+- Live: `useNotificationStream` (in `MainLayout`) holds one SSE connection and refetches the list on a `notification` event and on every (re)connect. The sidebar and mobile sidebar show an unread badge.
 
 ## Pomodoro timer
 - `PomodoroButton.tsx` → `modals/pomodoro.tsx` → `hooks/useTimer.ts` → `lib/timerService.ts`

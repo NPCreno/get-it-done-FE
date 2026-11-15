@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import contract from "../api-contract.json";
-import { subTaskStatusPath, taskStatusPath } from "../../api/paths";
+import {
+  notificationReadPath,
+  notificationsListPath,
+  notificationsReadAllPath,
+  subTaskStatusPath,
+  taskStatusPath,
+} from "../../api/paths";
 
 // One encodeURIComponent per :param, the same rule apiPath applies.
 const fill = (template: string, values: Record<string, string>) =>
@@ -18,6 +24,9 @@ const builders: Record<string, { build: () => string; values: Record<string, str
     build: () => subTaskStatusPath(ID, "Complete"),
     values: { taskSubInstance_id: ID, status: "Complete" },
   },
+  notificationsList: { build: () => notificationsListPath(), values: {} },
+  notificationRead: { build: () => notificationReadPath(ID), values: { notif_id: ID } },
+  notificationsReadAll: { build: () => notificationsReadAllPath(), values: {} },
 };
 
 describe("request path builders match the vendored contract routes", () => {

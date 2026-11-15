@@ -7,6 +7,7 @@ import { useFormState } from "@/app/context/FormProvider";
 import { getAccessToken, parseJwt } from "../utils/utils";
 import { useProfile } from "@/lib/query/queries";
 import { shallowEqual } from "../utils/shallowEqual";
+import { useNotificationStream } from "@/lib/useNotificationStream";
 
 export default function MainLayout({
   children,
@@ -61,6 +62,7 @@ export default function MainLayout({
 
   // The profile query owns the fetch (deduplicated and cached across pages). The
   // context user is replaced only when a field actually changed.
+  useNotificationStream();
   const profile = useProfile();
   useEffect(() => {
     const token = getAccessToken();

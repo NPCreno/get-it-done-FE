@@ -2,8 +2,10 @@
 
 import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
+import { useUnreadCount } from "@/lib/query/notifications";
 
 export default function Sidebar() {
+  const unreadCount = useUnreadCount();
   const { sidebarWidth, setSidebarWidth, isSidebarOpen, setIsSidebarOpen, userData } = useFormState();
 
   return (
@@ -71,6 +73,7 @@ export default function Sidebar() {
             icon="/svgs/notifs-yellow.svg"
             iconHover="/svgs/notifs-white.svg"
             text="Notifications"
+          badge={unreadCount}
           />
           <SidebarLink
             href="/profileSettings"

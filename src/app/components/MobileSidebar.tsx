@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
+import { useUnreadCount } from "@/lib/query/notifications";
 
 export default function MobileSidebar() {
+  const unreadCount = useUnreadCount();
   const { isMobileSidebarOpen, closeMobileSidebar } = useFormState();
 
   // Close on escape key
@@ -168,6 +170,7 @@ export default function MobileSidebar() {
               icon="/svgs/notifs-yellow.svg"
               iconHover="/svgs/notifs-white.svg"
               text="Notifications"
+              badge={unreadCount}
               onClick={closeMobileSidebar}
               forceShowText={true}
             />

@@ -8,3 +8,9 @@ export const taskStatusPath = (taskId: string, status: TaskStatus) =>
 
 export const subTaskStatusPath = (taskSubInstanceId: string, status: TaskStatus) =>
   apiPath`/tasks/update-subtask-status/${taskSubInstanceId}/status/${status}`;
+
+export const notificationsListPath = () => "/notifications";
+
+export const notificationReadPath = (notifId: string) => apiPath`/notifications/${notifId}/read`;
+
+export const notificationsReadAllPath = () => "/notifications/read-all";

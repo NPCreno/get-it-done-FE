@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ApiDate, Count, DateOnly, NullableText, OptionalText } from "./common";
-import { TASK_PRIORITIES, TASK_STATUSES } from "./enums";
+import { NOTIFICATION_ACTION_TYPES, NOTIFICATION_TYPES, TASK_PRIORITIES, TASK_STATUSES } from "./enums";
 
 /**
  * Response schemas, derived field by field from the backend entities and the
@@ -136,3 +136,23 @@ export type HeatmapCell = z.infer<typeof HeatmapCellSchema>;
 
 export const StreakSchema = z.object({ count: Count });
 export type Streak = z.infer<typeof StreakSchema>;
+
+/** One notification. metadata and actionTarget are never sent by the backend. */
+export const NotificationSchema = z.object({
+  notif_id: z.string(),
+  type: z.enum(NOTIFICATION_TYPES),
+  title: z.string(),
+  message: NullableText,
+  read: z.boolean(),
+  actionType: z.enum(NOTIFICATION_ACTION_TYPES).nullable(),
+  createdAt: ApiDate,
+});
+export type Notification = z.infer<typeof NotificationSchema>;
+
+/** GET /notifications (envelope data). */
+export const NotificationsPageSchema = z.object({
+  items: NotificationSchema.array(),
+  unread_count: Count,
+  next_cursor: z.string().nullable(),
+});
+export type NotificationsPage = z.infer<typeof NotificationsPageSchema>;

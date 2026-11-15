@@ -11,6 +11,7 @@ export default function SidebarLink({
   onClick,
   forceShowText = false,
   className = "",
+  badge = 0,
 }: {
   href: string;
   icon: string;
@@ -19,6 +20,8 @@ export default function SidebarLink({
   onClick?: () => void;
   forceShowText?: boolean;
   className?: string;
+  /** Unread count; hidden at 0. */
+  badge?: number;
 }) {
   const { isSidebarOpen } = useFormState();
   const router = useRouter();
@@ -60,8 +63,17 @@ export default function SidebarLink({
           : "hover:bg-primary-default/10"
         } ${className}`}
       aria-current={isActive ? 'page' : undefined}
+      aria-label={badge > 0 ? `${text}, ${badge} unread` : undefined}
     >
       <div className="relative ml-2 w-5 h-5 flex-shrink-0">
+        {badge > 0 && (
+          <span
+            aria-hidden="true"
+            className="absolute -top-2 -right-2 z-10 min-w-[16px] h-4 px-1 rounded-full bg-error-default text-white text-[10px] leading-4 text-center font-bold"
+          >
+            {badge > 99 ? "99+" : badge}
+          </span>
+        )}
         <Image
           src={icon}
           alt={text}
