@@ -1,3 +1,40 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript", "plugin:jsx-a11y/recommended"]
+  "extends": ["next/core-web-vitals", "next/typescript", "plugin:jsx-a11y/recommended"],
+  "overrides": [
+    {
+      "files": ["src/app/components/dashboard/**/*.{ts,tsx}", "src/app/components/tasks/**/*.{ts,tsx}"],
+      "excludedFiles": ["**/__tests__/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "@/lib/query/queries",
+                "importNames": ["useProfile", "useUnreadCount", "useNotifications"],
+                "message": "Layout-only hook: this folder is rendered by /demo without a layout (DEMO-01)."
+              },
+              {
+                "name": "@/lib/query/notifications",
+                "message": "Notification queries are layout-only; this folder is rendered by /demo (DEMO-01)."
+              },
+              {
+                "name": "@/lib/useNotificationStream",
+                "message": "The notification stream is mounted by MainLayout only (DEMO-01)."
+              },
+              {
+                "name": "@/app/components/MainLayout",
+                "message": "The body must stay layout-free: /demo renders it without MainLayout (DEMO-01)."
+              },
+              {
+                "name": "@/app/utils/utils",
+                "importNames": ["getAccessToken", "parseJwt"],
+                "message": "The demo has no token; do not read it here (DEMO-01)."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }
