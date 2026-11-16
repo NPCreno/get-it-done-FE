@@ -8,7 +8,7 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 
 ## Architecture
 - App Router with route groups: `(auth)/` for public auth pages, `(routes)/` for protected pages
-- BFF pattern: route handlers at `/api/auth/login` and `/api/auth/logout` talk to the backend and set cookies server-side
+- BFF pattern: route handlers at `/api/auth/login`, `/api/auth/signup` and `/api/auth/logout` talk to the backend and set cookies server-side
 - JWT dual-token: httpOnly `refresh_token` cookie + JS-readable `access_token` cookie (sent as a Bearer header by the request helpers)
 - `src/middleware.ts` protects every route except the public list, verifies the access token with `jose` `jwtVerify` (HS256), and refreshes tokens silently
 - The backend `AuthorizeGuard` is the real security boundary; the middleware is a UX layer
@@ -18,9 +18,10 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `/login`, `/signup`, `/forgot-password` (placeholder: reset not available yet) — `src/app/(auth)/`
 - `/dashboard`, `/projects`, `/notifications`, `/profileSettings` — `src/app/(routes)/`
 
-## API route handlers (3)
+## API route handlers (4)
 - `POST /api/auth/refresh` — silent refresh from the browser; never clears cookies
 - `POST /api/auth/login` — validates input, calls backend `/user/loginEmail` or `/user/loginUsername`, sets both cookies, forwards the client IP as `X-Client-IP`
+- `POST /api/auth/signup` — validates with `CreateUserRequestSchema`, forwards only the four signup fields to BE `/user/create` with the attested client IP (SEC-09: the BE rate limits signup per client IP), passes the envelope and a 429 `Retry-After` through
 - `POST /api/auth/logout` — revokes the family on the BE, clears both cookies
 
 ## Key files

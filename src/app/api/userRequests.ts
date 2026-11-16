@@ -5,11 +5,12 @@ import type { CreateUserDraft } from "../contracts/mappers";
 import type { UpdateUserRequest } from "../contracts/requests";
 
 export const createUser = (payload: CreateUserDraft) =>
-  apiClient("/user/create", {
+  apiClient("/api/auth/signup", {
     method: "POST",
     body: payload,
     requestSchema: CreateUserRequestSchema,
     auth: false,
+    sameOrigin: true,
     fallbackError: "Failed to create account",
   });
 

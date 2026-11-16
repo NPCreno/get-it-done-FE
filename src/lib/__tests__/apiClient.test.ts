@@ -237,3 +237,21 @@ describe("apiClient: environment guards", () => {
     expect(fetchMock).toHaveBeenCalledTimes(0);
   });
 });
+
+describe("apiClient: sameOrigin (BFF routes)", () => {
+  it("calls a relative URL, sends no bearer and needs no API URL", async () => {
+    vi.stubEnv("NEXT_PUBLIC_API_URL", "");
+    fetchMock.mockResolvedValue(res(201, envelope({ id: 1 })));
+    const r = await apiClient("/api/auth/signup", opts({ method: "POST", body: { a: 1 }, auth: false, sameOrigin: true }));
+    expect(r.ok).toBe(true);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("/api/auth/signup");
+    expect(init.headers.Authorization).toBeUndefined();
+  });
+
+  it("maps a 429 to an http failure carrying the server message", async () => {
+    fetchMock.mockResolvedValue(res(429, { status: "error", message: "Too many attempts. Please wait and try again." }));
+    const r = await apiClient("/api/auth/signup", opts({ method: "POST", auth: false, sameOrigin: true }));
+    expect(r).toMatchObject({ ok: false, status: 429, kind: "http", message: "Too many attempts. Please wait and try again." });
+  });
+});

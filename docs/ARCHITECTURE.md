@@ -11,7 +11,7 @@ Browser → Vercel edge → Next.js middleware → page or BFF route handler →
 - **Tokens:** the backend issues an access token (short-lived, HS256) and a refresh token.
 - **Cookies:** `POST /api/auth/login` sets `access_token` (readable by JS, needed for Bearer headers) and `refresh_token` (httpOnly, never visible to client JS). Both are `SameSite=Strict`, and `Secure` in production only.
 - **Middleware decision order:**
-  1. `/api/auth/login` and `/api/auth/logout` pass through.
+  1. `/api/auth/login`, `/api/auth/signup`, `/api/auth/logout` and `/api/auth/refresh` pass through.
   2. `/`, `/login`, `/signup`, `/forgot-password`: allowed. A valid token redirects to `/dashboard`. An expired token is ignored. A forged or malformed token has its cookies cleared.
   3. Everything else needs a valid token. No tokens means redirect to `/login`.
   4. A missing access token with a refresh token triggers a refresh.
