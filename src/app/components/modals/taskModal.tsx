@@ -75,7 +75,7 @@ export default function TaskModal({
   isUpdate,
   isLoading,
 }: taskModalProps) {
-  const { setSelectedTaskData, userData } = useFormState();
+  const { userData } = useFormState();
   const [height, setHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -103,7 +103,6 @@ export default function TaskModal({
   }));
 
   const clearAllData = () => {
-    setSelectedTaskData(null);
     formik.setFieldValue("title", "");
     formik.setFieldValue("description", "");
     formik.setFieldValue("priority", "");

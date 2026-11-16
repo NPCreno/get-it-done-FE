@@ -35,7 +35,7 @@ export function TaskItem({
   showSubtasks = false,
   onToggleSubtasks
 }: TaskItemProps) {
-  const { setSelectedTaskData, userData } = useFormState();
+  const { userData } = useFormState();
   // Server data goes through mutations: optimistic status, per-parent serialization
   // (scope) and invalidation live in lib/query. This component keeps no request state.
   const setTaskStatus = useSetTaskStatus(task.task_id);
@@ -221,7 +221,6 @@ export function TaskItem({
         className={`flex flex-row w-full h-[46px] items-center rounded-[10px] ${userData?.theme === "dark" ? "hover:bg-gray-900" : "hover:bg-[#FAFAFA] "} 
           cursor-pointer gap-3 pr-4 pl-3 mb-1 ${isComplete ? 'opacity-70' : ''} ${priorityColor}`}
         onClick={() => {
-          setSelectedTaskData(task);
           handleUpdateTask();
         }}
         onMouseEnter={() => setShowDeleteModal(true)} 
@@ -264,7 +263,6 @@ export function TaskItem({
                 ref={titleRef}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSelectedTaskData(task);
                   handleUpdateTask();
                 }}
                 className={`flex-1 font-lato text-4 ${task.status === 'Complete' 

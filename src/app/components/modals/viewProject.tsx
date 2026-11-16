@@ -15,7 +15,7 @@ interface ViewProjectModalProps {
   handleCreateTask: () => void;
   tasks: ITask[];
   tasksLoad: { state: LoadState<unknown>; onRetry: () => void; retrying: boolean };
-  handleUpdateTask: () => void;
+  handleUpdateTask: (task: ITask) => void;
   onStatusError: (message: string) => void;
   handleDeleteTask: (taskId: string) => void;
 }
@@ -103,16 +103,13 @@ export default function ViewProjectModal({
 
 interface TaskCardProps {
   task: ITask;
-  handleUpdateTask: () => void;
+  handleUpdateTask: (task: ITask) => void;
   onStatusError: (message: string) => void;
   handleDeleteTask: (taskId: string) => void;
 }
 
 const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: TaskCardProps) => {
-  const {
-    setSelectedTaskData,
-    userData
-  } = useFormState();
+  const { userData } = useFormState();
   const isDarkMode = userData?.theme === 'dark';
   const setStatus = useSetTaskStatus(task.task_id);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -164,8 +161,7 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
           role="presentation"
           className="flex flex-row gap-[10px] items-center w-full" 
           onClick={() => {
-            setSelectedTaskData(task)
-            handleUpdateTask()
+            handleUpdateTask(task)
           }}
         >
           <div 
@@ -189,8 +185,7 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
                   className="text-left"
                   onClick={(e) => {
                     e.stopPropagation()
-                    setSelectedTaskData(task)
-                    handleUpdateTask()
+                    handleUpdateTask(task)
                   }}
                 >
                   {task.title}

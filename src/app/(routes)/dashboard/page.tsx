@@ -2,14 +2,13 @@
 import MainLayout from "@/app/components/MainLayout";
 import ChartCard from "../../components/chartCard";
 import StatsCard from "../../components/statsCard";
-import TaskModal from "@/app/components/modals/taskModal";
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import TaskEditorDialog from "@/app/components/tasks/TaskEditorDialog";
+import { useTaskEditor } from "@/app/components/tasks/useTaskEditor";
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { focusFallback } from '@/lib/focusFallback';
 import PomodoroButton from '@/app/components/PomodoroButton';
 import DashboardSearch from "@/app/components/DashboardSearch";
 import { useFormState } from "@/app/context/FormProvider";
-import { FormikErrors, useFormik } from "formik";
-import { createTaskSchema } from "@/app/schemas/createTaskSchema";
 import {
   useCalendarHeatmap,
   useCompletionTrend,
@@ -19,14 +18,13 @@ import {
   useTaskDistribution,
   useUpcomingTasks,
 } from "@/lib/query/queries";
-import { useCreateTask, useDeleteRecurringTasks, useDeleteTask, useUpdateTask } from "@/lib/query/mutations";
+import { useDeleteRecurringTasks, useDeleteTask } from "@/lib/query/mutations";
 import { settled } from "@/lib/query/unwrap";
 import { loadStateOf } from "@/lib/query/loadState";
 import { isEmptyDistribution, isEmptyList, never } from "@/lib/query/emptiness";
 import LoadError from "@/app/components/LoadError";
 import type { ChartLoad } from "@/app/components/chartCard";
 import { IProject } from "@/app/interface/IProject";
-import { toCreateTaskRequest, toUpdateTaskRequest } from "@/app/contracts/mappers";
 import ToastHost from "@/app/components/ToastHost";
 import { useToastController } from "@/hooks/useToastController";
 import { ITask } from "@/app/interface/ITask";
@@ -35,8 +33,6 @@ import LoadingPage from "@/app/components/loader";
 import { IDashboardData } from "@/app/interface/IDashboardData";
 import { ITaskCompletionTrendData } from "@/app/interface/ITaskCompletionTrendData";
 import { TaskItem } from "@/app/components/taskItem";
-import { ITaskFormErrors } from "@/app/interface/forms/ITaskFormErrors";
-import { ITaskFormValues } from "@/app/interface/forms/ITaskFormValues";
 import { ITaskDistribution } from "@/app/interface/ITaskDistribution";
 import { IHeatmapData } from "@/app/interface/IHeatmapData";
 import PomodoroModal from "@/app/components/modals/pomodoro";
@@ -56,18 +52,16 @@ const EMPTY_DASHBOARD: IDashboardData = {
 
 export default function DashboardPage() {
   const { 
-    selectedTaskData, 
-    setSelectedTaskData, 
     selectedMonth, 
     selectedYear, 
     calendarMonthYear, 
     userData
   } = useFormState();
 
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   // One toast controller for the page: the host and every handler below share it.
   const toast = useToastController();
-  const [isUpdateTask, setIsUpdateTask] = useState(false);
+  // The one task editor (create and update); the editor is the only writer of selectedTaskData.
+  const editor = useTaskEditor(toast);
   // Server data is owned by query hooks (src/lib/query): one key per request
   // parameter set, cancellation, and invalidation from mutations. Nothing here
   // refetches because of a toast, a modal or a user-object change.
@@ -99,13 +93,10 @@ export default function DashboardPage() {
   });
   // First load only. On error the page never waits: the shell renders with the error widgets.
   const pageLoading = upcomingState.status === "loading" || summaryState.status === "loading";
-  const createTaskMutation = useCreateTask();
-  const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
   const deleteRecurringMutation = useDeleteRecurringTasks();
   // Where focus goes if the delete removes the button that opened the dialog.
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
   const [isPomodoroModalOpen, setIsPomodoroModalOpen] = useState(false);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
@@ -125,160 +116,6 @@ export default function DashboardPage() {
       return newSet;
     });
   }, []);
-
-  const initialValues = useMemo(
-    () => ({
-      title: "",
-      description: "",
-      due_date: null,
-      project_id: "",
-      project_title: "",
-      project_color: "",
-      priority: "Low",
-      status: "Pending",
-      isRecurring: false,
-      repeat_every: "",
-      repeat_days: [],
-      start_date: null,
-      end_date: null,
-      project: "",
-    }),
-    []
-  );
-
-  const {
-    validateForm,
-    setFieldValue,
-    setFieldError,
-    values,
-    errors,
-    handleSubmit,
-    handleChange,
-    setSubmitting,
-    resetForm,
-  } = useFormik({
-    initialValues,
-    enableReinitialize: true,
-    validationSchema: createTaskSchema,
-    validateOnChange: false, // Disable real-time validation
-    validateOnBlur: false,
-    onSubmit: async (values) => {
-      if (!userData) return;
-      handleSubmitForm(values);
-    },
-  });
-
-  const handleSubmitForm = async (values: ITaskFormValues) => {
-    const validationErrors: FormikErrors<typeof values> = await validateForm();
-    console.log("validationErrors: ", validationErrors);
-    if (Object.keys(validationErrors).length === 0) {
-      await createTask(values);
-    }
-    setSubmitting(false);
-  };
-
-  const createTask = async (values: ITaskFormValues) => {
-    try {
-      setIsLoading(true);
-      if (!userData) {
-        console.error("No User data found");
-        return;
-      }
-      const payload = toCreateTaskRequest(values);
-      const response = await settled(createTaskMutation.mutateAsync(payload));
-      if (response.ok) {
-        setIsTaskModalOpen(false);
-        toast.success("Task Created", "Your new task has been created successfully", response.data.message);
-      } else if (isUserFacing(response.failure)) {
-        // The modal stays open so the user can retry.
-        toast.failure(response.failure);
-      }
-    } catch (error) {
-      toast.unexpected(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isTaskModalOpen && !isUpdateTask) {
-      resetForm({
-        values: {
-          ...initialValues,
-          status: "Pending",
-        },
-      });
-    }
-  }, [isTaskModalOpen, isUpdateTask, initialValues, resetForm]);
-
-  const handleUpdateTask = async (values: ITaskFormValues) => {
-    const validationErrors: FormikErrors<typeof values> = await validateForm();
-    if (Object.keys(validationErrors).length === 0) {
-      await updateTask(values);
-    }
-    setSubmitting(false);
-  };
-
-  const updateTask = async (values: ITaskFormValues) => {
-    try {
-      setIsLoading(true);
-      if (!userData) {
-        console.error("No User data found");
-        return;
-      }
-      const taskId = selectedTaskData ? selectedTaskData.task_id : values.task_id;
-      if (!taskId) {
-        console.error("No task id to update");
-        return;
-      }
-      const response = await settled(updateTaskMutation.mutateAsync({ taskId, body: toUpdateTaskRequest(values) }));
-      if (response.ok) {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        toast.success("Task Updated", "Your task has been updated successfully", response.data.message);
-      } else if (isUserFacing(response.failure)) {
-        // Backend rejected it (kind 'api'): reset and close. Transport failure: keep the modal open.
-        if (response.failure.kind === 'api') {
-          clearValueAndErrors();
-          setIsTaskModalOpen(false);
-        }
-        toast.failure(response.failure);
-      }
-    } catch (error) {
-      toast.unexpected(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    setFieldValue("title", selectedTaskData?.title || "");
-    setFieldValue("description", selectedTaskData?.description || "");
-    setFieldValue("priority", selectedTaskData?.priority || "");
-    setFieldValue("status", selectedTaskData?.status || "");
-    setFieldValue("due_date", selectedTaskData?.due_date || null);
-    setFieldValue("isRecurring", false);
-  }, [selectedTaskData, setFieldValue]);
-
-  const clearValueAndErrors = () => {
-    setFieldValue("title", "");
-    setFieldValue("description", "");
-    setFieldValue("priority", "");
-    setFieldValue("project", "");
-    setFieldValue("status", "");
-    setFieldValue("due_date", null);
-    setFieldValue("isRecurring", false);
-    setFieldValue("repeat_every", "");
-    setFieldValue("repeat_days", []);
-    setFieldValue("start_date", null);
-    setFieldValue("end_date", null);
-    setFieldError("title", "");
-    setFieldError("description", "");
-    setFieldError("priority", "");
-    setFieldError("project", "");
-    setFieldError("status", "");
-    setFieldError("due_date", "");
-  };
 
   useEffect(() => {
     if (!pageLoading) {
@@ -317,14 +154,12 @@ export default function DashboardPage() {
     try {
       const response = await settled(deleteTaskMutation.mutateAsync(taskId));
       if (response.ok) {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
+        editor.close();
         focusFallback(headingRef);
         toast.success("Task Deleted", "Your task has been deleted successfully", response.data.message);
       } else if (isUserFacing(response.failure)) {
         if (response.failure.kind === 'api') {
-          clearValueAndErrors();
-          setIsTaskModalOpen(false);
+          editor.close();
         }
         toast.failure(response.failure);
       }
@@ -501,9 +336,7 @@ export default function DashboardPage() {
                       }
                       before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300`}
                       onClick={() => {
-                        setIsTaskModalOpen(true);
-                        clearValueAndErrors();
-                        setIsUpdateTask(false);
+                        editor.open({ mode: "create" });
                       }}
                     >
                       {/* Animated ring effect */}
@@ -576,9 +409,7 @@ export default function DashboardPage() {
                             type="button"
                             className="rounded-xl px-5 py-2 font-lato font-medium text-white bg-primary-default hover:opacity-90"
                             onClick={() => {
-                              setIsTaskModalOpen(true);
-                              clearValueAndErrors();
-                              setIsUpdateTask(false);
+                              editor.open({ mode: "create" });
                             }}
                           >
                             New Task
@@ -592,9 +423,7 @@ export default function DashboardPage() {
                           key={`active-${task.task_id}-${task.status}`}
                           task={task}
                           handleUpdateTask={() => {
-                            setSelectedTaskData(task);
-                            setIsTaskModalOpen(true);
-                            setIsUpdateTask(true);
+                            editor.open({ mode: "update", task });
                           }}
                           handleDeleteTask={(taskId: string) => handleDeleteTask(taskId)}
                           handleDeleteRecurringTasks={
@@ -648,9 +477,7 @@ export default function DashboardPage() {
                                     key={`completed-${task.task_id}-${task.status}`}
                                     task={task}
                                     handleUpdateTask={() => {
-                                      setSelectedTaskData(task);
-                                      setIsTaskModalOpen(true);
-                                      setIsUpdateTask(true);
+                                      editor.open({ mode: "update", task });
                                     }}
                                     handleDeleteTask={() => handleDeleteTask(task.task_id)}
                                     handleDeleteRecurringTasks={(taskTemplate_id: string, taskId: string) => 
@@ -713,23 +540,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {isTaskModalOpen && (
-        <TaskModal
-          onClose={() => setIsTaskModalOpen(false)}
-          formik={{
-            values: values,
-            errors: errors as ITaskFormErrors,
-            handleChange,
-            setFieldValue,
-            setFieldError,
-          }}
-          handleCreateTask={() => handleSubmit()}
-          project={projectOptions}
-          isUpdate={isUpdateTask}
-          handleUpdateTask={() => handleUpdateTask(values as ITaskFormValues)}
-          isLoading={isLoading}
-        />
-      )}
+      <TaskEditorDialog editor={editor} projects={projectOptions} />
 
       {isPomodoroModalOpen && (
         <PomodoroModal onClose={() => setIsPomodoroModalOpen(false)} />

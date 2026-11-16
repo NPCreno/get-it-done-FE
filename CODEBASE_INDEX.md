@@ -94,6 +94,7 @@ shadcn (`shadcn/`)
 ## State, hooks, lib, utils
 - `src/app/context/FormProvider.tsx` — shared form context
 - `src/hooks/useTimer.ts` — timer hook
+- `src/app/components/tasks/` — the one task editor (ARCH-01 PR B): `useTaskEditor.ts` (`open`/`close`/`submit`, own Formik form, the only writer of `selectedTaskData`), `TaskEditorDialog.tsx` (renders the unchanged `TaskModal`), `taskSaveOutcome.ts` (pure `outcomeOf`: failure keeps the modal open and the values), tests in `__tests__/`
 - `src/hooks/toastController.ts` (framework-independent, owns timers), `useToastController.ts` (one per page, disposed on unmount) — toast state; tests in `src/hooks/__tests__/`
 - `src/lib/timerService.ts` — pomodoro timer state, persisted in `localStorage` key `pomodoroTimerState`
 - `src/lib/utils.ts` — shadcn class-name helper

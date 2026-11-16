@@ -6,11 +6,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { focusFallback } from "@/lib/focusFallback";
 import {
   useCreateProject,
-  useCreateTask,
   useDeleteProject,
   useDeleteTask,
   useUpdateProject,
-  useUpdateTask,
 } from "@/lib/query/mutations";
 import { useProject, useProjects, useProjectTasks } from "@/lib/query/queries";
 import { failureOf, settled } from "@/lib/query/unwrap";
@@ -26,17 +24,17 @@ import ViewProjectModal from "@/app/components/modals/viewProject";
 import { IProject } from "@/app/interface/IProject";
 import {
   toCreateProjectRequest,
-  toCreateTaskRequest,
   toUpdateProjectRequest,
-  toUpdateTaskRequest,
 } from "@/app/contracts/mappers";
 import { ITask } from "@/app/interface/ITask";
-import { createTaskSchema } from "@/app/schemas/createTaskSchema";
-import TaskModal from "@/app/components/modals/taskModal";
+import TaskEditorDialog from "@/app/components/tasks/TaskEditorDialog";
+import { useTaskEditor } from "@/app/components/tasks/useTaskEditor";
 import LoadingPage from "@/app/components/loader";
-import { IProjectOrTaskFormValues } from "@/app/interface/forms/IProjectorTaskFormValues";
-import { IProjectFormErrors } from "@/app/interface/forms/IProjectFormErrors";
+import type { ProjectFormValues } from "@/app/contracts/forms";
 import ProjectModal from "@/app/components/modals/projectModal";
+
+/** The project form: project fields only (the task editor has its own form). */
+type ProjectFormState = ProjectFormValues & { project_id: string };
 
 interface ProjectModalState {
   isOpen: boolean;
@@ -48,18 +46,18 @@ const NO_PROJECTS: IProject[] = [];
 const NO_TASKS: ITask[] = [];
 
 export default function ProjectsPage() {
-  const { selectedTaskData, userData } = useFormState();
+  const { userData } = useFormState();
   const [isProjectModalOpen, setIsProjectModalOpen] = useState<ProjectModalState>({
     isOpen: false,
     projectId: undefined,
     isEdit: false,
   });
   const [isViewProjectModalOpen, setIsViewProjectModalOpen] = useState(false);
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   // One toast controller for the page: the host and every handler below share it.
   const toast = useToastController();
+  // The one task editor; it owns the task form and is the only writer of selectedTaskData.
+  const editor = useTaskEditor(toast);
   const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
-  const [isUpdateTask, setIsUpdateTask] = useState(false);
   // Server data is owned by query hooks (src/lib/query). Mutations declare what they
   // invalidate, so nothing here refetches because of a modal or a toast.
   const projectsQuery = useProjects();
@@ -76,15 +74,12 @@ export default function ProjectsPage() {
   const deleteProjectMutation = useDeleteProject();
   // Where focus goes if the delete removes the button that opened the dialog.
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const createTaskMutation = useCreateTask();
-  const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
   // Same title, description and class as before; only the timers moved into the controller.
   const setStatusError = (message: string) => toast.error("Something Went Wrong", message);
-  const [isLoading, setIsLoading] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
 
-  const initialValues = useMemo(
+  const initialValues = useMemo<ProjectFormState>(
     () => ({
       title: "",
       description: "",
@@ -92,16 +87,6 @@ export default function ProjectsPage() {
       colorLabel: "",
       color: "",
       project_id: "",
-      project_title: "",
-      project_color: "",
-      priority: "",
-      status: "",
-      isRecurring: false,
-      repeat_every: "",
-      repeat_days: [],
-      start_date: new Date().toISOString(),
-      end_date: null,
-      project: "",
     }),
     []
   );
@@ -119,16 +104,16 @@ export default function ProjectsPage() {
   } = useFormik({
     initialValues,
     enableReinitialize: true,
-    validationSchema: selectedProject ? createTaskSchema : projectSchema,
+    validationSchema: projectSchema,
     validateOnChange: false, // Disable real-time validation
     validateOnBlur: false,
     onSubmit: async (values) => {
       if (!userData) return;
-      handleSubmitForm(values as IProjectOrTaskFormValues);
+      handleSubmitForm(values);
     },
   });
 
-  const handleSubmitForm = async (values: IProjectOrTaskFormValues) => {
+  const handleSubmitForm = async (values: ProjectFormState) => {
     const validationErrors: FormikErrors<typeof values> = await validateForm();
     console.log("validationErrors: ", validationErrors);
     if (Object.keys(validationErrors).length === 0 && !isProjectModalOpen.isEdit) {
@@ -139,9 +124,8 @@ export default function ProjectsPage() {
     setSubmitting(false);
   };
 
-  const createProj = async (values: IProjectOrTaskFormValues) => {
+  const createProj = async (values: ProjectFormState) => {
     try {
-      setIsLoading(true);
       if (!userData) {
         console.error("No User data found");
         return;
@@ -159,14 +143,11 @@ export default function ProjectsPage() {
       }
     } catch (error) {
       toast.unexpected(error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const updateProj = async (values: IProjectOrTaskFormValues) => {
+  const updateProj = async (values: ProjectFormState) => {
     try {
-      setIsLoading(true);
       if (!userData) {
         console.error("No User data found");
         return;
@@ -191,8 +172,6 @@ export default function ProjectsPage() {
       }
     } catch (error) {
       toast.unexpected(error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -207,96 +186,22 @@ export default function ProjectsPage() {
   };
 
   useEffect(() => {
-    if (!isTaskModalOpen && !isViewProjectModalOpen) {
+    if (!editor.isOpen && !isViewProjectModalOpen) {
       setSelectedProject(null);
     }
-  }, [isViewProjectModalOpen, isTaskModalOpen]);
-
-  const handleCreateTask = async (values: IProjectOrTaskFormValues) => {
-    const validationErrors: FormikErrors<typeof values> = await validateForm();
-    if (Object.keys(validationErrors).length === 0) {
-      await createTask(values);
-    }
-    setSubmitting(false);
-  };
-
-  const handleUpdateTask = async (values: IProjectOrTaskFormValues) => {
-    const validationErrors: FormikErrors<typeof values> = await validateForm();
-    if (Object.keys(validationErrors).length === 0) {
-      await updateTask(values);
-    }
-    setSubmitting(false);
-  };
-
-  const createTask = async (values: IProjectOrTaskFormValues) => {
-    try {
-      if (!userData) {
-        console.error("No User data found");
-        return;
-      }
-      const payload = toCreateTaskRequest(values, {
-        projectId: selectedProject ? selectedProject.project_id : values.project_id,
-      });
-      const response = await settled(createTaskMutation.mutateAsync(payload));
-      if (response.ok) {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        toast.success("Task Created", "Your new task has been created successfully", response.data.message);
-      } else if (isUserFacing(response.failure)) {
-        if (response.failure.kind === 'api') {
-          clearValueAndErrors();
-          setIsTaskModalOpen(false);
-        }
-        toast.failure(response.failure);
-      }
-    } catch (error) {
-      toast.unexpected(error);
-    }
-  };
-
-  const updateTask = async (values: IProjectOrTaskFormValues) => {
-    try {
-      setIsLoading(true);
-      if (!userData) {
-        console.error("No User data found");
-        return;
-      }
-      const taskId = selectedTaskData ? selectedTaskData.task_id : values.task_id;
-      if (!taskId) {
-        console.error("No task id to update");
-        return;
-      }
-      const response = await settled(updateTaskMutation.mutateAsync({ taskId, body: toUpdateTaskRequest(values) }));
-      if (response.ok) {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
-        toast.success("Task Created", "Your new task has been created successfully", response.data.message);
-      } else if (isUserFacing(response.failure)) {
-        if (response.failure.kind === 'api') {
-          clearValueAndErrors();
-          setIsTaskModalOpen(false);
-        }
-        toast.failure(response.failure);
-      }
-    } catch (error) {
-      toast.unexpected(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [isViewProjectModalOpen, editor.isOpen]);
 
   const deleteTask = async (taskId: string) => {
     try {
       const response = await settled(deleteTaskMutation.mutateAsync(taskId));
       if (response.ok) {
-        clearValueAndErrors();
-        setIsTaskModalOpen(false);
+        editor.close();
         focusFallback(headingRef);
         toast.success("Task Deleted", "Your task has been deleted successfully", response.data.message);
       } else if (isUserFacing(response.failure)) {
         if (response.failure.kind === 'api') {
           clearValueAndErrors();
-          setIsTaskModalOpen(false);
+          editor.close();
         }
         toast.failure(response.failure);
       }
@@ -304,20 +209,6 @@ export default function ProjectsPage() {
       toast.unexpected(error);
     }
   };
-
-  useEffect(() => {
-    if (selectedTaskData) {
-      setFieldValue("title", selectedTaskData?.title || "");
-      setFieldValue("description", selectedTaskData?.description || "");
-      setFieldValue("priority", selectedTaskData?.priority || "");
-      setFieldValue("status", selectedTaskData?.status || "");
-      setFieldValue("due_date", selectedTaskData?.due_date || null);
-      setFieldValue("project_id", selectedTaskData?.project_id || "");
-      setFieldValue("isRecurring", false);
-    } else {
-      return;
-    }
-  }, [selectedTaskData, setFieldValue]);
 
   const clearAllData = () => {
     setFieldValue("title", "");
@@ -368,13 +259,13 @@ export default function ProjectsPage() {
       const response = await settled(deleteProjectMutation.mutateAsync(projectId));
       if (response.ok) {
         clearValueAndErrors();
-        setIsTaskModalOpen(false);
+        editor.close();
         focusFallback(headingRef);
         toast.success("Project Deleted", "Your project has been deleted successfully", response.data.message);
       } else if (isUserFacing(response.failure)) {
         if (response.failure.kind === 'api') {
           clearValueAndErrors();
-          setIsTaskModalOpen(false);
+          editor.close();
         }
         toast.failure(response.failure);
       }
@@ -497,7 +388,7 @@ export default function ProjectsPage() {
                         }}
                         onAddTaskClick={() => {
                           setSelectedProject(project);
-                          setIsTaskModalOpen(true);
+                          editor.open({ mode: "create", projectId: project.project_id });
                         }}
                         onEditClick={() => {
                           setIsProjectModalOpen({
@@ -644,42 +535,19 @@ export default function ProjectsPage() {
           }
           handleCreateTask={() => {
             setIsViewProjectModalOpen(false);
-            setIsTaskModalOpen(true);
-            setIsUpdateTask(false);
+            editor.open({ mode: "create", projectId: selectedProject?.project_id });
           }}
           tasks={tasks ? tasks : []}
-          handleUpdateTask={() => {
+          handleUpdateTask={(task) => {
             setIsViewProjectModalOpen(false);
-            setIsTaskModalOpen(true);
-            setIsUpdateTask(true);
+            editor.open({ mode: "update", task });
           }}
           onStatusError={setStatusError}
           handleDeleteTask={(taskId: string) => handleDeleteTask(taskId)}
         />
       )}
 
-      {isTaskModalOpen && (
-        <TaskModal
-          onClose={() => setIsTaskModalOpen(false)}
-          formik={{
-            values: values as IProjectOrTaskFormValues,
-            errors: errors as IProjectFormErrors,
-            handleChange,
-            setFieldValue,
-            setFieldError,
-          }}
-          handleCreateTask={() =>
-            handleCreateTask(values as IProjectOrTaskFormValues)
-          }
-          project={projectOptions}
-          preselectedProject={selectedProject}
-          isUpdate={isUpdateTask}
-          handleUpdateTask={() =>
-            handleUpdateTask(values as IProjectOrTaskFormValues)
-          }
-          isLoading={isLoading}
-        />
-      )}
+      <TaskEditorDialog editor={editor} projects={projectOptions} preselectedProject={selectedProject} />
     </MainLayout>
   );
 }
