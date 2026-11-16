@@ -10,7 +10,7 @@ A modern productivity and task management web application built with Next.js and
 - **Responsive UI:** Modern design using Tailwind CSS and Radix UI components.
 
 ## Technologies Used
-- **Framework:** Next.js (React 18, App Router)
+- **Framework:** Next.js (React 19, App Router)
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS, tailwindcss-animate
 - **UI Libraries:** Radix UI, Lucide React, React Icons

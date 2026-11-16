@@ -9,7 +9,7 @@ interface TaskBoardProps {
   data: Pick<DashboardData, "tasks" | "upcoming" | "upcomingState">;
   theme?: string;
   /** Where focus goes when a delete removes the button that opened its dialog. */
-  headingRef: RefObject<HTMLHeadingElement>;
+  headingRef: RefObject<HTMLHeadingElement | null>;
   onNewTask: () => void;
   onEditTask: (task: ITask) => void;
   onDeleteTask: (taskId: string) => void;
