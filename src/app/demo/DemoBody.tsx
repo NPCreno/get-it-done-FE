@@ -1,19 +1,8 @@
 "use client";
 
 /**
- * SINGLE SWAP POINT. Replace this file's content with a re-export of the layout-free dashboard
- * body from ARCH-01 PR C (it must not call useProfile, useUnreadCount, useNotifications or
- * useNotificationStream), for example:
- *   export { default } from "@/app/components/dashboard/DashboardView";
- * Until then this placeholder renders, and the PR stays a draft.
+ * The demo body is the real dashboard body. It is layout-free by contract (no useProfile,
+ * useUnreadCount, useNotifications, notification stream or token reads; enforced by the lint
+ * override in .eslintrc.json), so it runs against the in-browser fake API with no backend.
  */
-export default function DemoBody() {
-  return (
-    <div className="p-8" data-testid="demo-placeholder">
-      <p className="font-semibold">Demo placeholder</p>
-      <p className="text-sm text-muted-foreground">
-        The dashboard appears here once the layout-free dashboard body (ARCH-01 PR C) is merged.
-      </p>
-    </div>
-  );
-}
+export { default } from "@/app/components/dashboard/DashboardView";
