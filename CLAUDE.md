@@ -1,7 +1,7 @@
 # Get It Done — Frontend
 
 ## Stack
-Next.js 14.2, React 18, TypeScript 5, pnpm (pinned in `package.json` `packageManager`), Tailwind CSS 3.4 + shadcn/ui
+Next.js 15.5, React 19, TypeScript 5, pnpm (pinned in `package.json` `packageManager`; `overrides` live in `pnpm-workspace.yaml`: `recharts>react-is` matches React, `next>postcss` clears an advisory), Tailwind CSS 3.4 + shadcn/ui
 
 ## Deployment
 Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-BE`).
