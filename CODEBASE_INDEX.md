@@ -8,7 +8,7 @@ One line per significant source file. Paths are relative to the repo root.
 - `src/app/(auth)/login/page.tsx` — login page, hosts `LoginForm`
 - `src/app/(auth)/signup/page.tsx` — signup page, hosts `SignupForm`
 - `src/app/(auth)/forgot-password/page.tsx` — forgot-password page, a static placeholder (self-service reset is not available yet)
-- `src/app/(routes)/dashboard/page.tsx` — dashboard: stats, charts, heatmap, streak, tasks, projects
+- `src/app/(routes)/dashboard/page.tsx` — dashboard: `<MainLayout><DashboardView/></MainLayout>` only
 - `src/app/(routes)/projects/page.tsx` — project list and tasks per project
 - `src/app/(routes)/notifications/page.tsx` — notifications list
 - `src/app/(routes)/profileSettings/page.tsx` — profile editing and logout
@@ -93,7 +93,8 @@ shadcn (`shadcn/`)
 ## State, hooks, lib, utils
 - `src/app/context/FormProvider.tsx` — shared form context
 - `src/hooks/useTimer.ts` — timer hook
-- `src/app/components/tasks/` — the one task editor (ARCH-01 PR B): `useTaskEditor.ts` (`open`/`close`/`submit`, own Formik form, the only writer of `selectedTaskData`), `TaskEditorDialog.tsx` (renders the unchanged `TaskModal`), `taskSaveOutcome.ts` (pure `outcomeOf`: failure keeps the modal open and the values), tests in `__tests__/`
+- `src/app/components/tasks/` — the one task editor (ARCH-01 PR B): `useTaskEditor.ts` (`open`/`close`/`submit`, own Formik form, the only writer of `selectedTaskData`), `TaskEditorDialog.tsx` (renders the unchanged `TaskModal`), `taskSaveOutcome.ts` (pure `outcomeOf`: failure keeps the modal open and the values), tests in `__tests__/`, `useTaskDelete.ts` (single and recurring delete, takes the page's toast and editor)
+- `src/app/components/dashboard/` — the layout-free dashboard body shared by `/dashboard` and `/demo` (ARCH-01 PR C): `DashboardView.tsx` (no props; toast, editor, loader, Pomodoro, recurring-delete dialog), `DashboardHeader.tsx`, `StatsRow.tsx`, `TaskBoard.tsx`, `AnalyticsGrid.tsx`, `useDashboardData.ts` (the 7 queries and load states). A lint override blocks layout hooks, `MainLayout` and token reads here and in `tasks/`
 - `src/hooks/toastController.ts` (framework-independent, owns timers), `useToastController.ts` (one per page, disposed on unmount) — toast state; tests in `src/hooks/__tests__/`
 - `src/lib/timerService.ts` — pomodoro timer state, persisted in `localStorage` key `pomodoroTimerState`
 - `src/lib/utils.ts` — shadcn class-name helper
