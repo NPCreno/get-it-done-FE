@@ -16,7 +16,7 @@ const secretKey = new TextEncoder().encode(JWT_SECRET);
 const publicRoutes = ["/login", "/signup", "/forgot-password"];
 // Auth route handlers: they must work without a valid session. /api/auth/refresh
 // MUST be here, or middleware would rotate the cookie before the handler runs.
-const authApiRoutes = ["/api/auth/login", "/api/auth/logout", "/api/auth/refresh"];
+const authApiRoutes = ["/api/auth/login", "/api/auth/signup", "/api/auth/logout", "/api/auth/refresh"];
 // Every other route is protected by default.
 
 const REFRESH_WINDOW_SECONDS = 60;

@@ -17,6 +17,7 @@ One line per significant source file. Paths are relative to the repo root.
 - `src/middleware.ts` — open routes first (`isOpenRoute`), then the public-route allowlist, `jwtVerify`, proactive and expired-token refresh
 - `src/app/api/auth/session.ts` — edge-safe shared session helpers: `refreshWithBackend` (ok / invalid / unavailable), `setSessionCookies`, `clearSessionCookies`, `revokeWithBackend`, `backendAuthHeaders`, `isSameOrigin`
 - `src/app/api/auth/refresh/route.ts` — `POST /api/auth/refresh`, client-side silent refresh (never clears cookies)
+- `src/app/api/auth/signup/route.ts` (+ `payload.ts`) — BFF signup, forwards the attested client IP to BE `/user/create`
 - `src/app/api/auth/login/route.ts` — BFF login, sets httpOnly refresh cookie and readable access cookie
 - `src/app/api/auth/logout/route.ts` — BFF logout, revokes the token family on the BE, clears cookies
 

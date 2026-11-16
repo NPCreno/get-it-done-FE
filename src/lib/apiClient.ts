@@ -29,6 +29,8 @@ export interface ApiRequestOptions<T = unknown> {
   body?: unknown;
   query?: Record<string, string | number | undefined>;
   auth?: boolean; // default true
+  /** Call a same-origin route handler (BFF) instead of the backend. */
+  sameOrigin?: boolean;
   expect?: "envelope" | "raw" | "none"; // default 'envelope'
   allowEmpty?: boolean; // default false
   timeoutMs?: number; // default 15000
@@ -287,8 +289,8 @@ async function execute<T>(path: string, opts: ApiRequestOptions<T>, isRetry: boo
     console.error("[api] apiClient is browser-only");
     return fail(0, "network", "API client is browser-only");
   }
-  const base = process.env.NEXT_PUBLIC_API_URL;
-  if (!base) return fail(0, "network", "API URL is not configured");
+  const base = opts.sameOrigin ? "" : process.env.NEXT_PUBLIC_API_URL;
+  if (base === undefined || (!opts.sameOrigin && !base)) return fail(0, "network", "API URL is not configured");
 
   const validated = validateRequest(path, opts);
   if ("ok" in validated) return validated;
