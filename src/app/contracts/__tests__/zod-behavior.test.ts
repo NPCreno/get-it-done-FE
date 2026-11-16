@@ -252,21 +252,40 @@ describe("zod default messages (Group M: expected to change between majors)", ()
     r.success ? null : r.error!.issues[0].message;
   const withoutFullname = { username: validUser.username, email: validUser.email, password: validUser.password };
 
+  /** zod 4 wording (asserted). The zod 3.25 wording is kept in a comment for the record. */
   const cases: [string, unknown, string][] = [
-    ["missing required string", CreateUserRequestSchema.safeParse(withoutFullname), "Required"],
-    ["too-short string", CreateUserRequestSchema.safeParse({ ...validUser, fullname: "ab" }), "String must contain at least 3 character(s)"],
+    // zod 3: "Required"
+    [
+      "missing required string",
+      CreateUserRequestSchema.safeParse(withoutFullname),
+      "Invalid input: expected string, received undefined",
+    ],
+    // zod 3: "String must contain at least 3 character(s)"
+    [
+      "too-short string",
+      CreateUserRequestSchema.safeParse({ ...validUser, fullname: "ab" }),
+      "Too small: expected string to have >=3 characters",
+    ],
+    // zod 3: "String must contain at most 50 character(s)"
     [
       "too-long string",
       CreateUserRequestSchema.safeParse({ ...validUser, fullname: "a".repeat(LIMITS.fullnameMax + 1) }),
-      "String must contain at most 50 character(s)",
+      "Too big: expected string to have <=50 characters",
     ],
+    // zod 3: "Invalid enum value. Expected 'Low' | 'Medium' | 'High', received 'Urgent'"
     [
       "invalid enum value",
       CreateTaskRequestSchema.safeParse({ ...baseTask, priority: "Urgent" }),
-      "Invalid enum value. Expected 'Low' | 'Medium' | 'High', received 'Urgent'",
+      'Invalid option: expected one of "Low"|"Medium"|"High"',
     ],
-    ["invalid email", CreateUserRequestSchema.safeParse({ ...validUser, email: "nope" }), "Invalid email"],
-    ["pattern mismatch (username)", CreateUserRequestSchema.safeParse({ ...validUser, username: "ada-1" }), "Invalid"],
+    // zod 3: "Invalid email"
+    ["invalid email", CreateUserRequestSchema.safeParse({ ...validUser, email: "nope" }), "Invalid email address"],
+    // zod 3: "Invalid"
+    [
+      "pattern mismatch (username)",
+      CreateUserRequestSchema.safeParse({ ...validUser, username: "ada-1" }),
+      "Invalid string: must match pattern /^[A-Za-z0-9_]+$/",
+    ],
   ];
   it.each(cases)("%s", (_name, result, expected) => {
     expect(firstMessage(result as Parameters<typeof firstMessage>[0])).toBe(expected);

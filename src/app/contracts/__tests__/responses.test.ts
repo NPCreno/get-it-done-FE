@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import type { ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 import {
   DashboardDataSchema,
   DistributionSchema,
@@ -23,7 +23,7 @@ const load = (name: string): any => JSON.parse(readFileSync(join(dir, `${name}.j
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 
 /** [fixture, schema, how to reach the payload]: envelope endpoints use `.data`, raw ones the body. */
-const CASES: [string, ZodTypeAny, "envelope" | "raw"][] = [
+const CASES: [string, ZodType, "envelope" | "raw"][] = [
   ["tasks-list", TaskListItemSchema.array(), "envelope"],
   ["tasks-empty", TaskListItemSchema.array(), "envelope"],
   ["tasks-by-project", ProjectTaskSchema.array(), "raw"],
