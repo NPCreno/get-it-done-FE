@@ -18,6 +18,9 @@ Request chains per feature. Backend paths are shown without the `/api` prefix, b
 - Heatmap: `dashboard/page.tsx` → `getCalendarHeatmap()` → BE `/tasks/calendar-heatmap/:user_id`, rendered by `MonthlyHeatmap.tsx`
 - Streak: `dashboard/page.tsx` → `getStreakCount()` → BE `/tasks/streak/:user_id`, rendered by `streakCounter.tsx`
 
+## Demo (signed out)
+- `/demo`: `demo/page.tsx` → `DemoRuntimeBoundary` (in-browser fake API installed through `installApiTransport`, no backend requests) → `DemoLayout` → `DemoBody` → the shared `components/dashboard/DashboardView`. Reset demo swaps in a fresh store. Linked from `/login` and `/signup` ("Try the demo"). The Pomodoro timer uses `localStorage` and is shared with the real dashboard in the same browser (accepted, DEMO-01).
+
 ## Projects
 - List: `dashboard/page.tsx` and `projects/page.tsx` → `projectCard.tsx` → `getProjectsForUser()` → BE `/projects/getAll/:user_id`
 - Create and edit: `projects/page.tsx` with `modals/projectModal.tsx` → `createProject()`, `updateProject()` → BE `/projects/create`, `/projects/:project_id`

@@ -30,7 +30,7 @@ One line per significant source file. Paths are relative to the repo root.
 ## Demo infrastructure (`src/app/demo/`, DEMO-01a; no page or UI yet)
 - `runtime.ts` — `createDemoRuntime({clock}) → { store, transport, queryClient, reset(), start(), stop() }`, framework-free; its `QueryClient` is never registered with `registerQueryClient`
 - `fake/clock.ts`, `seed.ts` (relative to `clock.now()`, id `demo-user`, `demo@example.invalid`), `store.ts` (instance state, `generation`, `retire()`), `crud.ts` (validates with the real request schemas), `analytics.ts` (demo-only simplified rules), `router.ts` (15 routes by method + anchored path, 501 otherwise, optional hit log)
-- `DemoRuntimeBoundary.tsx` (one runtime per mount, inner `FormProvider` + `DemoIdentity` + the demo's own `QueryClientProvider`), `DemoLayout.tsx` (banner, Reset, Sign up / Log in, no protected links), `DemoBody.tsx` (single swap point, a placeholder until ARCH-01 PR C), `page.tsx` (`/demo`), `demoUser.ts`
+- `DemoRuntimeBoundary.tsx` (one runtime per mount, inner `FormProvider` + `DemoIdentity` + the demo's own `QueryClientProvider`), `DemoLayout.tsx` (banner, Reset, Sign up / Log in, no protected links), `DemoBody.tsx` (re-exports `components/dashboard/DashboardView`), `page.tsx` (`/demo`), `demoUser.ts`
 - `__tests__/` — `fake.test.ts` (seed invariants, schema conformance, semantics, router), `runtime.test.ts` (lifecycle, isolation, concurrency, reset), `endpoints.test.ts` (D8 drift guard over `specs.ts`, `taskRequests.ts`, `projectsRequests.ts`)
 
 ## Query layer (`src/lib/query/`)

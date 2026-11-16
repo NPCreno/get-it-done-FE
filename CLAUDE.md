@@ -13,10 +13,11 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `src/middleware.ts` protects every route except the public list, verifies the access token with `jose` `jwtVerify` (HS256), and refreshes tokens silently
 - The backend `AuthorizeGuard` is the real security boundary; the middleware is a UX layer
 
-## Routes (8 pages)
+## Routes (8 pages, plus the public `/demo`)
 - `/` — landing page (`src/app/page.tsx`)
 - `/login`, `/signup`, `/forgot-password` (placeholder: reset not available yet) — `src/app/(auth)/`
 - `/dashboard`, `/projects`, `/notifications`, `/profileSettings` — `src/app/(routes)/`
+- `/demo` — public, signed-out dashboard on an in-browser fake API (`src/app/demo/`, listed in `openRoutes`)
 
 ## API route handlers (3)
 - `POST /api/auth/refresh` — silent refresh from the browser; never clears cookies
