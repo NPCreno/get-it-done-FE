@@ -6,6 +6,7 @@ vi.mock("@/app/utils/utils", async (orig) => ({
 }));
 vi.mock("@/lib/clientSession", () => ({ refreshSession: vi.fn(), expireSession: vi.fn() }));
 
+import * as chatRequests from "@/app/api/chatRequests";
 import * as projectsRequests from "@/app/api/projectsRequests";
 import * as taskRequests from "@/app/api/taskRequests";
 import { getAccessToken } from "@/app/utils/utils";
@@ -19,7 +20,7 @@ import { DEMO_USER_ID } from "../fake/seed";
 import { createDemoRuntime } from "../runtime";
 
 /**
- * D8, the drift guard. Every export of specs.ts, taskRequests.ts and projectsRequests.ts is IN
+ * D8, the drift guard. Every export of specs.ts, taskRequests.ts, projectsRequests.ts and chatRequests.ts is IN
  * SCOPE by default and must be given seed-valid args below, or an entry in ALLOW with a reason.
  * A new spec or helper therefore fails this test until it gets a fake route or a reasoned entry.
  */
@@ -35,6 +36,17 @@ const ALLOW: Record<string, string> = {
   getProjectById: "project detail is on the projects page, not the dashboard",
   updateProject: "project CRUD is on the projects page, not the dashboard",
   deleteProjectById: "project CRUD is on the projects page, not the dashboard",
+  // FEAT-05 chat (specs.ts and chatRequests.ts)
+  chatMembersSpec: "chat is not in the demo",
+  sharedProjectsSpec: "chat is not in the demo",
+  chatMessagesSpec: "chat is not in the demo",
+  getChatMembers: "chat is not in the demo",
+  addChatMember: "chat is not in the demo",
+  removeChatMember: "chat is not in the demo",
+  getSharedProjects: "chat is not in the demo",
+  getChatMessagesPage: "chat is not in the demo",
+  sendChatMessage: "chat is not in the demo",
+  deleteChatMessage: "chat is not in the demo",
 };
 
 const NOW = Date.parse("2026-11-16T12:00:00Z");
@@ -84,7 +96,7 @@ afterEach(() => {
 });
 
 const exportsOf = (m: Record<string, unknown>) => Object.entries(m).filter(([, v]) => typeof v === "function") as [string, (...a: unknown[]) => unknown][];
-const ALL = [...exportsOf(specs), ...exportsOf(taskRequests), ...exportsOf(projectsRequests)];
+const ALL = [...exportsOf(specs), ...exportsOf(taskRequests), ...exportsOf(projectsRequests), ...exportsOf(chatRequests)];
 
 describe("D8: endpoint coverage", () => {
   it("every export is in scope with args, or allowlisted with a reason; neither list is stale", () => {

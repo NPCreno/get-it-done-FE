@@ -9,6 +9,7 @@ import {
 } from "@/app/api/taskRequests";
 import { getProjectById, getProjectsForUser } from "@/app/api/projectsRequests";
 import { getUser } from "@/app/api/userRequests";
+import { getChatMembers, getChatMessagesPage, getSharedProjects } from "@/app/api/chatRequests";
 import { qk } from "./keys";
 import { unwrap } from "./unwrap";
 import type { TaskWindow } from "./window";
@@ -68,4 +69,26 @@ export const heatmapSpec = (id: string, month: string, year: string) => ({
 export const streakSpec = (id: string) => ({
   queryKey: qk.streak(id),
   queryFn: async ({ signal }: Ctx) => unwrap(await getStreakCount(id, { signal })),
+});
+
+// ------------------------------------------------------------------- chat (FEAT-05)
+
+export const chatMembersSpec = (id: string, projectId: string) => ({
+  queryKey: qk.chatMembers(id, projectId),
+  queryFn: async ({ signal }: Ctx) => unwrap(await getChatMembers(projectId, { signal })),
+});
+
+/** The user is the token; `id` only scopes the cache. */
+export const sharedProjectsSpec = (id: string) => ({
+  queryKey: qk.sharedProjects(id),
+  queryFn: async ({ signal }: Ctx) => unwrap(await getSharedProjects({ signal })),
+});
+
+/** Infinite, newest page first. The cursor is the page param, not part of the key. */
+export const chatMessagesSpec = (id: string, projectId: string) => ({
+  queryKey: qk.chatMessages(id, projectId),
+  queryFn: async ({ signal, pageParam }: Ctx & { pageParam: string | undefined }) =>
+    unwrap(await getChatMessagesPage(projectId, pageParam, { signal })),
+  initialPageParam: undefined as string | undefined,
+  getNextPageParam: (last: { next_cursor: string | null }) => last.next_cursor ?? undefined,
 });

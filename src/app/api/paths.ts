@@ -14,3 +14,16 @@ export const notificationsListPath = () => "/notifications";
 export const notificationReadPath = (notifId: string) => apiPath`/notifications/${notifId}/read`;
 
 export const notificationsReadAllPath = () => "/notifications/read-all";
+
+// FEAT-05 chat: its own `/chat` prefix, so nothing collides with `/projects/:project_id`.
+export const chatMembersPath = (projectId: string) => apiPath`/chat/projects/${projectId}/members`;
+
+export const chatMemberPath = (projectId: string, userId: string) =>
+  apiPath`/chat/projects/${projectId}/members/${userId}`;
+
+export const chatSharedProjectsPath = () => "/chat/shared-projects";
+
+export const chatMessagesPath = (projectId: string) => apiPath`/chat/projects/${projectId}/messages`;
+
+export const chatMessagePath = (projectId: string, messageId: string) =>
+  apiPath`/chat/projects/${projectId}/messages/${messageId}`;

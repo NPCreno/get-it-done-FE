@@ -42,3 +42,19 @@ export async function invalidateAll(qc: QueryClient, keys: QueryKey[]): Promise<
 export function gatedInvalidate(qc: QueryClient, mutationKey: MutationKey, keys: QueryKey[]): Promise<void> | undefined {
   return qc.isMutating({ mutationKey }) === 1 ? invalidateAll(qc, keys) : undefined;
 }
+
+/** FEAT-05 chat events. They name a project, so they have their own table. */
+export type ChatDataEvent =
+  | "chat-members" // added, removed, or left
+  | "chat-message"; // sent or deleted
+
+export function chatInvalidationsFor(event: ChatDataEvent, userId: string, projectId: string): QueryKey[] {
+  switch (event) {
+    case "chat-members":
+      return [qk.chatMembers(userId, projectId), qk.sharedProjects(userId)];
+    case "chat-message":
+      // Nothing: the mutation writes its own response into the cache and the socket
+      // delivers everyone else's. A refetch would reload every loaded page of history.
+      return [];
+  }
+}

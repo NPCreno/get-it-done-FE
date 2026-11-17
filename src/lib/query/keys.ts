@@ -13,12 +13,16 @@ export function resourceOf(key: readonly unknown[]): string {
   const [, , area, a, b] = key;
   if (area === "profile") return "profile";
   if (area === "notifications") return "notifications";
-  if (area === "projects") return key.length > 3 ? "projects.detail" : "projects";
+  if (area === "projects") {
+    if (a === "shared") return "chat.shared";
+    if (b === "members") return "chat.members";
+    if (b === "messages") return "chat.messages";
+    return key.length > 3 ? "projects.detail" : "projects";
+  }
   if (area === "tasks") return a === "upcoming" ? "tasks.upcoming" : a === "project" ? "tasks.project" : "unknown";
   if (area === "analytics" && ["summary", "trend", "distribution", "heatmap", "streak"].includes(a as string)) {
     return `analytics.${a as string}`;
   }
-  void b;
   return "unknown";
 }
 
@@ -32,6 +36,14 @@ export const qk = {
     [...u(id), "tasks", "project", projectId, w.start, w.end] as const,
   /** One infinite list per user; the cursor is a page param, not part of the key. */
   notifications: (id: string) => [...u(id), "notifications"] as const,
+  /**
+   * FEAT-05 chat. These sit under the `projects` prefix (plan 31b), so a project
+   * save or delete also invalidates them; only active queries refetch.
+   */
+  chatMembers: (id: string, projectId: string) => [...u(id), "projects", projectId, "members"] as const,
+  sharedProjects: (id: string) => [...u(id), "projects", "shared"] as const,
+  /** One infinite list per project; the cursor is a page param, not part of the key. */
+  chatMessages: (id: string, projectId: string) => [...u(id), "projects", projectId, "messages"] as const,
   analytics: (id: string) => [...u(id), "analytics"] as const, // prefix
   summary: (id: string, w: TaskWindow) => [...u(id), "analytics", "summary", w.start, w.end] as const,
   trend: (id: string, r: { start: string; end: string }) =>
