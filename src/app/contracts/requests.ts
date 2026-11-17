@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ApiDate, LIMITS, PATTERNS } from "./common";
+import { ApiDate, CHAT_LIMITS, LIMITS, PATTERNS } from "./common";
 import {
   BOOLEAN_STRINGS,
   NEW_TASK_STATUSES,
@@ -95,3 +95,17 @@ export const CreateSubTaskRequestSchema = z.object({
   due_date: ApiDate.optional(),
 });
 export type CreateSubTaskRequest = z.infer<typeof CreateSubTaskRequestSchema>;
+
+// ------------------------------------------------------------------- chat (FEAT-05)
+
+/** Exact username, the same rules as signup. */
+export const AddChatMemberRequestSchema = z.object({
+  username: z.string().trim().min(LIMITS.usernameMin).max(LIMITS.usernameMax).regex(new RegExp(PATTERNS.username)),
+});
+export type AddChatMemberRequest = z.infer<typeof AddChatMemberRequestSchema>;
+
+/** Trimmed, 1 to CHAT_LIMITS.messageMax characters. */
+export const SendChatMessageRequestSchema = z.object({
+  body: z.string().trim().min(1).max(CHAT_LIMITS.messageMax),
+});
+export type SendChatMessageRequest = z.infer<typeof SendChatMessageRequestSchema>;
