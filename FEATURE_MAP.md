@@ -42,6 +42,12 @@ Request chains per feature. Backend paths are shown without the `/api` prefix, b
 - Data: `GET /notifications` (paged, `unread_count`), `PATCH /notifications/:id/read`, `PATCH /notifications/read-all`, `DELETE /notifications/clear/:user_id` through `notificationsRequests.ts` and `src/lib/query/notifications.ts`. Page actions: mark one read (card or button), Mark all as read, Clear all (confirmation dialog), Load more.
 - Live: `useNotificationStream` (in `MainLayout`) holds one SSE connection and refetches the list on a `notification` event and on every (re)connect. The sidebar and mobile sidebar show an unread badge.
 
+## Project chat (FEAT-05)
+- Sharing: the owner's project view (`modals/viewProject.tsx`) has Members → `chat/MembersDialog.tsx` → `getChatMembers()`, `addChatMember()`, `removeChatMember()` → BE `GET|POST /chat/projects/:project_id/members`, `DELETE /chat/projects/:project_id/members/:user_id`. Add by exact username; at most 20 members.
+- Shared with me: `projects/page.tsx` → `chat/SharedProjectsSection.tsx` → `getSharedProjects()` → BE `GET /chat/shared-projects`. Members see the title, color and owner, and the chat, never the tasks. Leave = remove yourself.
+- Chat: `chat/ChatPanel.tsx` (from the owner's project view or a shared card) → `getChatMessagesPage()` (newest first, opaque cursor), `sendChatMessage()`, `deleteChatMessage()` → BE `/chat/projects/:project_id/messages[/:id]`. You delete your own messages; the owner deletes any.
+- Live: `useChatRoom` joins the project's room on the one per-tab socket (`chatSocket.ts`, `wss://<api>/chat/ws`, auth frame first). `message.created` / `message.deleted` patch the cache; a reconnect refetches; `removed` shows "no longer have access". Chat is not in `/demo`.
+
 ## Pomodoro timer
 - `PomodoroButton.tsx` → `modals/pomodoro.tsx` → `hooks/useTimer.ts` → `lib/timerService.ts`
 - State persisted in `localStorage` key `pomodoroTimerState`

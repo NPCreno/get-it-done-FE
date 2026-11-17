@@ -76,6 +76,8 @@ Dashboard and data display
 - `projectCard.tsx` — project summary card
 - `taskItem.tsx` — task row with status and subtasks
 - `notificationCard.tsx` — single notification (mark-as-read)
+- `chat/` (FEAT-05): `ChatPanel.tsx` (side panel: `role="log"` message list, load older, composer, delete), `MembersDialog.tsx` (owner: list, add by username, remove), `SharedProjectsSection.tsx` ("Shared with me" cards: Open chat, Leave), `ProjectChatActions.tsx` (Members and Chat buttons in the owner's project view)
+- `src/lib/chatSocket.ts`, `useChatRoom.ts` — the managed chat WebSocket (one per tab) and the hook that keeps a project's message cache live; `src/lib/query/chat.ts` (members, shared projects, messages, the four mutations), `chatCache.ts` (pure message-cache helpers); `src/app/api/chatRequests.ts`
 - `src/lib/notificationStream.ts`, `useNotificationStream.ts` — the managed SSE stream; `notificationRoutes.ts` — action-route allowlist; `relativeTime.ts`; `src/lib/query/notifications.ts`, `notificationsOptimistic.ts` — list, read-state and clear hooks; `src/app/api/notificationsRequests.ts`
 
 Inputs and small UI

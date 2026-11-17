@@ -38,6 +38,7 @@ No global store. Component state, `FormProvider` context for form handling, and 
 - `projectsRequests.ts` → `ProjectsController` (`/projects/*`)
 - `taskRequests.ts` → `TaskController` (`/tasks/*`)
 - Notifications: a paged list plus read state (source of truth), and one SSE stream per tab that only signals "refetch". See `CLAUDE.md`.
+- `chatRequests.ts` → `ChatController` (`/chat/*`, FEAT-05) plus one WebSocket per tab at `/chat/ws` (`chatSocket.ts`). Unlike notifications, a chat event carries the message and patches the cache directly; only a (re)connect refetches. When SEC-10 adds a CSP, `connect-src` must allow the API's `wss:` origin.
 
 ## Transport contract (DATA-02)
 - The backend is the runtime boundary (global ValidationPipe, whitelisted DTOs, server-derived identity). The FE mirrors its contract in `src/app/contracts/` and checks it two ways: request bodies are validated with zod before sending (`requestSchema`, failure kind `invalid_request`, nothing is sent), and unwrapped responses are validated after (`schema`, failure kind `invalid_response`).
