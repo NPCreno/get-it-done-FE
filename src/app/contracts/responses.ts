@@ -156,3 +156,48 @@ export const NotificationsPageSchema = z.object({
   next_cursor: z.string().nullable(),
 });
 export type NotificationsPage = z.infer<typeof NotificationsPageSchema>;
+
+// ------------------------------------------------------------------- chat (FEAT-05)
+
+/** A person in a project's chat: the owner or a member. */
+export const ChatMemberSchema = z.object({
+  user_id: z.string(),
+  username: z.string(),
+  fullname: NullableText,
+});
+export type ChatMember = z.infer<typeof ChatMemberSchema>;
+
+/** GET /chat/shared-projects: projects someone else owns and shared with me. */
+export const SharedProjectSchema = z.object({
+  project_id: z.string(),
+  title: NullableText,
+  color: NullableText,
+  owner_username: z.string(),
+});
+export type SharedProject = z.infer<typeof SharedProjectSchema>;
+
+/** One chat message, the same shape over REST and in a socket event. */
+export const ChatMessageSchema = z.object({
+  id: z.string(),
+  project_id: z.string(),
+  user_id: z.string(),
+  username: z.string(),
+  body: z.string(),
+  created_at: ApiDate,
+});
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+
+/** GET /chat/projects/:id/messages (envelope data): newest first, opaque cursor. */
+export const ChatMessagesPageSchema = z.object({
+  items: ChatMessageSchema.array(),
+  next_cursor: z.string().nullable(),
+});
+export type ChatMessagesPage = z.infer<typeof ChatMessagesPageSchema>;
+
+/** Server-to-client frames on /chat/ws. Unknown frame types fail the parse and are ignored. */
+export const ChatSocketEventSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("ready") }),
+  z.object({ type: z.literal("message.created"), project_id: z.string(), message: ChatMessageSchema }),
+  z.object({ type: z.literal("message.deleted"), project_id: z.string(), id: z.string() }),
+]);
+export type ChatSocketEvent = z.infer<typeof ChatSocketEventSchema>;
