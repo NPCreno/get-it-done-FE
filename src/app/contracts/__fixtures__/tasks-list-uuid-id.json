@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "message": "Tasks fetched successfully",
+  "data": [
+    {
+      "id": "3f2b8c1e-9a4d-4e7b-8c21-5d6f7a8b9c0d",
+      "task_id": "generatedTask-194010000",
+      "subInstances": [],
+      "title": "Task",
+      "description": null,
+      "priority": "Medium",
+      "status": "Pending",
+      "due_date": "2026-01-15T09:00:00.000Z",
+      "createdAt": "2026-01-15T09:00:00.000Z",
+      "updatedAt": "2026-01-15T09:00:00.000Z",
+      "deletedAt": null,
+      "user_id": "user-000000001",
+      "project_id": null,
+      "project_title": null,
+      "template_id": "TMP-000000001"
+    }
+  ]
+}

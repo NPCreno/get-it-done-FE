@@ -26,6 +26,8 @@ const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 const CASES: [string, ZodType, "envelope" | "raw"][] = [
   ["tasks-list", TaskListItemSchema.array(), "envelope"],
   ["tasks-empty", TaskListItemSchema.array(), "envelope"],
+  // FE-only (not synced from the BE): production's task_instance_entity.id is a uuid (OPS-04).
+  ["tasks-list-uuid-id", TaskListItemSchema.array(), "envelope"],
   ["tasks-by-project", ProjectTaskSchema.array(), "raw"],
   ["projects-list", ProjectListItemSchema.array(), "envelope"],
   ["projects-empty", ProjectListItemSchema.array(), "envelope"],
@@ -152,6 +154,32 @@ describe("negative cases are rejected", () => {
     const t = firstTask();
     delete t.description;
     expect(TaskListItemSchema.safeParse(t).success).toBe(false);
+  });
+});
+
+// OPS-04: production sends uuid task ids, old local databases send integers.
+// Tighten to string only after the BE contract sync.
+describe("task id accepts a uuid string or an integer", () => {
+  const uuid = "3f2b8c1e-9a4d-4e7b-8c21-5d6f7a8b9c0d";
+
+  it("TaskListItem: the uuid fixture keeps its string id", () => {
+    const [t] = TaskListItemSchema.array().parse(payload("tasks-list-uuid-id"));
+    expect(t.id).toBe(uuid);
+  });
+
+  it("TaskListItem: string and number ids both parse; other types do not", () => {
+    for (const id of [uuid, 1]) expect(TaskListItemSchema.safeParse({ ...firstTaskOf(), id }).success).toBe(true);
+    for (const id of [null, true, undefined]) {
+      expect(TaskListItemSchema.safeParse({ ...firstTaskOf(), id }).success).toBe(false);
+    }
+  });
+
+  it("ProjectTask: string and number ids both parse; other types do not", () => {
+    const base = () => clone(payload("tasks-by-project")[0]);
+    for (const id of [uuid, 1]) expect(ProjectTaskSchema.safeParse({ ...base(), id }).success).toBe(true);
+    for (const id of [null, true, undefined]) {
+      expect(ProjectTaskSchema.safeParse({ ...base(), id }).success).toBe(false);
+    }
   });
 });
 

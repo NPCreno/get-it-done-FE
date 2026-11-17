@@ -24,7 +24,7 @@ export type SubTask = z.infer<typeof SubTaskSchema>;
 
 /** getTasksByUser (envelope). project_id is null for tasks without a project. */
 export const TaskListItemSchema = z.object({
-  id: z.number(),
+  id: z.union([z.string(), z.number()]), // OPS-04: tighten after BE contract sync
   task_id: z.string(),
   title: z.string(),
   description: NullableText,
@@ -44,7 +44,7 @@ export type TaskListItem = z.infer<typeof TaskListItemSchema>;
 
 /** getTasksByProj (raw array). Always has project_id; no user/template/subtask fields. */
 export const ProjectTaskSchema = z.object({
-  id: z.number(),
+  id: z.union([z.string(), z.number()]), // OPS-04: tighten after BE contract sync
   task_id: z.string(),
   title: z.string(),
   description: NullableText,
