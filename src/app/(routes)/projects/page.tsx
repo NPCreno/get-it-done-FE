@@ -32,6 +32,8 @@ import { useTaskEditor } from "@/app/components/tasks/useTaskEditor";
 import LoadingPage from "@/app/components/loader";
 import type { ProjectFormValues } from "@/app/contracts/forms";
 import ProjectModal from "@/app/components/modals/projectModal";
+import ProjectChatActions from "@/app/components/chat/ProjectChatActions";
+import SharedProjectsSection from "@/app/components/chat/SharedProjectsSection";
 
 /** The project form: project fields only (the task editor has its own form). */
 type ProjectFormState = ProjectFormValues & { project_id: string };
@@ -486,6 +488,8 @@ export default function ProjectsPage() {
             </div>
           </>
         )}
+
+        {!pageLoading && <SharedProjectsSection toast={toast} />}
         </div>
       </div>
 
@@ -544,6 +548,7 @@ export default function ProjectsPage() {
           }}
           onStatusError={setStatusError}
           handleDeleteTask={(taskId: string) => handleDeleteTask(taskId)}
+          extraActions={selectedProject ? <ProjectChatActions project={selectedProject} toast={toast} /> : null}
         />
       )}
 

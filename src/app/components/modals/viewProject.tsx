@@ -18,6 +18,8 @@ interface ViewProjectModalProps {
   handleUpdateTask: (task: ITask) => void;
   onStatusError: (message: string) => void;
   handleDeleteTask: (taskId: string) => void;
+  /** Extra footer actions (the owner's chat buttons). */
+  extraActions?: React.ReactNode;
 }
 
 export default function ViewProjectModal({ 
@@ -29,6 +31,7 @@ export default function ViewProjectModal({
   handleUpdateTask,
   onStatusError,
   handleDeleteTask,
+  extraActions,
 }: ViewProjectModalProps) {
  
   const { userData } = useFormState();
@@ -89,12 +92,15 @@ export default function ViewProjectModal({
             </svg>
             New Task
           </button>
-          
+
+          <div className="flex flex-row gap-2 items-center">
+          {extraActions}
           <button className={`border ${isDarkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-700' : 'border-primary-200 text-primary-default hover:bg-gray-50'} 
             rounded-[5px] flex justify-center items-center font-lato text-xs p-[10px] px-4 transition-colors duration-200`} 
             onClick={onClose}>
             Cancel
           </button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
