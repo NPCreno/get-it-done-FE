@@ -1,8 +1,8 @@
 import { apiClient } from "@/lib/apiClient";
-import { CHAT_LIMITS } from "../contracts/common";
+import { LIMITS } from "../contracts/common";
 import { AddChatMemberRequestSchema, SendChatMessageRequestSchema } from "../contracts/requests";
 import type { AddChatMemberRequest, SendChatMessageRequest } from "../contracts/requests";
-import { ChatMemberSchema, ChatMessageSchema, ChatMessagesPageSchema, SharedProjectSchema } from "../contracts/responses";
+import { ChatMembersSchema, ChatMessageSchema, ChatMessagesPageSchema, SharedProjectSchema } from "../contracts/responses";
 import {
   chatMemberPath,
   chatMembersPath,
@@ -15,14 +15,14 @@ import {
 // answers a non-member with the same 404 as a missing project.
 
 export const CHAT_MESSAGES_PAGE_SIZE = 50;
-if (CHAT_MESSAGES_PAGE_SIZE > CHAT_LIMITS.messagesPageMax) throw new Error("page size exceeds the contract maximum");
+if (CHAT_MESSAGES_PAGE_SIZE > LIMITS.chatMessagesPageMax) throw new Error("page size exceeds the contract maximum");
 
 type Opts = { signal?: AbortSignal };
 
 /** The owner plus every member. */
 export const getChatMembers = (projectId: string, opts?: Opts) =>
   apiClient(chatMembersPath(projectId), {
-    schema: ChatMemberSchema.array(),
+    schema: ChatMembersSchema,
     signal: opts?.signal,
     fallbackError: "Failed to load members",
   });

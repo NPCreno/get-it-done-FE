@@ -12,6 +12,9 @@ export const LIMITS = {
   descriptionMax: 500,
   colorLabelMax: 50,
   notificationsPageMax: 100,
+  chatMessageMax: 2000,
+  chatMessagesPageMax: 50,
+  chatMembersMax: 20,
 } as const;
 
 /** Regex sources, compared with the contract JSON by a test. */
@@ -42,10 +45,3 @@ export const OptionalText = z
   .string()
   .nullable()
   .transform((v) => v ?? undefined);
-
-/** FEAT-05 chat limits (plan 31a). Checked against the contract once the BE exports them. */
-export const CHAT_LIMITS = {
-  messageMax: 2000,
-  messagesPageMax: 50,
-  membersMax: 20,
-} as const;

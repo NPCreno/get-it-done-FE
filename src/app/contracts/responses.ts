@@ -167,6 +167,13 @@ export const ChatMemberSchema = z.object({
 });
 export type ChatMember = z.infer<typeof ChatMemberSchema>;
 
+/** GET /chat/projects/:id/members: the owner apart from the members. */
+export const ChatMembersSchema = z.object({
+  owner: ChatMemberSchema,
+  members: ChatMemberSchema.array(),
+});
+export type ChatMembers = z.infer<typeof ChatMembersSchema>;
+
 /** GET /chat/shared-projects: projects someone else owns and shared with me. */
 export const SharedProjectSchema = z.object({
   project_id: z.string(),
@@ -194,10 +201,20 @@ export const ChatMessagesPageSchema = z.object({
 });
 export type ChatMessagesPage = z.infer<typeof ChatMessagesPageSchema>;
 
-/** Server-to-client frames on /chat/ws. Unknown frame types fail the parse and are ignored. */
+/**
+ * Server-to-client frames on /chat/ws, all `{ type, data }`. Only the frames the
+ * app acts on are listed; `joined`, `left` and anything unknown fail the parse
+ * and are ignored.
+ */
 export const ChatSocketEventSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("ready") }),
-  z.object({ type: z.literal("message.created"), project_id: z.string(), message: ChatMessageSchema }),
-  z.object({ type: z.literal("message.deleted"), project_id: z.string(), id: z.string() }),
+  z.object({ type: z.literal("ready"), data: z.object({ user_id: z.string() }) }),
+  z.object({ type: z.literal("message.created"), data: ChatMessageSchema }),
+  z.object({ type: z.literal("message.deleted"), data: z.object({ id: z.string(), project_id: z.string() }) }),
+  /** This user was removed from the project (or left in another tab). */
+  z.object({ type: z.literal("removed"), data: z.object({ project_id: z.string() }) }),
+  z.object({
+    type: z.literal("error"),
+    data: z.object({ code: z.string(), project_id: z.string().optional() }),
+  }),
 ]);
 export type ChatSocketEvent = z.infer<typeof ChatSocketEventSchema>;

@@ -4,7 +4,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } fr
 import LoadError from "@/app/components/LoadError";
 import ConfirmationModal from "@/app/components/modals/confirmation";
 import { useFormState } from "@/app/context/FormProvider";
-import { CHAT_LIMITS } from "@/app/contracts/common";
+import { LIMITS } from "@/app/contracts/common";
 import type { ChatMessage } from "@/app/contracts/responses";
 import type { ToastController } from "@/hooks/toastController";
 import { formatRelativeTime } from "@/lib/relativeTime";
@@ -32,7 +32,7 @@ export default function ChatPanel({ projectId, projectTitle, isOwner, onClose, t
   const { userData } = useFormState();
   const dark = userData?.theme === "dark";
   const me = useSessionUserId();
-  useChatRoom(projectId);
+  const { removed } = useChatRoom(projectId);
 
   const query = useChatMessages(projectId);
   const state = loadStateOf(query, isEmptyChat);
@@ -115,7 +115,16 @@ export default function ChatPanel({ projectId, projectTitle, isOwner, onClose, t
           )}
         </div>
 
-        <Composer projectId={projectId} dark={dark} toast={toast} />
+        {removed ? (
+          <p
+            role="status"
+            className={`border-t p-4 font-lato text-sm ${dark ? "border-gray-800 text-gray-300" : "border-gray-100 text-[#676767]"}`}
+          >
+            You no longer have access to this chat.
+          </p>
+        ) : (
+          <Composer projectId={projectId} dark={dark} toast={toast} />
+        )}
 
         {pendingDelete && (
           <ConfirmationModal
@@ -246,7 +255,7 @@ function Composer({ projectId, dark, toast }: { projectId: string; dark: boolean
   const counterId = `${inputId}-count`;
   const input = useRef<HTMLTextAreaElement>(null);
   const trimmed = draft.trim();
-  const over = draft.length > CHAT_LIMITS.messageMax;
+  const over = draft.length > LIMITS.chatMessageMax;
   const canSend = trimmed.length > 0 && !over && !send.isPending;
 
   useEffect(() => {
@@ -281,7 +290,7 @@ function Composer({ projectId, dark, toast }: { projectId: string; dark: boolean
         ref={input}
         rows={3}
         value={draft}
-        maxLength={CHAT_LIMITS.messageMax}
+        maxLength={LIMITS.chatMessageMax}
         aria-describedby={counterId}
         placeholder="Write a message. Enter sends, Shift+Enter adds a line."
         onChange={(e) => setDraft(e.target.value)}
@@ -297,7 +306,7 @@ function Composer({ projectId, dark, toast }: { projectId: string; dark: boolean
       />
       <div className="flex items-center justify-between">
         <span id={counterId} className={`font-lato text-xs ${over ? "text-error-default" : dark ? "text-gray-300" : "text-[#676767]"}`}>
-          {draft.length} / {CHAT_LIMITS.messageMax}
+          {draft.length} / {LIMITS.chatMessageMax}
         </span>
         <button
           type="submit"

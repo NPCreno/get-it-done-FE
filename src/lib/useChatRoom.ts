@@ -1,6 +1,6 @@
 "use client";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getAccessToken } from "@/app/utils/utils";
 import { chatSocketUrl, createChatSocket, type ChatSocket } from "./chatSocket";
 import { refreshSession } from "./clientSession";
@@ -54,10 +54,12 @@ function chatSocket(): ChatSocket | null {
 /**
  * Keeps one project's message cache live while mounted. An event patches the
  * cache directly (no refetch); a (re)connect refetches to recover anything missed.
+ * Returns true once the server says this user is no longer in the project.
  */
-export function useChatRoom(projectId: string | undefined): void {
+export function useChatRoom(projectId: string | undefined): { removed: boolean } {
   const qc = useQueryClient();
   const userId = useSessionUserId();
+  const [removedFrom, setRemovedFrom] = useState<string | null>(null);
   useEffect(() => {
     if (!userId || !projectId) return;
     const socket = chatSocket();
@@ -67,6 +69,11 @@ export function useChatRoom(projectId: string | undefined): void {
       onCreated: (message) => qc.setQueryData<ChatMessagePages>(key, (d) => addMessage(d, message)),
       onDeleted: (id) => qc.setQueryData<ChatMessagePages>(key, (d) => removeMessage(d, id)),
       onResync: () => void qc.invalidateQueries({ queryKey: key }),
+      onRemoved: () => {
+        setRemovedFrom(projectId);
+        void qc.invalidateQueries({ queryKey: qk.sharedProjects(userId) });
+      },
     });
   }, [qc, userId, projectId]);
+  return { removed: !!projectId && removedFrom === projectId };
 }

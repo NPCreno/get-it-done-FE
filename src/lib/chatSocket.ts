@@ -72,6 +72,8 @@ export interface ChatRoomHandlers {
   onDeleted: (id: string) => void;
   /** The room was (re)joined on a fresh connection: refetch to recover anything missed. */
   onResync: () => void;
+  /** The server took this user out of the room (removed, left elsewhere, or no longer allowed). */
+  onRemoved: () => void;
 }
 
 export interface ChatSocket {
@@ -95,6 +97,8 @@ export function createChatSocket(deps: ChatSocketDeps): ChatSocket {
   let running: AbortController | null = null;
   /** The socket, only while it is authenticated. Join and leave frames go here. */
   let live: SocketHandle | null = null;
+  /** Rooms the server refused or kicked us from: not re-joined until every subscriber left. */
+  const gone = new Set<string>();
 
   const shouldRun = () => rooms.size > 0 && !hidden;
 
@@ -107,14 +111,29 @@ export function createChatSocket(deps: ChatSocketDeps): ChatSocket {
     }
   };
 
+  const each = (projectId: string, fn: (h: ChatRoomHandlers) => void) => {
+    for (const h of [...(rooms.get(projectId) ?? [])]) fn(h);
+  };
+
   function dispatch(event: ChatSocketEvent): void {
-    if (event.type === "ready") return;
-    const handlers = rooms.get(event.project_id);
-    if (!handlers) return;
-    for (const h of [...handlers]) {
-      if (event.type === "message.created") h.onCreated(event.message);
-      else h.onDeleted(event.id);
+    switch (event.type) {
+      case "message.created":
+        return each(event.data.project_id, (h) => h.onCreated(event.data));
+      case "message.deleted":
+        return each(event.data.project_id, (h) => h.onDeleted(event.data.id));
+      case "removed":
+        return removed(event.data.project_id);
+      case "error":
+        // A join the server refused: same 404 as a missing project.
+        if (event.data.code === "NOT_FOUND" && event.data.project_id) removed(event.data.project_id);
+        return;
     }
+  }
+
+  function removed(projectId: string): void {
+    if (!rooms.has(projectId) || gone.has(projectId)) return;
+    gone.add(projectId);
+    each(projectId, (h) => h.onRemoved());
   }
 
   function connectOnce(token: string, signal: AbortSignal): Promise<Outcome> {
@@ -149,8 +168,9 @@ export function createChatSocket(deps: ChatSocketDeps): ChatSocket {
             outcome.ready = true;
             outcome.readyAt = deps.now();
             live = socket;
-            for (const projectId of rooms.keys()) send(socket, { type: "join", project_id: projectId });
-            for (const handlers of [...rooms.values()]) for (const h of [...handlers]) h.onResync();
+            const open = [...rooms.keys()].filter((id) => !gone.has(id));
+            for (const projectId of open) send(socket, { type: "join", project_id: projectId });
+            for (const projectId of open) each(projectId, (h) => h.onResync());
             return;
           }
           if (outcome.ready) dispatch(event);
@@ -238,7 +258,7 @@ export function createChatSocket(deps: ChatSocketDeps): ChatSocket {
         current?.delete(handlers);
         if (current && current.size === 0) {
           rooms.delete(projectId);
-          send(live, { type: "leave", project_id: projectId });
+          if (!gone.delete(projectId)) send(live, { type: "leave", project_id: projectId });
         }
         sync();
       };

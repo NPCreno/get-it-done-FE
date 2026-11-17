@@ -6,7 +6,7 @@ import ChatPanel from "./ChatPanel";
 import MembersDialog from "./MembersDialog";
 
 interface ProjectChatActionsProps {
-  project: { project_id: string; title: string; user_id: string };
+  project: { project_id: string; title: string };
   toast: ToastController;
 }
 
@@ -33,7 +33,6 @@ export default function ProjectChatActions({ project, toast }: ProjectChatAction
         <MembersDialog
           projectId={project.project_id}
           projectTitle={project.title}
-          ownerId={project.user_id}
           onClose={() => setOpen(null)}
           toast={toast}
         />

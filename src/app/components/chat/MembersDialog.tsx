@@ -4,12 +4,12 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } fr
 import InputBox from "@/app/components/inputBox";
 import LoadError from "@/app/components/LoadError";
 import { useFormState } from "@/app/context/FormProvider";
-import { CHAT_LIMITS } from "@/app/contracts/common";
+import { LIMITS } from "@/app/contracts/common";
 import { AddChatMemberRequestSchema } from "@/app/contracts/requests";
 import type { ChatMember } from "@/app/contracts/responses";
 import type { ToastController } from "@/hooks/toastController";
 import { useAddChatMember, useChatMembers, useRemoveChatMember } from "@/lib/query/chat";
-import { isEmptyList } from "@/lib/query/emptiness";
+import { never } from "@/lib/query/emptiness";
 import { loadStateOf } from "@/lib/query/loadState";
 import { settled } from "@/lib/query/unwrap";
 import type { ApiFailure } from "@/lib/apiClient";
@@ -17,8 +17,6 @@ import type { ApiFailure } from "@/lib/apiClient";
 interface MembersDialogProps {
   projectId: string;
   projectTitle: string;
-  /** The project's owner (`project.user_id`): listed, never removable. */
-  ownerId: string;
   onClose: () => void;
   toast: ToastController;
 }
@@ -32,21 +30,20 @@ function addErrorCopy(f: ApiFailure): string | null {
 }
 
 /** Owner only: list the members, add one by exact username, remove one. */
-export default function MembersDialog({ projectId, projectTitle, ownerId, onClose, toast }: MembersDialogProps) {
+export default function MembersDialog({ projectId, projectTitle, onClose, toast }: MembersDialogProps) {
   const { userData } = useFormState();
   const dark = userData?.theme === "dark";
   const query = useChatMembers(projectId);
-  const state = loadStateOf(query, isEmptyList);
+  // Never "empty": the owner is always listed.
+  const state = loadStateOf(query, never);
   const add = useAddChatMember(projectId);
   const remove = useRemoveChatMember(projectId);
   const [username, setUsername] = useState("");
   const [error, setError] = useState<string | undefined>();
 
-  const members = (state.status === "ready" || state.status === "empty" ? state.data : []).filter(
-    (m) => m.user_id !== ownerId
-  );
-  const owner = state.status === "ready" ? state.data.find((m) => m.user_id === ownerId) : undefined;
-  const full = members.length >= CHAT_LIMITS.membersMax;
+  const owner = state.status === "ready" ? state.data.owner : undefined;
+  const members = state.status === "ready" ? state.data.members : [];
+  const full = members.length >= LIMITS.chatMembersMax;
 
   const submit = async () => {
     if (add.isPending) return;
@@ -134,7 +131,7 @@ export default function MembersDialog({ projectId, projectTitle, ownerId, onClos
         </form>
         {full && (
           <p className={`font-lato text-xs ${muted}`}>
-            This project has the maximum of {CHAT_LIMITS.membersMax} members.
+            This project has the maximum of {LIMITS.chatMembersMax} members.
           </p>
         )}
 
@@ -152,7 +149,7 @@ export default function MembersDialog({ projectId, projectTitle, ownerId, onClos
               theme={userData?.theme}
             />
           ) : (
-            <ul className="flex flex-col gap-2" aria-label={`${members.length} of ${CHAT_LIMITS.membersMax} members`}>
+            <ul className="flex flex-col gap-2" aria-label={`${members.length} of ${LIMITS.chatMembersMax} members`}>
               {owner && <MemberRow member={owner} label="Owner" dark={dark} />}
               {members.map((m) => (
                 <MemberRow

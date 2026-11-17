@@ -13,7 +13,8 @@ vi.mock("@/app/api/chatRequests", () => ({
 }));
 
 import * as chatApi from "@/app/api/chatRequests";
-import type { ChatMessage } from "@/app/contracts/responses";
+import { ChatMembersSchema, ChatMessagesPageSchema, SharedProjectSchema, type ChatMessage } from "@/app/contracts/responses";
+import { AddChatMemberRequestSchema, SendChatMessageRequestSchema } from "@/app/contracts/requests";
 import { addMemberOptions, deleteMessageOptions, removeMemberOptions, sendMessageOptions } from "../query/chat";
 import { addMessage, isEmptyChat, oldestFirst, removeMessage, type ChatMessagePages } from "../query/chatCache";
 import { chatInvalidationsFor } from "../query/invalidation";
@@ -182,5 +183,41 @@ describe("CH3: mutations", () => {
     await flush();
     expect(qc.getQueryData(qk.chatMessages(U, P))).toBeDefined();
     expect(spy.mock.calls.map(([f]) => f?.queryKey)).toEqual([qk.chatMembers(U, P), qk.sharedProjects(U)]);
+  });
+});
+
+describe("CH4: chat schemas (BE ChatMembersDto, SharedProjectDto, ChatMessagesPageDto)", () => {
+  it("members: owner apart from members; a null fullname reads as empty", () => {
+    const r = ChatMembersSchema.parse({
+      owner: { user_id: "u1", username: "olivia", fullname: "Olivia O" },
+      members: [{ user_id: "u2", username: "bob", fullname: null, extra: "stripped" }],
+    });
+    expect(r.members[0]).toEqual({ user_id: "u2", username: "bob", fullname: "" });
+  });
+
+  it("shared projects: title and color are nullable columns", () => {
+    expect(SharedProjectSchema.parse({ project_id: "P1", title: null, color: null, owner_username: "olivia" })).toEqual({
+      project_id: "P1",
+      title: "",
+      color: "",
+      owner_username: "olivia",
+    });
+    expect(SharedProjectSchema.safeParse({ project_id: "P1", title: "t", color: "#fff" }).success).toBe(false);
+  });
+
+  it("messages page: ISO dates, nullable cursor", () => {
+    expect(ChatMessagesPageSchema.safeParse({ items: [m("a")], next_cursor: null }).success).toBe(true);
+    expect(ChatMessagesPageSchema.safeParse({ items: [{ ...m("a"), created_at: "nope" }], next_cursor: null }).success).toBe(false);
+  });
+
+  it("requests mirror the BE DTOs: trimmed body 1..2000 without NUL; exact username", () => {
+    expect(SendChatMessageRequestSchema.parse({ body: "  hi  " })).toEqual({ body: "hi" });
+    expect(SendChatMessageRequestSchema.safeParse({ body: "   " }).success).toBe(false);
+    expect(SendChatMessageRequestSchema.safeParse({ body: "x".repeat(2000) }).success).toBe(true);
+    expect(SendChatMessageRequestSchema.safeParse({ body: "x".repeat(2001) }).success).toBe(false);
+    expect(SendChatMessageRequestSchema.safeParse({ body: "a b" }).success).toBe(false);
+    expect(AddChatMemberRequestSchema.safeParse({ username: "bob_1" }).success).toBe(true);
+    expect(AddChatMemberRequestSchema.safeParse({ username: "bob smith" }).success).toBe(false);
+    expect(AddChatMemberRequestSchema.safeParse({ username: "ab" }).success).toBe(false);
   });
 });

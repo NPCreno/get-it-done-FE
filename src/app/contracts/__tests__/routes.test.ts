@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import contract from "../api-contract.json";
 import {
+  chatMemberPath,
+  chatMembersPath,
+  chatMessagePath,
+  chatMessagesPath,
+  chatSharedProjectsPath,
   notificationReadPath,
   notificationsListPath,
   notificationsReadAllPath,
@@ -27,6 +32,13 @@ const builders: Record<string, { build: () => string; values: Record<string, str
   notificationsList: { build: () => notificationsListPath(), values: {} },
   notificationRead: { build: () => notificationReadPath(ID), values: { notif_id: ID } },
   notificationsReadAll: { build: () => notificationsReadAllPath(), values: {} },
+  chatMembersList: { build: () => chatMembersPath(ID), values: { project_id: ID } },
+  chatMemberAdd: { build: () => chatMembersPath(ID), values: { project_id: ID } },
+  chatMemberRemove: { build: () => chatMemberPath(ID, "u/1"), values: { project_id: ID, user_id: "u/1" } },
+  chatSharedProjects: { build: () => chatSharedProjectsPath(), values: {} },
+  chatMessagesList: { build: () => chatMessagesPath(ID), values: { project_id: ID } },
+  chatMessageSend: { build: () => chatMessagesPath(ID), values: { project_id: ID } },
+  chatMessageDelete: { build: () => chatMessagePath(ID, "m 1"), values: { project_id: ID, id: "m 1" } },
 };
 
 describe("request path builders match the vendored contract routes", () => {

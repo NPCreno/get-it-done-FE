@@ -29,21 +29,21 @@ describe("C1: chatSocketUrl and parseChatFrame", () => {
     expect(chatSocketUrl("ftp://x/api")).toBeNull();
   });
 
-  it("accepts only known, well-formed frames", () => {
-    expect(parseChatFrame('{"type":"ready"}')).toEqual({ type: "ready" });
-    expect(parseChatFrame(JSON.stringify({ type: "message.created", project_id: "P1", message: msg("m1") }))).toEqual({
-      type: "message.created",
-      project_id: "P1",
-      message: msg("m1"),
-    });
-    expect(parseChatFrame(JSON.stringify({ type: "message.deleted", project_id: "P1", id: "m1" }))).toEqual({
-      type: "message.deleted",
-      project_id: "P1",
-      id: "m1",
-    });
+  it("accepts only known, well-formed {type, data} frames", () => {
+    const ready = { type: "ready", data: { user_id: "u1" } };
+    expect(parseChatFrame(JSON.stringify(ready))).toEqual(ready);
+    const created = { type: "message.created", data: msg("m1") };
+    expect(parseChatFrame(JSON.stringify(created))).toEqual(created);
+    const deleted = { type: "message.deleted", data: { id: "m1", project_id: "P1" } };
+    expect(parseChatFrame(JSON.stringify(deleted))).toEqual(deleted);
+    const removed = { type: "removed", data: { project_id: "P1" } };
+    expect(parseChatFrame(JSON.stringify(removed))).toEqual(removed);
+    const error = { type: "error", data: { code: "NOT_FOUND", project_id: "P1" } };
+    expect(parseChatFrame(JSON.stringify(error))).toEqual(error);
     expect(parseChatFrame("{bad json")).toBeNull();
-    expect(parseChatFrame('{"type":"typing"}')).toBeNull();
-    expect(parseChatFrame(JSON.stringify({ type: "message.created", project_id: "P1", message: { id: 1 } }))).toBeNull();
+    expect(parseChatFrame('{"type":"typing","data":{}}')).toBeNull();
+    expect(parseChatFrame('{"type":"joined","data":{"project_id":"P1"}}')).toBeNull(); // not acted on
+    expect(parseChatFrame(JSON.stringify({ type: "message.created", data: { id: 1 } }))).toBeNull();
     expect(parseChatFrame(new ArrayBuffer(2))).toBeNull();
   });
 });
@@ -74,7 +74,7 @@ class FakeSocket {
     this.events.open();
   }
   ready() {
-    this.events.message(JSON.stringify({ type: "ready" }));
+    this.events.message(JSON.stringify({ type: "ready", data: { user_id: "u1" } }));
   }
   push(frame: object) {
     this.events.message(JSON.stringify(frame));
@@ -110,7 +110,7 @@ function harness(over: Partial<ChatSocketDeps> = {}) {
     ...over,
   };
   const room = (): ChatRoomHandlers & { [K in keyof ChatRoomHandlers]: ReturnType<typeof vi.fn> } =>
-    ({ onCreated: vi.fn(), onDeleted: vi.fn(), onResync: vi.fn() }) as never;
+    ({ onCreated: vi.fn(), onDeleted: vi.fn(), onResync: vi.fn(), onRemoved: vi.fn() }) as never;
   return { deps, sockets, sleeps, room, advance: (ms: number) => (clock += ms) };
 }
 
@@ -151,12 +151,13 @@ describe("C2: chat socket controller", () => {
     await tick();
     const s = h.sockets[0];
     s.open();
-    s.push({ type: "message.created", project_id: "P1", message: msg("early") });
+    s.push({ type: "message.created", data: msg("early") });
     expect(a.onCreated).not.toHaveBeenCalled();
     s.ready();
-    s.push({ type: "message.created", project_id: "P1", message: msg("m1") });
-    s.push({ type: "message.deleted", project_id: "P1", id: "m0" });
-    s.push({ type: "message.created", project_id: "P9", message: msg("x", "P9") });
+    s.push({ type: "message.created", data: msg("m1") });
+    s.push({ type: "joined", data: { project_id: "P1" } }); // ignored
+    s.push({ type: "message.deleted", data: { id: "m0", project_id: "P1" } });
+    s.push({ type: "message.created", data: msg("x", "P9") });
     expect(a.onCreated).toHaveBeenCalledWith(msg("m1"));
     expect(a.onDeleted).toHaveBeenCalledWith("m0");
     expect(b.onCreated).not.toHaveBeenCalled();
@@ -298,12 +299,52 @@ describe("C2: chat socket controller", () => {
     const chat = createChatSocket(h.deps);
     const other = h.room();
     let leave = () => {};
-    const self: ChatRoomHandlers = { onCreated: () => leave(), onDeleted: vi.fn(), onResync: vi.fn() };
+    const self: ChatRoomHandlers = { onCreated: () => leave(), onDeleted: vi.fn(), onResync: vi.fn(), onRemoved: vi.fn() };
     leave = chat.join("P1", self);
     chat.join("P1", other);
     await tick();
     await connect(h.sockets[0]);
-    h.sockets[0].push({ type: "message.created", project_id: "P1", message: msg("m1") });
+    h.sockets[0].push({ type: "message.created", data: msg("m1") });
     expect(other.onCreated).toHaveBeenCalledTimes(1);
+  });
+
+  it("removed: tells the room once, and a reconnect does not re-join it until every subscriber left", async () => {
+    const h = harness();
+    const chat = createChatSocket(h.deps);
+    const a = h.room();
+    const b = h.room();
+    const offA = chat.join("P1", a);
+    chat.join("P2", b);
+    await tick();
+    await connect(h.sockets[0]);
+    h.sockets[0].push({ type: "removed", data: { project_id: "P1" } });
+    h.sockets[0].push({ type: "removed", data: { project_id: "P1" } });
+    expect(a.onRemoved).toHaveBeenCalledTimes(1);
+    expect(b.onRemoved).not.toHaveBeenCalled();
+    h.sockets[0].drop(1006);
+    await ticks(3);
+    await connect(h.sockets[1]);
+    expect(h.sockets[1].sent).toEqual([
+      { type: "auth", token: "tok" },
+      { type: "join", project_id: "P2" },
+    ]);
+    offA();
+    expect(h.sockets[1].sent.at(-1)).toEqual({ type: "join", project_id: "P2" }); // no leave for a room we are not in
+    chat.join("P1", h.room());
+    expect(h.sockets[1].sent.at(-1)).toEqual({ type: "join", project_id: "P1" });
+  });
+
+  it("a refused join (error NOT_FOUND with the project) counts as removed; other errors do nothing", async () => {
+    const h = harness();
+    const chat = createChatSocket(h.deps);
+    const a = h.room();
+    chat.join("P1", a);
+    await tick();
+    await connect(h.sockets[0]);
+    h.sockets[0].push({ type: "error", data: { code: "BAD_FRAME" } });
+    h.sockets[0].push({ type: "error", data: { code: "TOO_MANY_ROOMS", project_id: "P1" } });
+    expect(a.onRemoved).not.toHaveBeenCalled();
+    h.sockets[0].push({ type: "error", data: { code: "NOT_FOUND", project_id: "P1" } });
+    expect(a.onRemoved).toHaveBeenCalledTimes(1);
   });
 });
