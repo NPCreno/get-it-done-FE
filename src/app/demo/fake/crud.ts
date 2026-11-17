@@ -1,4 +1,4 @@
-import type { ZodTypeAny } from "zod";
+import type { ZodType, output } from "zod";
 import {
   CreateSubTaskRequestSchema,
   CreateTaskRequestSchema,
@@ -19,7 +19,7 @@ const RETIRED = bad(503, "The demo is not running");
 const NO_TASK = bad(404, "Task not found");
 const NO_SUBTASK = bad(404, "Subtask not found");
 
-function parse<T extends ZodTypeAny>(schema: T, body: unknown): { value: T["_output"] } | Out<never> {
+function parse<T extends ZodType>(schema: T, body: unknown): { value: output<T> } | Out<never> {
   const r = schema.safeParse(body);
   if (r.success) return { value: r.data };
   return bad(

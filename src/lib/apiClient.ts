@@ -1,4 +1,4 @@
-import type { ZodTypeAny, ZodTypeDef, ZodType } from "zod";
+import type { ZodType } from "zod";
 import { getAccessToken } from "@/app/utils/utils";
 import { expireSession, refreshSession } from "./clientSession";
 import { getActiveApiTransport, type ApiTransport } from "./apiTransport";
@@ -37,9 +37,9 @@ export interface ApiRequestOptions<T = unknown> {
   signal?: AbortSignal;
   fallbackError: string; // endpoint-specific human message
   /** Validates the request body before sending; failure is `invalid_request`. */
-  requestSchema?: ZodTypeAny;
+  requestSchema?: ZodType;
   /** Validates the unwrapped response data; failure is `invalid_response`. */
-  schema?: ZodType<T, ZodTypeDef, unknown>;
+  schema?: ZodType<T>;
 }
 
 const DEFAULT_TIMEOUT_MS = 15_000;

@@ -116,7 +116,7 @@ shadcn (`shadcn/`)
 - `forms.ts` — form value types (ISO-string dates)
 - `mappers.ts` — `toCreateTaskRequest`, `toUpdateTaskRequest`, `toCreateProjectRequest`, `toUpdateProjectRequest`, `toCreateSubTaskRequest`, `toSignupRequest`, `toProfileUpdateRequest`, `toIso`, `cleanRepeatDays`
 - `api-contract.json` — vendored copy of the BE export; `__fixtures__/` — captured BE responses
-- `__tests__/` — contract, response-fixture and mapper tests
+- `__tests__/` — contract, response-fixture and mapper tests; `zod-behavior.test.ts` pins how zod validates our schemas (Group B, must not change on a zod upgrade) and zod's default message wording (Group M)
 - `../../../scripts/api-contract.mjs` — `contract:sync` / `contract:check`; `../../../vitest.config.ts`
 
 ## Schemas (`src/app/schemas/`)

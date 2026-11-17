@@ -1,4 +1,4 @@
-import type { ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 import { describe, expect, it } from "vitest";
 import {
   DashboardDataSchema,
@@ -78,7 +78,7 @@ describe("D2: every handler's response satisfies the real zod schema", () => {
     const { call, w, U } = h;
     const d = new Date(NOON);
     const month = d.getUTCMonth() + 1;
-    const cases: [string, string, Record<string, string | number> | undefined, ZodTypeAny][] = [
+    const cases: [string, string, Record<string, string | number> | undefined, ZodType][] = [
       ["GET", `/projects/getAll${U}`, undefined, ProjectListItemSchema.array()],
       ["GET", `/tasks/getTasksByUser${U}`, { startDate: w.start, endDate: w.end }, TaskListItemSchema.array()],
       ["GET", `/tasks/getDashboardData${U}`, { startDate: w.start, endDate: w.end }, DashboardDataSchema],
