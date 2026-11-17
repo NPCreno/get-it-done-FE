@@ -65,7 +65,7 @@ export function useChatRoom(projectId: string | undefined): { removed: boolean }
     const socket = chatSocket();
     if (!socket) return;
     const key = qk.chatMessages(userId, projectId);
-    return socket.join(projectId, {
+    const leave = socket.join(projectId, {
       onCreated: (message) => qc.setQueryData<ChatMessagePages>(key, (d) => addMessage(d, message)),
       onDeleted: (id) => qc.setQueryData<ChatMessagePages>(key, (d) => removeMessage(d, id)),
       onResync: () => void qc.invalidateQueries({ queryKey: key }),
@@ -74,6 +74,11 @@ export function useChatRoom(projectId: string | undefined): { removed: boolean }
         void qc.invalidateQueries({ queryKey: qk.sharedProjects(userId) });
       },
     });
+    return () => {
+      leave();
+      // Not in the room any more, so events are missed from now on: the next open refetches.
+      void qc.invalidateQueries({ queryKey: key, refetchType: "none" });
+    };
   }, [qc, userId, projectId]);
   return { removed: !!projectId && removedFrom === projectId };
 }
