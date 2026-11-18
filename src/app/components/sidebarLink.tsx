@@ -23,7 +23,9 @@ export default function SidebarLink({
   /** Unread count; hidden at 0. */
   badge?: number;
 }) {
-  const { isSidebarOpen } = useFormState();
+  const { isSidebarExpanded, sidebarAnimated } = useFormState();
+  // The mobile drawer always shows its labels; the desktop labels follow the toggle (UX-02).
+  const showText = forceShowText || isSidebarExpanded;
   const router = useRouter();
   const pathname = usePathname();
   
@@ -56,8 +58,8 @@ export default function SidebarLink({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className={`flex items-center gap-2 rounded-[10px] h-[35px] ${isActive ? "w-full" : "w-[35px]"} justify-start 
-        group-hover:w-[126px] transition-all duration-300 linkbtn cursor-pointer
+      title={showText ? undefined : text}
+      className={`flex items-center gap-2 rounded-[10px] h-[35px] w-full flex-shrink-0 justify-start linkbtn cursor-pointer
         ${isActive 
           ? "bg-primary-default shadow-[0px_4px_10.9px_0px_rgba(0,_0,_0,0.25)]" 
           : "hover:bg-primary-default/10"
@@ -89,11 +91,13 @@ export default function SidebarLink({
           className={`absolute transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-0'}`}
         />
       </div>
+      {/* Always rendered (clipped by the collapsed panel, never display:none), so the link keeps
+          its name; a short fade stops letters being cut mid-glyph at rest. */}
       <span
-        className={`font-bold font-lato text-[13px] transition-all duration-300 whitespace-nowrap
-            ${(isSidebarOpen || forceShowText) ? "opacity-100 w-auto ml-2" : "opacity-0 w-0 ml-0"}
+        className={`font-bold font-lato text-[13px] ml-2 whitespace-nowrap transition-opacity duration-150
+            ${sidebarAnimated ? "motion-reduce:transition-none" : "!transition-none"}
+            ${showText ? "opacity-100 delay-100" : "opacity-0"}
             ${isActive ? "text-white" : "text-primary-default"}
-            ${forceShowText ? '!opacity-100 !w-auto !ml-2' : ''}
           `}
       >
         {text}

@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { readSidebarExpanded, writeSidebarExpanded } from "@/lib/sidebarPreference";
 import { ITask } from "../interface/ITask";
 import { IUser } from "../interface/IUser";
 
@@ -14,16 +15,17 @@ type FormStateType = {
 type UniversalStateType = {
   formState: FormStateType;
   setFormState: React.Dispatch<React.SetStateAction<FormStateType>>;
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  /** Desktop sidebar: expanded by its toggle button only (UX-02); remembered per browser. */
+  isSidebarExpanded: boolean;
+  toggleSidebar: () => void;
+  /** False until the stored choice has been applied, so that first apply does not animate. */
+  sidebarAnimated: boolean;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
   toggleMobileSidebar: () => void;
   closeMobileSidebar: () => void;
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  sidebarWidth: number;
-  setSidebarWidth: React.Dispatch<React.SetStateAction<number>>;
   selectedTaskData: ITask | null;
   setSelectedTaskData: React.Dispatch<React.SetStateAction<ITask | null>>;
   selectedMonth: string;
@@ -48,16 +50,36 @@ export const FormProvider = ({ children }: { children: ReactNode }) => {
   });
 
   // Additional universal states
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  // Collapsed on the server and on the first client render; the stored choice is applied after mount.
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [sidebarAnimated, setSidebarAnimated] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(60);
   const [selectedTaskData, setSelectedTaskData] = useState<ITask | null>(null);
   const [userData, setUserData] = useState<IUser | null>(null);
   // Initialize with current month (1-12) and year (e.g., 2025)
   const [selectedMonth, setSelectedMonth] = useState<string>((new Date().getMonth() + 1).toString());
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [calendarMonthYear, setCalendarMonthYear] = useState<{month: string, year: string}>({month: selectedMonth, year: selectedYear});
+  useEffect(() => {
+    setIsSidebarExpanded(readSidebarExpanded());
+    // Enable transitions only after the stored width has painted (two frames), so it never animates in.
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => setSidebarAnimated(true));
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
+  }, []);
+
+  const toggleSidebar = () => {
+    const next = !isSidebarExpanded;
+    setIsSidebarExpanded(next);
+    writeSidebarExpanded(next);
+  };
+
   // Mobile sidebar actions
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen((v) => !v);
@@ -72,16 +94,15 @@ export const FormProvider = ({ children }: { children: ReactNode }) => {
       value={{
         formState,
         setFormState,
-        isSidebarOpen,
-        setIsSidebarOpen,
+        isSidebarExpanded,
+        toggleSidebar,
+        sidebarAnimated,
         isMobileSidebarOpen,
         setIsMobileSidebarOpen,
         toggleMobileSidebar,
         closeMobileSidebar,
         isLoading,
         setIsLoading,
-        sidebarWidth,
-        setSidebarWidth,
         selectedTaskData,
         setSelectedTaskData,
         selectedMonth,

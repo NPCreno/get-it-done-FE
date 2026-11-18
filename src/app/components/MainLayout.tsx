@@ -8,6 +8,7 @@ import { getAccessToken, parseJwt } from "../utils/utils";
 import { useProfile } from "@/lib/query/queries";
 import { shallowEqual } from "../utils/shallowEqual";
 import { useNotificationStream } from "@/lib/useNotificationStream";
+import { sidebarWrapperWidth } from "./sidebarWidths";
 
 export default function MainLayout({
   children,
@@ -15,8 +16,8 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const { 
-    sidebarWidth, 
-    setSidebarWidth, 
+    isSidebarExpanded,
+    sidebarAnimated,
     isMobileSidebarOpen, 
     closeMobileSidebar, 
     setUserData, 
@@ -78,12 +79,13 @@ export default function MainLayout({
 
   return (
     <div className={`flex ${userData?.theme === "dark" ? "bg-background-dark" : "bg-background-light"} h-screen overflow-hidden`}>
-      {/* Desktop Sidebar - Hidden on mobile */}
+      {/* Desktop Sidebar - Hidden on mobile. Its toggle (not hover) sets the width; the content
+          moves once, together with the panel (UX-02). */}
       <div 
-        className={`hidden md:block hover:w-[146px] w-[80px] p-5 h-screen transition-all duration-300`}
-        style={{ width: `${sidebarWidth + 20}px` }}
-        onMouseEnter={() => setSidebarWidth(146)}
-        onMouseLeave={() => setSidebarWidth(60)}
+        className={`hidden md:block flex-shrink-0 p-5 h-screen ${
+          sidebarAnimated ? "transition-[width] duration-300 ease-out motion-reduce:transition-none" : ""
+        }`}
+        style={{ width: `${sidebarWrapperWidth(isSidebarExpanded)}px` }}
       >
         <Sidebar />
       </div>

@@ -3,31 +3,30 @@
 import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
 import { useUnreadCount } from "@/lib/query/notifications";
+import { sidebarPanelWidth } from "./sidebarWidths";
+
+export const DESKTOP_SIDEBAR_ID = "desktop-sidebar";
 
 export default function Sidebar() {
   const unreadCount = useUnreadCount();
-  const { sidebarWidth, setSidebarWidth, isSidebarOpen, setIsSidebarOpen, userData } = useFormState();
+  const { isSidebarExpanded, toggleSidebar, sidebarAnimated, userData } = useFormState();
+  const motion = sidebarAnimated ? "motion-reduce:transition-none" : "!transition-none";
 
   return (
     <>
-      {/* Sidebar for large screens: plain navigation, never a dialog (BUG-04) */}
+      {/* Sidebar for large screens: plain navigation, never a dialog (BUG-04). Only the panel's
+          width animates; its contents are always rendered and the widening edge uncovers them (UX-02). */}
       <div
-        className={`flex flex-col h-full py-5 px-[10px] rounded-[10px] items-start group transition-all duration-300 border
+        id={DESKTOP_SIDEBAR_ID}
+        className={`flex flex-col h-full py-5 px-[10px] rounded-[10px] items-start overflow-hidden border
+        transition-[width] duration-300 ease-out ${motion}
         ${userData?.theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"} 
         ${userData?.theme === "dark" ? "text-white" : "text-black"}
         ${userData?.theme === "dark" ? "border-gray-800" : ""}`
       }
-        style={{ width: `${sidebarWidth}px` }} // Use global state for width
-        onMouseEnter={() => {
-          setSidebarWidth(146);
-          setIsSidebarOpen(true);
-        }}
-        onMouseLeave={() => {
-          setSidebarWidth(60);
-          setIsSidebarOpen(false);
-        }}
+        style={{ width: `${sidebarPanelWidth(isSidebarExpanded)}px` }}
       >
-        <div className="flex flex-row fixed gap-[10px] max-h-[30px] group-hover:ml-0 ml-1">
+        <div className="flex flex-row flex-shrink-0 gap-[10px] max-h-[30px] ml-1">
           <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M26.2499 15.0027C26.2499 8.79175 21.2108 3.75269 14.9999 3.75269C8.78897 3.75269 3.7499 8.79175 3.7499 15.0027C3.7499 21.2136 8.78897 26.2527 14.9999 26.2527C21.2108 26.2527 26.2499 21.2136 26.2499 15.0027Z" stroke="#FEAD03" strokeWidth="2" strokeMiterlimit="10"/>
           <g filter="url(#filter0_d_628_413)">
@@ -48,14 +47,15 @@ export default function Sidebar() {
           </svg>
 
           <h1
-            className={`text-2xl text-primary-default font-rancho transition-opacity duration-300 
-            ${isSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+            className={`text-2xl text-primary-default font-rancho whitespace-nowrap transition-opacity duration-150 ${motion}
+            ${isSidebarExpanded ? "opacity-100 delay-100" : "opacity-0"}`}
           >
             Get it Done!
           </h1>
         </div>
 
-        <nav aria-label="Main navigation" className="flex flex-col gap-5 mt-[60px]">
+        {/* The logo row is in the flow now (30 px), so 30 px here keeps the icons where they were. */}
+        <nav aria-label="Main navigation" className="flex flex-col gap-5 mt-[30px] w-full">
           <SidebarLink
             href="/dashboard"
             icon="/svgs/dashboard-yellow.svg"
@@ -82,6 +82,33 @@ export default function Sidebar() {
             text="Profile"
           />
         </nav>
+
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-expanded={isSidebarExpanded}
+          aria-controls={DESKTOP_SIDEBAR_ID}
+          aria-label={isSidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
+          title={isSidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
+          className="mt-auto flex items-center w-full h-[35px] flex-shrink-0 rounded-[10px] text-primary-default hover:bg-primary-default/10
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
+        >
+          {/* » collapsed, « expanded */}
+          <svg
+            aria-hidden="true"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`ml-2 flex-shrink-0 transition-transform duration-300 ${motion} ${isSidebarExpanded ? "rotate-180" : ""}`}
+          >
+            <path d="M6 17l5-5-5-5M13 17l5-5-5-5" />
+          </svg>
+        </button>
       </div>
     </>
   );
