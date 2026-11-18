@@ -14,7 +14,7 @@ One line per significant source file. Paths are relative to the repo root.
 - `src/app/(routes)/profileSettings/page.tsx` — profile editing and logout
 
 ## Middleware and BFF
-- `src/middleware.ts` — open routes first (`isOpenRoute`), then the public-route allowlist, `jwtVerify`, proactive and expired-token refresh
+- `src/middleware.ts` — open routes first (`isOpenRoute`), then the public-route allowlist, `jwtVerify`, proactive and expired-token refresh. Its `config.matcher` skips `public/` files by extension; `src/__tests__/middlewareMatcher.test.ts` pins which paths run it
 - `src/app/api/auth/session.ts` — edge-safe shared session helpers: `refreshWithBackend` (ok / invalid / unavailable), `setSessionCookies`, `clearSessionCookies`, `revokeWithBackend`, `backendAuthHeaders`, `isSameOrigin`
 - `src/app/api/auth/refresh/route.ts` — `POST /api/auth/refresh`, client-side silent refresh (never clears cookies)
 - `src/app/api/auth/signup/route.ts` (+ `payload.ts`) — BFF signup, forwards the attested client IP to BE `/user/create`

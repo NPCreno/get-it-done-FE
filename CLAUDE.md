@@ -52,6 +52,7 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - Route names are camelCase: `/profileSettings`, not `/profile-settings`
 - Forms use Formik + yup. Transport uses zod 4 (`contracts/`); type a schema parameter as `ZodType<T>`. Form value types are separate from transport types; `mappers.ts` converts one to the other. `react-hook-form` was removed
 - Any new page is protected by default; add it to `publicRoutes` in `middleware.ts` only if it must be open
+- Files in `public/` skip the middleware by extension (the `config.matcher` list in `middleware.ts`: svg, png, jpg, jpeg, gif, webp, avif, ico, mp3, wav, ogg, woff, woff2). A new asset type must be added there, or signed-out visitors get a redirect to `/login` instead of the file
 - Client IP is derived on the server only. Never fetch it from a third party
 - Data calls use `apiClient` helpers and return `ApiResult<T>`: check `result.ok`, toast only if `isUserFacing(result)`, reset spinners in `finally`
 - Mappers never put `user_id` in a create body (the backend takes the owner from the token). Update mappers turn `''` into `null` so a value can be cleared. Dates in forms are ISO strings or null

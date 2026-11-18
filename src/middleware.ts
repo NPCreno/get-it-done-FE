@@ -138,8 +138,10 @@ export async function middleware(req: NextRequest) {
   }
 }
 
+// Keep this a static literal: Next reads it at build time.
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    // Public assets bypass auth by file extension (BUG-03). A new asset type in `public/` must be added here.
+    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|mp3|wav|ogg|woff2?)$).*)',
   ],
 };
