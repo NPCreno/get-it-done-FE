@@ -13,6 +13,7 @@ export function resourceOf(key: readonly unknown[]): string {
   const [, , area, a, b] = key;
   if (area === "profile") return "profile";
   if (area === "notifications") return "notifications";
+  if (area === "api-tokens") return "apiTokens";
   if (area === "projects") {
     if (a === "shared") return "chat.shared";
     if (a === "chat-unread") return "chat.unread";
@@ -47,6 +48,8 @@ export const qk = {
   chatUnread: (id: string) => [...u(id), "projects", "chat-unread"] as const,
   /** One infinite list per project; the cursor is a page param, not part of the key. */
   chatMessages: (id: string, projectId: string) => [...u(id), "projects", projectId, "messages"] as const,
+  /** FEAT-07 the user's personal access tokens. List items only: a secret is never cached. */
+  apiTokens: (id: string) => [...u(id), "api-tokens"] as const,
   analytics: (id: string) => [...u(id), "analytics"] as const, // prefix
   summary: (id: string, w: TaskWindow) => [...u(id), "analytics", "summary", w.start, w.end] as const,
   trend: (id: string, r: { start: string; end: string }) =>

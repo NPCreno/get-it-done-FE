@@ -36,3 +36,10 @@ export type BooleanString = (typeof BOOLEAN_STRINGS)[number];
 export function narrow<T extends string>(list: readonly T[], value: unknown): T | undefined {
   return typeof value === "string" && (list as readonly string[]).includes(value) ? (value as T) : undefined;
 }
+
+// FEAT-07 personal access tokens (plan 38a §B).
+export const API_TOKEN_STATUSES = ["active", "expired", "revoked"] as const;
+/** The expiry choices besides "no expiry" (null). */
+export const API_TOKEN_EXPIRY_DAYS = [30, 90, 365] as const;
+export type ApiTokenStatus = (typeof API_TOKEN_STATUSES)[number];
+export type ApiTokenExpiryDays = (typeof API_TOKEN_EXPIRY_DAYS)[number];

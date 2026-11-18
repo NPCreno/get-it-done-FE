@@ -9,7 +9,8 @@ export type DataEvent =
   | "project-saved" // created or updated
   | "project-deleted"
   | "profile"
-  | "notifications"; // read state changed, or cleared
+  | "notifications" // read state changed, or cleared
+  | "api-tokens"; // created or revoked (FEAT-07)
 
 export function invalidationsFor(event: DataEvent, userId: string): QueryKey[] {
   switch (event) {
@@ -26,6 +27,8 @@ export function invalidationsFor(event: DataEvent, userId: string): QueryKey[] {
       return [qk.profile(userId)];
     case "notifications":
       return [qk.notifications(userId)];
+    case "api-tokens":
+      return [qk.apiTokens(userId)];
   }
 }
 

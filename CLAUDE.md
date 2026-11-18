@@ -31,14 +31,14 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `src/lib/apiClient.ts`, `src/lib/clientSession.ts` — browser API client (`ApiResult<T>`, never throws) and refresh-and-retry
 - `src/app/utils/clientIp.ts` — `getClientIp(headers)`, audit-only client IP, never throws, no network call
 - `src/app/utils/utils.tsx` — `getAccessToken()`, `parseJwt()`, `base64UrlDecode()`, date helpers
-- `src/app/api/userRequests.ts`, `projectsRequests.ts`, `taskRequests.ts`, `chatRequests.ts` — backend calls with a Bearer token
+- `src/app/api/userRequests.ts`, `projectsRequests.ts`, `taskRequests.ts`, `chatRequests.ts`, `tokensRequests.ts` — backend calls with a Bearer token
 
 ## Directory layout
 - `src/app/(auth)/` — login, signup, forgot-password (placeholder) pages
 - `src/app/(routes)/` — dashboard, projects, notifications, profileSettings
 - `src/app/api/auth/` — BFF route handlers and `authRequests.ts`
 - `src/app/api/` — request helpers
-- `src/app/components/` — `auth/` (2), `chat/` (4), `modals/` (5), `shadcn/` (11), top level (23)
+- `src/app/components/` — `apiTokens/` (7), `auth/` (2), `chat/` (5), `modals/` (5), `shadcn/` (11), top level (23)
 - `src/app/context/` — `FormProvider`
 - `src/app/contracts/` — transport contract: `enums.ts`, `common.ts`, `requests.ts` and `responses.ts` (zod), `forms.ts`, `mappers.ts`, vendored `api-contract.json`, `__fixtures__/`, `__tests__/`
 - `src/app/interface/` — component-facing types (derived from the zod response schemas) plus `forms/` re-exports
@@ -68,6 +68,7 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - The dashboard body (`components/dashboard/DashboardView`) is layout-free and shared with `/demo`: it must not use `MainLayout`, `useProfile`, `useUnreadCount`, `useNotifications`, the notification stream or token reads. `.eslintrc.json` restricts these imports in `components/dashboard/` and `components/tasks/`; a child that adds one later is caught by the demo's 0-request check
 - Task completion from the project view now uses the status endpoint, so it triggers notifications
 - Task create/update goes through `useTaskEditor(toast)` (`components/tasks/`): `open({mode, task?, projectId?})` fully initializes, `close()` fully clears, and it is the only writer of `selectedTaskData`. A failed save keeps the modal open and the values; only success closes. The editor has its own form, separate from the projects page's project form
+- API tokens (FEAT-07, Profile → "Connect an AI assistant"): a token secret (`gid_pat_…`) exists only in the `POST /tokens` response. It never enters the React Query cache (the create mutation has `gcTime: 0`, writes no query data, refetches the list instead, and the dialog calls `reset()` once it has the token), `localStorage`, `sessionStorage` or a log; it lives in the section's React state until the "created" dialog closes. `ApiTokenSchema` strips unknown keys, so a list can't carry one. `src/lib/__tests__/apiTokens.test.ts` searches the whole cache for `gid_pat_`. The MCP URL is built from `NEXT_PUBLIC_API_URL` by `mcpServerUrl()`, never hard-coded. Tokens are not in `/demo`
 - Toasts: a page calls `useToastController()` once and passes that instance to `<ToastHost controller>` and to every handler (`toast.success/failure/unexpected/error/show`). Never keep `showToast`/`setTimeout` toast state in a page; a new toast cancels the previous one's timers
 
 ## Commands

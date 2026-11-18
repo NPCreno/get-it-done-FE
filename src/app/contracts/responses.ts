@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ApiDate, Count, DateOnly, NullableText, OptionalText } from "./common";
-import { NOTIFICATION_ACTION_TYPES, NOTIFICATION_TYPES, TASK_PRIORITIES, TASK_STATUSES } from "./enums";
+import { API_TOKEN_RULES, ApiDate, Count, DateOnly, NullableText, OptionalText } from "./common";
+import { API_TOKEN_STATUSES, NOTIFICATION_ACTION_TYPES, NOTIFICATION_TYPES, TASK_PRIORITIES, TASK_STATUSES } from "./enums";
 
 /**
  * Response schemas, derived field by field from the backend entities and the
@@ -235,3 +235,33 @@ export const ChatSocketEventSchema = z.discriminatedUnion("type", [
   }),
 ]);
 export type ChatSocketEvent = z.infer<typeof ChatSocketEventSchema>;
+
+// ------------------------------------------------------- API tokens (FEAT-07)
+
+/**
+ * One personal access token as listed by GET /tokens. Never a secret or a hash: an unknown key
+ * (say a `token` the backend sent by mistake) is stripped here, so it cannot reach the cache.
+ */
+export const ApiTokenSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  prefix: z.string(),
+  created_at: ApiDate,
+  last_used_at: ApiDate.nullable(),
+  expires_at: ApiDate.nullable(),
+  revoked_at: ApiDate.nullable(),
+  status: z.enum(API_TOKEN_STATUSES),
+});
+export type ApiToken = z.infer<typeof ApiTokenSchema>;
+
+export const ApiTokenListSchema = ApiTokenSchema.array();
+export type ApiTokenList = z.infer<typeof ApiTokenListSchema>;
+
+/** The full token: `gid_pat_<prefix>_<secret>`, base62 and base64url characters only. */
+export const ApiTokenSecret = z
+  .string()
+  .regex(new RegExp(`^${API_TOKEN_RULES.prefix}[A-Za-z0-9]+_[A-Za-z0-9_-]+$`), "Expected a gid_pat_ token");
+
+/** POST /tokens: the list item plus the secret. The only time the secret leaves the server. */
+export const CreatedApiTokenSchema = ApiTokenSchema.extend({ token: ApiTokenSecret });
+export type CreatedApiToken = z.infer<typeof CreatedApiTokenSchema>;

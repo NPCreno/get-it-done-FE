@@ -14,6 +14,9 @@ import ConfirmationModal from "@/app/components/modals/confirmation";
 import LoadingPage from "@/app/components/loader";
 import InputBox from "@/app/components/inputBox";
 import { useFormState } from "@/app/context/FormProvider";
+import ApiTokensSection from "@/app/components/apiTokens/ApiTokensSection";
+import ToastHost from "@/app/components/ToastHost";
+import { useToastController } from "@/hooks/useToastController";
 interface profileSettingsFormValues {
   fullname: string;
   username: string;
@@ -26,6 +29,8 @@ interface profileSettingsFormValues {
 export default function ProfileSettingsPage() {
   const { userData } = useFormState();
   const updateProfile = useUpdateProfile();
+  // FEAT-07: the tokens section reports through the shared controller; the form keeps its own toast for now.
+  const tokensToast = useToastController();
   const [isEditEnabled, setIsEditEnabled] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState({
@@ -170,6 +175,7 @@ export default function ProfileSettingsPage() {
 
   return (
     <MainLayout>
+      <ToastHost controller={tokensToast} />
       {showToast && (
         <div
           className={`fixed bottom-4 right-4 z-50 ${
@@ -510,6 +516,8 @@ export default function ProfileSettingsPage() {
               </button>
             </div>
           </form>
+
+          <ApiTokensSection toast={tokensToast} />
         </div>
       </div>
 

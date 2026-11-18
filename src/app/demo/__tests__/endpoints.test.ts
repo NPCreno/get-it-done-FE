@@ -9,6 +9,7 @@ vi.mock("@/lib/clientSession", () => ({ refreshSession: vi.fn(), expireSession: 
 import * as chatRequests from "@/app/api/chatRequests";
 import * as projectsRequests from "@/app/api/projectsRequests";
 import * as taskRequests from "@/app/api/taskRequests";
+import * as tokensRequests from "@/app/api/tokensRequests";
 import { getAccessToken } from "@/app/utils/utils";
 import { expireSession, refreshSession } from "@/lib/clientSession";
 import * as specs from "@/lib/query/specs";
@@ -20,7 +21,7 @@ import { DEMO_USER_ID } from "../fake/seed";
 import { createDemoRuntime } from "../runtime";
 
 /**
- * D8, the drift guard. Every export of specs.ts, taskRequests.ts, projectsRequests.ts and chatRequests.ts is IN
+ * D8, the drift guard. Every export of specs.ts, taskRequests.ts, projectsRequests.ts, chatRequests.ts and tokensRequests.ts is IN
  * SCOPE by default and must be given seed-valid args below, or an entry in ALLOW with a reason.
  * A new spec or helper therefore fails this test until it gets a fake route or a reasoned entry.
  */
@@ -51,6 +52,11 @@ const ALLOW: Record<string, string> = {
   chatUnreadSpec: "chat is not in the demo",
   getChatUnread: "chat is not in the demo",
   markChatRead: "chat is not in the demo",
+  // FEAT-07 personal access tokens (specs.ts and tokensRequests.ts)
+  apiTokensSpec: "account settings are not in the demo",
+  getApiTokens: "account settings are not in the demo",
+  createApiToken: "account settings are not in the demo",
+  revokeApiToken: "account settings are not in the demo",
 };
 
 const NOW = Date.parse("2026-11-16T12:00:00Z");
@@ -100,7 +106,7 @@ afterEach(() => {
 });
 
 const exportsOf = (m: Record<string, unknown>) => Object.entries(m).filter(([, v]) => typeof v === "function") as [string, (...a: unknown[]) => unknown][];
-const ALL = [...exportsOf(specs), ...exportsOf(taskRequests), ...exportsOf(projectsRequests), ...exportsOf(chatRequests)];
+const ALL = [...exportsOf(specs), ...exportsOf(taskRequests), ...exportsOf(projectsRequests), ...exportsOf(chatRequests), ...exportsOf(tokensRequests)];
 
 describe("D8: endpoint coverage", () => {
   it("every export is in scope with args, or allowlisted with a reason; neither list is stale", () => {

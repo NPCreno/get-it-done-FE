@@ -9,6 +9,7 @@ import {
 } from "@/app/api/taskRequests";
 import { getProjectById, getProjectsForUser } from "@/app/api/projectsRequests";
 import { getUser } from "@/app/api/userRequests";
+import { getApiTokens } from "@/app/api/tokensRequests";
 import { getChatMembers, getChatMessagesPage, getChatUnread, getSharedProjects } from "@/app/api/chatRequests";
 import { qk } from "./keys";
 import { unwrap } from "./unwrap";
@@ -97,4 +98,12 @@ export const chatMessagesSpec = (id: string, projectId: string) => ({
     unwrap(await getChatMessagesPage(projectId, pageParam, { signal })),
   initialPageParam: undefined as string | undefined,
   getNextPageParam: (last: { next_cursor: string | null }) => last.next_cursor ?? undefined,
+});
+
+// ------------------------------------------------------------- API tokens (FEAT-07)
+
+/** The user is the token; `id` only scopes the cache. */
+export const apiTokensSpec = (id: string) => ({
+  queryKey: qk.apiTokens(id),
+  queryFn: async ({ signal }: Ctx) => unwrap(await getApiTokens({ signal })),
 });

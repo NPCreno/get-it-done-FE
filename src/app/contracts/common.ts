@@ -45,3 +45,14 @@ export const OptionalText = z
   .string()
   .nullable()
   .transform((v) => v ?? undefined);
+
+/** FEAT-07 personal access token rules (plan 38a §B). Not part of `LIMITS`, which mirrors the contract's `limits`. */
+export const API_TOKEN_RULES = {
+  nameMin: 1,
+  nameMax: 60,
+  /** Active tokens per user; the backend refuses an 11th. */
+  maxActive: 10,
+  defaultExpiryDays: 90,
+  /** Every token starts with this, so a leaked one is easy to spot. */
+  prefix: "gid_pat_",
+} as const;

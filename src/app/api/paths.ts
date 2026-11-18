@@ -32,3 +32,8 @@ export const chatReadPath = (projectId: string) => apiPath`/chat/projects/${proj
 
 export const chatMessagePath = (projectId: string, messageId: string) =>
   apiPath`/chat/projects/${projectId}/messages/${messageId}`;
+
+// FEAT-07 personal access tokens (website only: the JWT, never a token, authorizes these).
+export const apiTokensPath = () => "/tokens";
+
+export const apiTokenPath = (tokenId: string) => apiPath`/tokens/${tokenId}`;
