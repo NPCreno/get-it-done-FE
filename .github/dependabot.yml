@@ -1,0 +1,9 @@
+# SEC-12b: Dependabot scans pnpm-lock.yaml (npm ecosystem) for alerts but opens no
+# version-update PRs: this repo merges directly to main, so updates are done by hand.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0

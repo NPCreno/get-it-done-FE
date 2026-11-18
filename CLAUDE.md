@@ -76,7 +76,8 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `pnpm typecheck` — `tsc --noEmit`
 - `pnpm test` — vitest (`src/**/__tests__/**/*.test.ts`)
 - `pnpm contract:sync` / `pnpm contract:check` — vendored BE contract and fixtures
-- This repo has its own `pnpm-lock.yaml`. Regenerate it with `pnpm install --lockfile-only --ignore-workspace` because the parent folder is also a pnpm workspace
+- This repo has its own `pnpm-lock.yaml` and `pnpm-workspace.yaml`, so pnpm treats it as its own root even though the parent folder is also a workspace. Regenerate the lockfile with `pnpm install --lockfile-only`. Never add `--ignore-workspace`: pnpm 11 then skips this repo's `pnpm-workspace.yaml` and silently drops its `overrides` from the lockfile (SEC-12b)
+- `.github/dependabot.yml` scans `pnpm-lock.yaml` for alerts with a PR limit of 0 (no update PRs)
 
 ## CI
 - GitHub Actions `.github/workflows/ci.yml` runs `pnpm lint`, `pnpm typecheck` and `pnpm test` on every PR and on pushes to `main`. The build is covered by Vercel preview deployments; `contract:check` needs the sibling BE checkout, so it stays local.
