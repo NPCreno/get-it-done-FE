@@ -1,6 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTimer } from '@/hooks/useTimer';
 import type { TimerType } from '@/lib/timerService';
+import { TimerConfig as TimerDurations } from '@/lib/timerService';
+import { timerPhase } from '@/lib/timerPhase';
 import ConfirmationModal from './confirmation';
 import { useFormState } from '@/app/context/FormProvider';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/app/components/shadcn/dialog';
@@ -121,6 +123,9 @@ export default function PomodoroModal({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }, [timeLeft]);
 
+  // idle | running | paused: a paused timer offers Resume, never Start (BUG-04)
+  const phase = timerPhase(isActive, timeLeft, TimerDurations[safeTimerType]);
+
   const toggleTimer = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     toggle();
@@ -226,7 +231,7 @@ export default function PomodoroModal({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Start
+                  {phase === 'paused' ? 'Resume' : 'Start'}
                 </>
               )}
             </button>

@@ -1,7 +1,9 @@
 'use client';
 
 import { useTimer } from '@/hooks/useTimer';
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
+import { TimerConfig } from '@/lib/timerService';
+import { timerCopy, timerPhase } from '@/lib/timerPhase';
 
 // Control button icons
 const PlayPauseIcon = ({ isPlaying }: { isPlaying: boolean }) => (
@@ -50,14 +52,9 @@ export default function PomodoroButton({ onOpenChange }: PomodoroButtonProps) {
     }
   }, [isActive, currentTimer, pause, start]);
   
-  // Track if we've ever interacted with the timer
-  const [hasInteracted, setHasInteracted] = useState(false);
-  
-  // Handle reset button click - reset to default time and pause
+  // Handle reset button click - reset to default time and pause (back to idle)
   const handleReset = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    // Mark that we've interacted with the timer
-    setHasInteracted(true);
     // Reset to default time for current mode
     reset(currentTimer);
     // Ensure timer is paused after reset
@@ -66,13 +63,6 @@ export default function PomodoroButton({ onOpenChange }: PomodoroButtonProps) {
     }
   }, [currentTimer, reset, isActive, pause]);
 
-  // Default timer values in seconds
-  const defaultTimes = {
-    pomodoro: 25 * 60,
-    shortBreak: 5 * 60,
-    longBreak: 15 * 60
-  };
-
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -80,23 +70,9 @@ export default function PomodoroButton({ onOpenChange }: PomodoroButtonProps) {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  // Determine if we should show the timer or the default text
-  const shouldShowTimer = () => {
-    // Always show timer when active or when not at default time
-    if (isActive || timeLeft !== defaultTimes[currentTimer]) return true;
-    
-    // Show timer if we've ever interacted with it
-    // This ensures the timer stays visible after reset
-    return hasInteracted;
-  };
-
-  // Get button text based on state
-  const getButtonText = () => {
-    if (shouldShowTimer()) {
-      return formatTime(timeLeft);
-    }
-    return `Start ${currentTimer === 'pomodoro' ? 'Pomodoro' : currentTimer === 'shortBreak' ? 'Short Break' : 'Long Break'}`;
-  };
+  // idle | running | paused: every label below comes from this one phase (BUG-04)
+  const phase = timerPhase(isActive, timeLeft, TimerConfig[currentTimer]);
+  const copy = timerCopy(phase, currentTimer, formatTime(timeLeft));
 
   // Get colors based on timer mode
   const getModeColors = () => {
@@ -142,7 +118,7 @@ export default function PomodoroButton({ onOpenChange }: PomodoroButtonProps) {
       <button
         className={getButtonStyles()}
         onClick={() => onOpenChange(true)}
-        aria-label={isActive ? `Pomodoro timer: ${formatTime(timeLeft)} remaining` : 'Start Pomodoro timer'}
+        aria-label={copy.ariaLabel}
       >
         {/* Animated shine effect */}
         <span className="absolute inset-0 rounded-xl overflow-hidden">
@@ -177,12 +153,12 @@ export default function PomodoroButton({ onOpenChange }: PomodoroButtonProps) {
 
         {/* Button text and control */}
         <div className="relative z-10 flex items-center gap-2">
-          <span className={`text-base  tracking-wide text-white ${shouldShowTimer() ? 'font-bold' : 'font-medium'}`}>
-            {getButtonText()}
+          <span className={`text-base  tracking-wide text-white ${phase === 'idle' ? 'font-medium' : 'font-bold'}`}>
+            {copy.label}
           </span>
           
-          {/* Control buttons - only show when timer is active or paused */}
-          {(isActive || shouldShowTimer()) && (
+          {/* Control buttons - only show when timer is running or paused */}
+          {phase !== 'idle' && (
             <div className="flex items-center gap-1">
               {/* Play/Pause button */}
               <button
@@ -233,7 +209,7 @@ export default function PomodoroButton({ onOpenChange }: PomodoroButtonProps) {
         opacity-0 group-hover:opacity-100 transition-opacity duration-200
         pointer-events-none z-10
       `}>
-        {isActive ? 'Timer is running' : 'Start Pomodoro'}
+        {copy.tooltip}
       </div>
     </div>
   );

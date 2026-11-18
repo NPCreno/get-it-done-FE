@@ -117,7 +117,6 @@ export default function ProjectsPage() {
 
   const handleSubmitForm = async (values: ProjectFormState) => {
     const validationErrors: FormikErrors<typeof values> = await validateForm();
-    console.log("validationErrors: ", validationErrors);
     if (Object.keys(validationErrors).length === 0 && !isProjectModalOpen.isEdit) {
       await createProj(values);
     } else if (Object.keys(validationErrors).length === 0 && isProjectModalOpen.isEdit) {
@@ -199,7 +198,7 @@ export default function ProjectsPage() {
       if (response.ok) {
         editor.close();
         focusFallback(headingRef);
-        toast.success("Task Deleted", "Your task has been deleted successfully", response.data.message);
+        toast.success("Task Deleted", "Your task has been deleted successfully");
       } else if (isUserFacing(response.failure)) {
         if (response.failure.kind === 'api') {
           clearValueAndErrors();
@@ -263,7 +262,7 @@ export default function ProjectsPage() {
         clearValueAndErrors();
         editor.close();
         focusFallback(headingRef);
-        toast.success("Project Deleted", "Your project has been deleted successfully", response.data.message);
+        toast.success("Project Deleted", "Your project has been deleted.");
       } else if (isUserFacing(response.failure)) {
         if (response.failure.kind === 'api') {
           clearValueAndErrors();

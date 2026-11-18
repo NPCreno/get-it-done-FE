@@ -1,5 +1,8 @@
 {
   "extends": ["next/core-web-vitals", "next/typescript", "plugin:jsx-a11y/recommended"],
+  "rules": {
+    "no-console": ["error", { "allow": ["warn", "error"] }]
+  },
   "overrides": [
     {
       "files": ["src/app/components/dashboard/**/*.{ts,tsx}", "src/app/components/tasks/**/*.{ts,tsx}"],

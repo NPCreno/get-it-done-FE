@@ -109,10 +109,7 @@ export function TaskItem({
 
   const handleDelete = useCallback(async (taskId: string) => {
     // Prevent multiple delete attempts for the same task
-    if (isDeleting[taskId]) {
-      console.log('Delete already in progress for task:', taskId);
-      return;
-    }
+    if (isDeleting[taskId]) return;
     
     try {
       // Mark this task as being deleted

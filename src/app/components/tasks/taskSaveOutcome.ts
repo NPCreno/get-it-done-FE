@@ -5,7 +5,7 @@ import type { Settled } from "@/lib/query/unwrap";
 export type SaveMode = "create" | "update";
 
 export type ToastIntent =
-  | { kind: "success"; title: string; fallback: string; message?: string }
+  | { kind: "success"; title: string; fallback: string }
   | { kind: "failure"; failure: ApiFailure }
   | { kind: "unexpected"; error: unknown };
 
@@ -24,9 +24,9 @@ const COPY: Record<SaveMode, { title: string; fallback: string }> = {
   update: { title: "Task Updated", fallback: "Your task has been updated successfully" },
 };
 
-export function outcomeOf(mode: SaveMode, result: Settled<{ message?: string }>): SaveOutcome {
+export function outcomeOf(mode: SaveMode, result: Settled<unknown>): SaveOutcome {
   if (result.ok) {
-    return { close: true, reset: true, toast: { kind: "success", ...COPY[mode], message: result.data.message } };
+    return { close: true, reset: true, toast: { kind: "success", ...COPY[mode] } };
   }
   // Toast only for failures the user caused or can act on (aborted and unauthorized stay silent).
   return { close: false, reset: false, toast: isUserFacing(result.failure) ? { kind: "failure", failure: result.failure } : null };
@@ -39,7 +39,7 @@ export function outcomeOfException(error: unknown): SaveOutcome {
 
 export function showToast(toast: ToastController, intent: ToastIntent | null): void {
   if (!intent) return;
-  if (intent.kind === "success") toast.success(intent.title, intent.fallback, intent.message);
+  if (intent.kind === "success") toast.success(intent.title, intent.fallback);
   else if (intent.kind === "failure") toast.failure(intent.failure);
   else toast.unexpected(intent.error);
 }

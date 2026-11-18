@@ -28,7 +28,7 @@ export function useTaskDelete(
       if (response.ok) {
         editor.close();
         focusFallback(headingRef);
-        toast.success("Task Deleted", "Your task has been deleted successfully", response.data.message);
+        toast.success("Task Deleted", "Your task has been deleted successfully");
       } else if (isUserFacing(response.failure)) {
         if (response.failure.kind === "api") {
           editor.close();

@@ -84,9 +84,9 @@ export function createToastController({ displayMs = 10_000, exitMs = 400 }: Toas
     },
 
     // Message shapes used across the pages.
-    /** `message` is the backend's own success text; `fallback` is the client copy. */
-    success(title: string, fallback: string, message?: string) {
-      controller.show({ title, description: message || fallback, className: SUCCESS });
+    /** Fixed client copy only: backend text never reaches a toast (DATA-04, BUG-04). */
+    success(title: string, description: string) {
+      controller.show({ title, description, className: SUCCESS });
     },
     /** A failed request. Silent for failures the user did not cause or cannot act on. */
     failure(failure: ApiFailure) {

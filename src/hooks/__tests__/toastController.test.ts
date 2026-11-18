@@ -123,12 +123,10 @@ describe("toast controller", () => {
     expect(t.getSnapshot).toBe(t.getSnapshot);
   });
 
-  it("success() prefers the backend message, else the fallback", () => {
+  it("success() shows the fixed client copy", () => {
     const t = createToastController();
-    t.success("Task Created", "fallback", "from server");
-    expect(t.getSnapshot().toast).toEqual({ title: "Task Created", description: "from server", className: "text-green-600" });
     t.success("Task Created", "fallback");
-    expect(t.getSnapshot().toast?.description).toBe("fallback");
+    expect(t.getSnapshot().toast).toEqual({ title: "Task Created", description: "fallback", className: "text-green-600" });
   });
 
   it("failure() shows fixed copy for user-facing kinds and nothing for aborted/unauthorized", () => {

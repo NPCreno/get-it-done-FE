@@ -10,8 +10,8 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Sidebar for large screens */}
-      <aside
+      {/* Sidebar for large screens: plain navigation, never a dialog (BUG-04) */}
+      <div
         className={`flex flex-col h-full py-5 px-[10px] rounded-[10px] items-start group transition-all duration-300 border
         ${userData?.theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"} 
         ${userData?.theme === "dark" ? "text-white" : "text-black"}
@@ -55,7 +55,7 @@ export default function Sidebar() {
           </h1>
         </div>
 
-        <nav className="flex flex-col gap-5 mt-[60px]">
+        <nav aria-label="Main navigation" className="flex flex-col gap-5 mt-[60px]">
           <SidebarLink
             href="/dashboard"
             icon="/svgs/dashboard-yellow.svg"
@@ -82,7 +82,7 @@ export default function Sidebar() {
             text="Profile"
           />
         </nav>
-      </aside>
+      </div>
     </>
   );
 }

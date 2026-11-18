@@ -49,5 +49,5 @@ Request chains per feature. Backend paths are shown without the `/api` prefix, b
 - Live: `useChatRoom` joins the project's room on the one per-tab socket (`chatSocket.ts`, `wss://<api>/chat/ws`, auth frame first). `message.created` / `message.deleted` patch the cache; a reconnect refetches; `removed` shows "no longer have access". Chat is not in `/demo`.
 
 ## Pomodoro timer
-- `PomodoroButton.tsx` → `modals/pomodoro.tsx` → `hooks/useTimer.ts` → `lib/timerService.ts`
+- `PomodoroButton.tsx` → `modals/pomodoro.tsx` → `hooks/useTimer.ts` → `lib/timerService.ts`; labels from `lib/timerPhase.ts` (a paused timer says "Paused" / "Resume")
 - State persisted in `localStorage` key `pomodoroTimerState`

@@ -99,15 +99,18 @@ export default function MobileSidebar() {
         tabIndex={isMobileSidebarOpen ? 0 : -1}
       />
       
-      {/* Mobile Sidebar */}
-      <aside
+      {/* Mobile Sidebar: a modal drawer (focus trap, Esc, backdrop). Closed, it is inert, so
+          screen readers and Tab never find a hidden dialog. */}
+      <div
+        id="mobile-navigation"
         className={`mobile-sidebar fixed inset-y-0 left-0 w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out ${
           isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
-        aria-label="Main navigation"
         role="dialog"
         aria-modal="true"
+        aria-label="Menu"
         aria-hidden={!isMobileSidebarOpen}
+        inert={!isMobileSidebarOpen}
       >
         <div 
           className="h-full flex flex-col py-5 px-4 overflow-y-auto w-full"
@@ -148,7 +151,7 @@ export default function MobileSidebar() {
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex-1 flex flex-col gap-4 mt-8 px-2">
+          <nav aria-label="Main navigation" className="flex-1 flex flex-col gap-4 mt-8 px-2">
             <SidebarLink
               href="/dashboard"
               icon="/svgs/dashboard-yellow.svg"
@@ -185,7 +188,7 @@ export default function MobileSidebar() {
             />
           </nav>
         </div>
-      </aside>
+      </div>
     </>
   );
 }
