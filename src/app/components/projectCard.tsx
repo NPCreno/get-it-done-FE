@@ -3,6 +3,8 @@ import { useRef, useState } from "react";
 import { useFormState } from "@/app/context/FormProvider";
 import ConfirmationModal from "./modals/confirmation";
 import { Pencil2Icon } from "@radix-ui/react-icons"
+import { useChatUnread } from "@/lib/query/chat";
+import UnreadBadge from "./chat/UnreadBadge";
 
 
 export default function ProjectCard({
@@ -19,6 +21,7 @@ export default function ProjectCard({
   onDeleteClick?: (project: IProject) => void;
 }) {
   const { userData } = useFormState();
+  const chatUnread = useChatUnread().countFor(project.project_id);
   const projectColor = project.colorLabel?.toLowerCase() || 'gray';
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -152,6 +155,7 @@ const getGradientClass = (color: string = 'gray') => {
                 {priority.charAt(0).toUpperCase() + priority.slice(1)}
               </span>
             )}
+            <UnreadBadge count={chatUnread} className="flex-shrink-0" />
           </div>
           <p className={`text-sm ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} truncate`}>
             {project.description || 'No description'}

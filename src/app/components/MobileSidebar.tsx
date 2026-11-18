@@ -2,9 +2,11 @@ import { useEffect } from 'react';
 import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
 import { useUnreadCount } from "@/lib/query/notifications";
+import { useChatUnread } from "@/lib/query/chat";
 
 export default function MobileSidebar() {
   const unreadCount = useUnreadCount();
+  const chatUnread = useChatUnread().total;
   const { isMobileSidebarOpen, closeMobileSidebar } = useFormState();
 
   // Close on escape key
@@ -165,6 +167,8 @@ export default function MobileSidebar() {
               icon="/svgs/projects-yellow.svg"
               iconHover="/svgs/projects-white.svg"
               text="Projects"
+              badge={chatUnread}
+              badgeLabel="unread chat messages"
               onClick={closeMobileSidebar}
               forceShowText={true}
             />

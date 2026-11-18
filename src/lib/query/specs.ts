@@ -9,7 +9,7 @@ import {
 } from "@/app/api/taskRequests";
 import { getProjectById, getProjectsForUser } from "@/app/api/projectsRequests";
 import { getUser } from "@/app/api/userRequests";
-import { getChatMembers, getChatMessagesPage, getSharedProjects } from "@/app/api/chatRequests";
+import { getChatMembers, getChatMessagesPage, getChatUnread, getSharedProjects } from "@/app/api/chatRequests";
 import { qk } from "./keys";
 import { unwrap } from "./unwrap";
 import type { TaskWindow } from "./window";
@@ -82,6 +82,12 @@ export const chatMembersSpec = (id: string, projectId: string) => ({
 export const sharedProjectsSpec = (id: string) => ({
   queryKey: qk.sharedProjects(id),
   queryFn: async ({ signal }: Ctx) => unwrap(await getSharedProjects({ signal })),
+});
+
+/** FEAT-08. The user is the token; `id` only scopes the cache. */
+export const chatUnreadSpec = (id: string) => ({
+  queryKey: qk.chatUnread(id),
+  queryFn: async ({ signal }: Ctx) => unwrap(await getChatUnread({ signal })),
 });
 
 /** Infinite, newest page first. The cursor is the page param, not part of the key. */

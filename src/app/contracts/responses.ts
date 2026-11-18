@@ -202,6 +202,23 @@ export const ChatMessagesPageSchema = z.object({
 export type ChatMessagesPage = z.infer<typeof ChatMessagesPageSchema>;
 
 /**
+ * GET /chat/unread (FEAT-08): only projects with unread messages are listed. Each count is
+ * capped at 100 by the server (the UI shows "99+"); `total` is the sum of the capped counts.
+ */
+export const ChatUnreadSchema = z.object({
+  items: z.object({ project_id: z.string(), unread_count: Count }).array(),
+  total: Count,
+});
+export type ChatUnread = z.infer<typeof ChatUnreadSchema>;
+
+/** PUT /chat/projects/:id/read: the read point after the write (it never moves back). */
+export const ChatReadSchema = z.object({
+  project_id: z.string(),
+  last_read_at: ApiDate,
+});
+export type ChatRead = z.infer<typeof ChatReadSchema>;
+
+/**
  * Server-to-client frames on /chat/ws, all `{ type, data }`. Only the frames the
  * app acts on are listed; `joined`, `left` and anything unknown fail the parse
  * and are ignored.

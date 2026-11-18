@@ -3,12 +3,14 @@
 import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
 import { useUnreadCount } from "@/lib/query/notifications";
+import { useChatUnread } from "@/lib/query/chat";
 import { sidebarPanelWidth } from "./sidebarWidths";
 
 export const DESKTOP_SIDEBAR_ID = "desktop-sidebar";
 
 export default function Sidebar() {
   const unreadCount = useUnreadCount();
+  const chatUnread = useChatUnread().total;
   const { isSidebarExpanded, toggleSidebar, sidebarAnimated, userData } = useFormState();
   const motion = sidebarAnimated ? "motion-reduce:transition-none" : "!transition-none";
 
@@ -67,6 +69,8 @@ export default function Sidebar() {
             icon="/svgs/projects-yellow.svg"
             iconHover="/svgs/projects-white.svg"
             text="Projects"
+          badge={chatUnread}
+          badgeLabel="unread chat messages"
           />
           <SidebarLink
             href="/notifications"

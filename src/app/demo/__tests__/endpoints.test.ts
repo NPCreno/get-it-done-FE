@@ -47,6 +47,10 @@ const ALLOW: Record<string, string> = {
   getChatMessagesPage: "chat is not in the demo",
   sendChatMessage: "chat is not in the demo",
   deleteChatMessage: "chat is not in the demo",
+  // FEAT-08 unread badges
+  chatUnreadSpec: "chat is not in the demo",
+  getChatUnread: "chat is not in the demo",
+  markChatRead: "chat is not in the demo",
 };
 
 const NOW = Date.parse("2026-11-16T12:00:00Z");

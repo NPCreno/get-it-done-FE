@@ -72,6 +72,8 @@ export interface StreamHandlers {
   onNotification: () => void;
   /** A connection was (re)established: refetch to recover anything missed. */
   onConnected: () => void;
+  /** FEAT-08: a `chat` event (some chat's unread count changed). It carries no counts. */
+  onChat?: () => void;
 }
 
 export interface StreamDeps {
@@ -96,7 +98,7 @@ export function createNotificationStream(deps: StreamDeps): NotificationStream {
   let hidden = false;
   let running: AbortController | null = null;
 
-  const emit = (k: keyof StreamHandlers) => subscribers.forEach((h) => h[k]());
+  const emit = (k: keyof StreamHandlers) => subscribers.forEach((h) => h[k]?.());
   const shouldRun = () => subscribers.size > 0 && !hidden;
 
   async function loop(signal: AbortSignal): Promise<void> {
@@ -153,7 +155,10 @@ export function createNotificationStream(deps: StreamDeps): NotificationStream {
         if (done) break;
         const parsed = parseSseChunk(rest, decoder.decode(value, { stream: true }));
         rest = parsed.rest;
-        for (const m of parsed.messages) if (m.event === "notification") emit("onNotification");
+        for (const m of parsed.messages) {
+          if (m.event === "notification") emit("onNotification");
+          else if (m.event === "chat") emit("onChat");
+        }
       }
     } catch {
       // aborted or broken connection

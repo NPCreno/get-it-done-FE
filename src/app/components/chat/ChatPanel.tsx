@@ -9,7 +9,7 @@ import type { ChatMessage } from "@/app/contracts/responses";
 import type { ToastController } from "@/hooks/toastController";
 import { formatRelativeTime } from "@/lib/relativeTime";
 import { useChatRoom } from "@/lib/useChatRoom";
-import { useChatMessages, useDeleteChatMessage, useSendChatMessage } from "@/lib/query/chat";
+import { useChatMessages, useDeleteChatMessage, useMarkChatReadWhileOpen, useSendChatMessage } from "@/lib/query/chat";
 import { isEmptyChat, oldestFirst } from "@/lib/query/chatCache";
 import { loadStateOf } from "@/lib/query/loadState";
 import { useSessionUserId } from "@/lib/query/queries";
@@ -37,6 +37,8 @@ export default function ChatPanel({ projectId, projectTitle, isOwner, onClose, t
   const query = useChatMessages(projectId);
   const state = loadStateOf(query, isEmptyChat);
   const messages = useMemo(() => oldestFirst(query.data), [query.data]);
+  // FEAT-08: this chat's badge reads 0 while open; the read point follows the newest message.
+  useMarkChatReadWhileOpen(projectId, removed ? undefined : messages.at(-1)?.id);
   const [pendingDelete, setPendingDelete] = useState<ChatMessage | null>(null);
   const deleteMessage = useDeleteChatMessage(projectId);
 

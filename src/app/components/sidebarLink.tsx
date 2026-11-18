@@ -12,6 +12,7 @@ export default function SidebarLink({
   forceShowText = false,
   className = "",
   badge = 0,
+  badgeLabel = "unread",
 }: {
   href: string;
   icon: string;
@@ -22,6 +23,8 @@ export default function SidebarLink({
   className?: string;
   /** Unread count; hidden at 0. */
   badge?: number;
+  /** What the badge counts, for the link's accessible name ("Projects, 3 unread chat messages"). */
+  badgeLabel?: string;
 }) {
   const { isSidebarExpanded, sidebarAnimated } = useFormState();
   // The mobile drawer always shows its labels; the desktop labels follow the toggle (UX-02).
@@ -65,7 +68,7 @@ export default function SidebarLink({
           : "hover:bg-primary-default/10"
         } ${className}`}
       aria-current={isActive ? 'page' : undefined}
-      aria-label={badge > 0 ? `${text}, ${badge} unread` : undefined}
+      aria-label={badge > 0 ? `${text}, ${badge > 99 ? "more than 99" : badge} ${badgeLabel}` : undefined}
     >
       <div className="relative ml-2 w-5 h-5 flex-shrink-0">
         {badge > 0 && (

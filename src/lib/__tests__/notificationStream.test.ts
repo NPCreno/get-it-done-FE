@@ -199,3 +199,54 @@ describe("F3: stream controller", () => {
     off();
   });
 });
+
+describe("F4: chat events on the same stream (FEAT-08)", () => {
+  async function connected() {
+    const h = harness();
+    const live = liveResponse();
+    h.fetchMock.mockResolvedValueOnce(live.response);
+    const handlers = { ...h.handlers, onChat: vi.fn() };
+    const off = createNotificationStream(h.deps).subscribe(handlers);
+    await tick();
+    return { live, handlers, off };
+  }
+
+  it("a chat event calls onChat and not onNotification", async () => {
+    const { live, handlers, off } = await connected();
+    live.send('event: chat\ndata: {"project_id":"P1"}\n\n');
+    await tick();
+    expect(handlers.onChat).toHaveBeenCalledTimes(1);
+    expect(handlers.onNotification).not.toHaveBeenCalled();
+    off();
+  });
+
+  it("a notification event works as before", async () => {
+    const { live, handlers, off } = await connected();
+    live.send("id: n1\nevent: notification\ndata: {}\n\n");
+    await tick();
+    expect(handlers.onNotification).toHaveBeenCalledTimes(1);
+    expect(handlers.onChat).not.toHaveBeenCalled();
+    off();
+  });
+
+  it("a mix in one chunk calls each handler once", async () => {
+    const { live, handlers, off } = await connected();
+    live.send('id: n2\nevent: notification\ndata: {}\n\nevent: chat\ndata: {"project_id":"P1"}\n\nevent: ping\ndata: \n\n');
+    await tick();
+    expect(handlers.onNotification).toHaveBeenCalledTimes(1);
+    expect(handlers.onChat).toHaveBeenCalledTimes(1);
+    off();
+  });
+
+  it("a subscriber without onChat ignores chat events", async () => {
+    const h = harness();
+    const live = liveResponse();
+    h.fetchMock.mockResolvedValueOnce(live.response);
+    const off = createNotificationStream(h.deps).subscribe(h.handlers);
+    await tick();
+    live.send('event: chat\ndata: {"project_id":"P1"}\n\n');
+    await tick();
+    expect(h.handlers.onNotification).not.toHaveBeenCalled();
+    off();
+  });
+});

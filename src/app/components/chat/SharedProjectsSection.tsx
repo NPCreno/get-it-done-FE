@@ -5,13 +5,14 @@ import ConfirmationModal from "@/app/components/modals/confirmation";
 import { useFormState } from "@/app/context/FormProvider";
 import type { SharedProject } from "@/app/contracts/responses";
 import type { ToastController } from "@/hooks/toastController";
-import { useRemoveChatMember, useSharedProjects } from "@/lib/query/chat";
+import { useChatUnread, useRemoveChatMember, useSharedProjects } from "@/lib/query/chat";
 import { isEmptyList } from "@/lib/query/emptiness";
 import { loadStateOf } from "@/lib/query/loadState";
 import { useSessionUserId } from "@/lib/query/queries";
 import { settled } from "@/lib/query/unwrap";
 import { focusFallback } from "@/lib/focusFallback";
 import ChatPanel from "./ChatPanel";
+import UnreadBadge from "./UnreadBadge";
 
 const HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
@@ -89,6 +90,7 @@ function SharedProjectCard({
 }) {
   const me = useSessionUserId();
   const leave = useRemoveChatMember(project.project_id);
+  const unread = useChatUnread().countFor(project.project_id);
   const [confirming, setConfirming] = useState(false);
   const color = HEX.test(project.color) ? project.color : "#9ca3af";
 
@@ -111,6 +113,7 @@ function SharedProjectCard({
       <div className="flex items-center gap-2">
         <span aria-hidden="true" className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: color }} />
         <h3 className="truncate font-lato text-base font-bold">{project.title || "Untitled project"}</h3>
+        <UnreadBadge count={unread} className="ml-auto flex-shrink-0" />
       </div>
       <p className={`font-lato text-xs ${dark ? "text-gray-300" : "text-[#676767]"}`}>Shared by @{project.owner_username}</p>
       <div className="flex gap-2">

@@ -25,5 +25,10 @@ export const chatSharedProjectsPath = () => "/chat/shared-projects";
 
 export const chatMessagesPath = (projectId: string) => apiPath`/chat/projects/${projectId}/messages`;
 
+// FEAT-08 unread counts and the read point.
+export const chatUnreadPath = () => "/chat/unread";
+
+export const chatReadPath = (projectId: string) => apiPath`/chat/projects/${projectId}/read`;
+
 export const chatMessagePath = (projectId: string, messageId: string) =>
   apiPath`/chat/projects/${projectId}/messages/${messageId}`;

@@ -15,6 +15,7 @@ export function resourceOf(key: readonly unknown[]): string {
   if (area === "notifications") return "notifications";
   if (area === "projects") {
     if (a === "shared") return "chat.shared";
+    if (a === "chat-unread") return "chat.unread";
     if (b === "members") return "chat.members";
     if (b === "messages") return "chat.messages";
     return key.length > 3 ? "projects.detail" : "projects";
@@ -42,6 +43,8 @@ export const qk = {
    */
   chatMembers: (id: string, projectId: string) => [...u(id), "projects", projectId, "members"] as const,
   sharedProjects: (id: string) => [...u(id), "projects", "shared"] as const,
+  /** FEAT-08 unread counts for every chat this user is in. Under `projects`, like the chat keys. */
+  chatUnread: (id: string) => [...u(id), "projects", "chat-unread"] as const,
   /** One infinite list per project; the cursor is a page param, not part of the key. */
   chatMessages: (id: string, projectId: string) => [...u(id), "projects", projectId, "messages"] as const,
   analytics: (id: string) => [...u(id), "analytics"] as const, // prefix

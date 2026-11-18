@@ -45,13 +45,20 @@ export function gatedInvalidate(qc: QueryClient, mutationKey: MutationKey, keys:
 
 /** FEAT-05 chat events. They name a project, so they have their own table. */
 export type ChatDataEvent =
-  | "chat-members" // added, removed, or left
-  | "chat-message"; // sent or deleted
+  | "chat-members" // added or removed by the owner
+  | "chat-left" // this user left the project
+  | "chat-message" // sent or deleted
+  | "chat-read"; // this user's read point moved (FEAT-08)
 
 export function chatInvalidationsFor(event: ChatDataEvent, userId: string, projectId: string): QueryKey[] {
   switch (event) {
     case "chat-members":
       return [qk.chatMembers(userId, projectId), qk.sharedProjects(userId)];
+    case "chat-left":
+      // That chat's badge goes too.
+      return [qk.sharedProjects(userId), qk.chatUnread(userId)];
+    case "chat-read":
+      return [qk.chatUnread(userId)];
     case "chat-message":
       // Nothing: the mutation writes its own response into the cache and the socket
       // delivers everyone else's. A refetch would reload every loaded page of history.

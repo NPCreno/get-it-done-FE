@@ -1,14 +1,23 @@
 import { apiClient } from "@/lib/apiClient";
 import { LIMITS } from "../contracts/common";
-import { AddChatMemberRequestSchema, SendChatMessageRequestSchema } from "../contracts/requests";
+import { AddChatMemberRequestSchema, MarkChatReadRequestSchema, SendChatMessageRequestSchema } from "../contracts/requests";
 import type { AddChatMemberRequest, SendChatMessageRequest } from "../contracts/requests";
-import { ChatMembersSchema, ChatMessageSchema, ChatMessagesPageSchema, SharedProjectSchema } from "../contracts/responses";
+import {
+  ChatMembersSchema,
+  ChatMessageSchema,
+  ChatMessagesPageSchema,
+  ChatReadSchema,
+  ChatUnreadSchema,
+  SharedProjectSchema,
+} from "../contracts/responses";
 import {
   chatMemberPath,
   chatMembersPath,
   chatMessagePath,
   chatMessagesPath,
+  chatReadPath,
   chatSharedProjectsPath,
+  chatUnreadPath,
 } from "./paths";
 
 // FEAT-05 project chat. Every route takes the caller from the token; the backend
@@ -50,6 +59,24 @@ export const getSharedProjects = (opts?: Opts) =>
     schema: SharedProjectSchema.array(),
     signal: opts?.signal,
     fallbackError: "Failed to load shared projects",
+  });
+
+/** FEAT-08: unread chat messages per project (only projects with any) and the total. */
+export const getChatUnread = (opts?: Opts) =>
+  apiClient(chatUnreadPath(), {
+    schema: ChatUnreadSchema,
+    signal: opts?.signal,
+    fallbackError: "Failed to load unread messages",
+  });
+
+/** FEAT-08: moves this user's read point up to `messageId`. Idempotent; never moves back. */
+export const markChatRead = (projectId: string, messageId: string) =>
+  apiClient(chatReadPath(projectId), {
+    method: "PUT",
+    body: { message_id: messageId },
+    requestSchema: MarkChatReadRequestSchema,
+    schema: ChatReadSchema,
+    fallbackError: "Failed to mark messages read",
   });
 
 /** Newest first. `cursor` is opaque: pass back exactly what the previous page returned. */

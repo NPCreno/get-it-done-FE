@@ -10,16 +10,34 @@ vi.mock("@/app/api/chatRequests", () => ({
   getChatMessagesPage: vi.fn(),
   sendChatMessage: vi.fn(),
   deleteChatMessage: vi.fn(),
+  getChatUnread: vi.fn(),
+  markChatRead: vi.fn(),
 }));
 
 import * as chatApi from "@/app/api/chatRequests";
-import { ChatMembersSchema, ChatMessagesPageSchema, SharedProjectSchema, type ChatMessage } from "@/app/contracts/responses";
-import { AddChatMemberRequestSchema, SendChatMessageRequestSchema } from "@/app/contracts/requests";
-import { addMemberOptions, deleteMessageOptions, removeMemberOptions, sendMessageOptions } from "../query/chat";
+import {
+  ChatMembersSchema,
+  ChatMessagesPageSchema,
+  ChatReadSchema,
+  ChatUnreadSchema,
+  SharedProjectSchema,
+  type ChatMessage,
+  type ChatUnread,
+} from "@/app/contracts/responses";
+import { AddChatMemberRequestSchema, MarkChatReadRequestSchema, SendChatMessageRequestSchema } from "@/app/contracts/requests";
+import {
+  addMemberOptions,
+  deleteMessageOptions,
+  markReadOptions,
+  removeMemberOptions,
+  sendMessageOptions,
+  unreadView,
+} from "../query/chat";
+import { clearUnread, formatUnread, restoreUnread, selectUnread, unreadLabel } from "../query/chatUnread";
 import { addMessage, isEmptyChat, oldestFirst, removeMessage, type ChatMessagePages } from "../query/chatCache";
 import { chatInvalidationsFor } from "../query/invalidation";
 import { qk, resourceOf } from "../query/keys";
-import { chatMembersSpec, chatMessagesSpec, sharedProjectsSpec } from "../query/specs";
+import { chatMembersSpec, chatMessagesSpec, chatUnreadSpec, sharedProjectsSpec } from "../query/specs";
 import { failResult, flush, okResult, testClient } from "../query/__tests__/helpers";
 
 const U = "u1";
@@ -160,7 +178,7 @@ describe("CH3: mutations", () => {
     expect(spy.mock.calls.map(([f]) => f?.queryKey)).toEqual([qk.chatMembers(U, P), qk.sharedProjects(U)]);
   });
 
-  it("leaving (removing yourself) drops that chat from the cache and refreshes the shared list", async () => {
+  it("leaving (removing yourself) drops that chat from the cache and refreshes the shared list and unread counts", async () => {
     const qc = testClient();
     qc.setQueryData(qk.chatMessages(U, P), pages([m("a")]));
     qc.setQueryData(qk.chatMembers(U, P), []);
@@ -171,7 +189,7 @@ describe("CH3: mutations", () => {
     expect(chatApi.removeChatMember).toHaveBeenCalledWith(P, U);
     expect(qc.getQueryData(qk.chatMessages(U, P))).toBeUndefined();
     expect(qc.getQueryData(qk.chatMembers(U, P))).toBeUndefined();
-    expect(spy.mock.calls.map(([f]) => f?.queryKey)).toEqual([qk.sharedProjects(U)]);
+    expect(spy.mock.calls.map(([f]) => f?.queryKey)).toEqual([qk.sharedProjects(U), qk.chatUnread(U)]);
   });
 
   it("the owner removing someone else keeps the chat and refreshes members", async () => {
@@ -219,5 +237,131 @@ describe("CH4: chat schemas (BE ChatMembersDto, SharedProjectDto, ChatMessagesPa
     expect(AddChatMemberRequestSchema.safeParse({ username: "bob_1" }).success).toBe(true);
     expect(AddChatMemberRequestSchema.safeParse({ username: "bob smith" }).success).toBe(false);
     expect(AddChatMemberRequestSchema.safeParse({ username: "ab" }).success).toBe(false);
+  });
+});
+
+// ------------------------------------------------------------- FEAT-08 unread
+
+const unread = (...items: [string, number][]): ChatUnread => ({
+  items: items.map(([project_id, unread_count]) => ({ project_id, unread_count })),
+  total: items.reduce((n, [, c]) => n + c, 0),
+});
+
+describe("CH5: unread keys, spec and invalidation (FEAT-08)", () => {
+  it("the spec's key equals its request (the user is the token)", async () => {
+    const signal = new AbortController().signal;
+    const spec = chatUnreadSpec(U);
+    expect(spec.queryKey).toEqual(["u", U, "projects", "chat-unread"]);
+    vi.mocked(chatApi.getChatUnread).mockResolvedValueOnce(okResult(unread()) as never);
+    await spec.queryFn({ signal });
+    expect(chatApi.getChatUnread).toHaveBeenCalledWith({ signal });
+  });
+
+  it("chatUnread sits under the projects prefix, so a project mutation invalidates it", async () => {
+    const qc = testClient();
+    qc.setQueryData(qk.chatUnread(U), unread(["P1", 2]));
+    await qc.invalidateQueries({ queryKey: qk.projects(U) });
+    expect(qc.getQueryState(qk.chatUnread(U))!.isInvalidated).toBe(true);
+    expect(resourceOf(qk.chatUnread("USER-S"))).toBe("chat.unread");
+  });
+
+  it("mark-read invalidates only the counts; leaving also drops the badge", () => {
+    expect(chatInvalidationsFor("chat-read", U, P)).toEqual([qk.chatUnread(U)]);
+    expect(chatInvalidationsFor("chat-left", U, P)).toEqual([qk.sharedProjects(U), qk.chatUnread(U)]);
+  });
+});
+
+describe("CH6: unread schemas (BE ChatUnreadDto, ChatReadDto)", () => {
+  it("accepts counts and an empty list", () => {
+    expect(ChatUnreadSchema.parse({ items: [{ project_id: "P1", unread_count: 3 }], total: 3 })).toEqual(unread(["P1", 3]));
+    expect(ChatUnreadSchema.safeParse({ items: [], total: 0 }).success).toBe(true);
+  });
+
+  it("rejects a negative or fractional count", () => {
+    expect(ChatUnreadSchema.safeParse({ items: [{ project_id: "P1", unread_count: -1 }], total: 0 }).success).toBe(false);
+    expect(ChatUnreadSchema.safeParse({ items: [], total: -1 }).success).toBe(false);
+    expect(ChatUnreadSchema.safeParse({ items: [{ project_id: "P1", unread_count: 1.5 }], total: 1 }).success).toBe(false);
+  });
+
+  it("read point: an ISO date; the request needs a message id", () => {
+    expect(ChatReadSchema.safeParse({ project_id: "P1", last_read_at: "2026-11-18T10:00:00.000Z" }).success).toBe(true);
+    expect(ChatReadSchema.safeParse({ project_id: "P1", last_read_at: "nope" }).success).toBe(false);
+    expect(MarkChatReadRequestSchema.safeParse({ message_id: "m1" }).success).toBe(true);
+    expect(MarkChatReadRequestSchema.safeParse({ message_id: "" }).success).toBe(false);
+  });
+});
+
+describe("CH7: unread display helpers", () => {
+  it("formatUnread: nothing at 0, then the number, then 99+", () => {
+    expect(formatUnread(0)).toBe("");
+    expect(formatUnread(1)).toBe("1");
+    expect(formatUnread(99)).toBe("99");
+    expect(formatUnread(100)).toBe("99+");
+    expect(formatUnread(-3)).toBe("");
+  });
+
+  it("each badge has an accessible name", () => {
+    expect(unreadLabel(1)).toBe("1 unread chat message");
+    expect(unreadLabel(3)).toBe("3 unread chat messages");
+    expect(unreadLabel(100)).toBe("more than 99 unread chat messages");
+  });
+
+  it("select gives a total and a lookup; open chats read 0 and leave the total", () => {
+    const counts = selectUnread(unread(["P1", 3], ["P2", 100]));
+    const shown = unreadView(counts, new Set());
+    expect(shown.total).toBe(103);
+    expect(shown.countFor("P2")).toBe(100);
+    expect(shown.countFor("P9")).toBe(0);
+    const whileOpen = unreadView(counts, new Set(["P1"]));
+    expect(whileOpen.countFor("P1")).toBe(0);
+    expect(whileOpen.total).toBe(100);
+  });
+});
+
+describe("CH8: optimistic mark-read", () => {
+  it("clearUnread sets one project to 0 and lowers the total; restore is compare-and-swap", () => {
+    const data = unread(["P1", 3], ["P2", 5]);
+    const cleared = clearUnread(data, "P1")!;
+    expect(cleared).toEqual(unread(["P2", 5]));
+    expect(clearUnread(cleared, "P1")).toBe(cleared);
+    expect(restoreUnread(cleared, "P1", 3)).toEqual({ items: [...cleared.items, { project_id: "P1", unread_count: 3 }], total: 8 });
+    // A newer server value (a refetch landed) wins over the rollback.
+    const newer = unread(["P1", 4], ["P2", 5]);
+    expect(restoreUnread(newer, "P1", 3)).toBe(newer);
+  });
+
+  it("success: the badge goes to 0 at once and the counts refetch", async () => {
+    const qc = testClient();
+    qc.setQueryData(qk.chatUnread(U), unread(["P1", 3], ["P2", 5]));
+    const spy = vi.spyOn(qc, "invalidateQueries");
+    vi.mocked(chatApi.markChatRead).mockResolvedValueOnce(
+      okResult({ project_id: "P1", last_read_at: "2026-11-18T10:00:00.000Z" }) as never
+    );
+    await new MutationObserver(qc, markReadOptions(qc, U, "P1")).mutate("m9");
+    await flush();
+    expect(chatApi.markChatRead).toHaveBeenCalledWith("P1", "m9");
+    expect(qc.getQueryData(qk.chatUnread(U))).toEqual(unread(["P2", 5]));
+    expect(spy.mock.calls.map(([f]) => f?.queryKey)).toEqual([qk.chatUnread(U)]);
+  });
+
+  it("error: the count comes back", async () => {
+    const qc = testClient();
+    qc.setQueryData(qk.chatUnread(U), unread(["P1", 3], ["P2", 5]));
+    vi.mocked(chatApi.markChatRead).mockResolvedValueOnce(failResult("network") as never);
+    const seen: unknown[] = [];
+    const observer = new MutationObserver(qc, {
+      ...markReadOptions(qc, U, "P1"),
+      onMutate: async (id, ctx) => {
+        const r = await markReadOptions(qc, U, "P1").onMutate!(id, ctx);
+        seen.push(qc.getQueryData(qk.chatUnread(U)));
+        return r;
+      },
+    });
+    await observer.mutate("m9").catch(() => {});
+    await flush();
+    expect(seen[0]).toEqual(unread(["P2", 5]));
+    const after = qc.getQueryData<ChatUnread>(qk.chatUnread(U))!;
+    expect(after.total).toBe(8);
+    expect(after.items.find((i) => i.project_id === "P1")?.unread_count).toBe(3);
   });
 });

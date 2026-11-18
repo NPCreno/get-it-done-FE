@@ -36,7 +36,10 @@ function stream(): NotificationStream {
   return shared;
 }
 
-/** Mount once (MainLayout). An event or a reconnect refetches the notifications list. */
+/**
+ * Mount once (MainLayout). A `notification` event refetches the notifications list; a `chat`
+ * event refetches the unread chat counts (FEAT-08); a reconnect refetches both.
+ */
 export function useNotificationStream(): void {
   const qc = useQueryClient();
   const userId = useSessionUserId();
@@ -44,7 +47,15 @@ export function useNotificationStream(): void {
     if (!userId || !process.env.NEXT_PUBLIC_API_URL) return;
     const s = stream();
     const refetch = () => void qc.invalidateQueries({ queryKey: qk.notifications(userId) });
-    const unsubscribe = s.subscribe({ onNotification: refetch, onConnected: refetch });
+    const refetchChat = () => void qc.invalidateQueries({ queryKey: qk.chatUnread(userId) });
+    const unsubscribe = s.subscribe({
+      onNotification: refetch,
+      onChat: refetchChat,
+      onConnected: () => {
+        refetch();
+        refetchChat();
+      },
+    });
     const onVisibility = () => s.setHidden(document.hidden);
     document.addEventListener("visibilitychange", onVisibility);
     s.setHidden(document.hidden);

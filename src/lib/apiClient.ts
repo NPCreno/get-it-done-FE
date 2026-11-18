@@ -25,7 +25,7 @@ export type ApiFailure = {
 export type ApiResult<T> = ApiSuccess<T> | ApiFailure;
 
 export interface ApiRequestOptions<T = unknown> {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   query?: Record<string, string | number | undefined>;
   auth?: boolean; // default true
