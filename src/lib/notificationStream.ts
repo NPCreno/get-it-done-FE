@@ -53,6 +53,9 @@ export function parseSseChunk(rest: string, chunk: string): { messages: SseMessa
   return { messages, rest: remainder };
 }
 
+/** FEAT-08: the SSE event type the BE sends when one of this user's chat counts changed. */
+export const CHAT_SSE_EVENT = "chat";
+
 // ------------------------------------------------------------------- backoff
 
 export const BACKOFF_BASE_MS = 1_000;
@@ -157,7 +160,7 @@ export function createNotificationStream(deps: StreamDeps): NotificationStream {
         rest = parsed.rest;
         for (const m of parsed.messages) {
           if (m.event === "notification") emit("onNotification");
-          else if (m.event === "chat") emit("onChat");
+          else if (m.event === CHAT_SSE_EVENT) emit("onChat");
         }
       }
     } catch {

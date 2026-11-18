@@ -211,9 +211,9 @@ describe("F4: chat events on the same stream (FEAT-08)", () => {
     return { live, handlers, off };
   }
 
-  it("a chat event calls onChat and not onNotification", async () => {
+  it("a chat event calls onChat and not onNotification (Nest's counter id on it is ignored)", async () => {
     const { live, handlers, off } = await connected();
-    live.send('event: chat\ndata: {"project_id":"P1"}\n\n');
+    live.send('id: 7\nevent: chat\ndata: {"project_id":"P1"}\n\n');
     await tick();
     expect(handlers.onChat).toHaveBeenCalledTimes(1);
     expect(handlers.onNotification).not.toHaveBeenCalled();

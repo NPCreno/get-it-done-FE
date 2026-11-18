@@ -3,6 +3,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { ZodType } from "zod";
 import {
+  ChatReadSchema,
+  ChatUnreadSchema,
   DashboardDataSchema,
   DistributionSchema,
   HeatmapCellSchema,
@@ -43,6 +45,8 @@ const CASES: [string, ZodType, "envelope" | "raw"][] = [
   ["streak", StreakSchema, "envelope"],
   ["notifications-list", NotificationsPageSchema, "envelope"],
   ["notifications-empty", NotificationsPageSchema, "envelope"],
+  ["chat-unread", ChatUnreadSchema, "envelope"],
+  ["chat-read", ChatReadSchema, "envelope"],
 ];
 
 const payload = (name: string) => {

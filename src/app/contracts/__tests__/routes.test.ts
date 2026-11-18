@@ -5,7 +5,9 @@ import {
   chatMembersPath,
   chatMessagePath,
   chatMessagesPath,
+  chatReadPath,
   chatSharedProjectsPath,
+  chatUnreadPath,
   notificationReadPath,
   notificationsListPath,
   notificationsReadAllPath,
@@ -39,6 +41,8 @@ const builders: Record<string, { build: () => string; values: Record<string, str
   chatMessagesList: { build: () => chatMessagesPath(ID), values: { project_id: ID } },
   chatMessageSend: { build: () => chatMessagesPath(ID), values: { project_id: ID } },
   chatMessageDelete: { build: () => chatMessagePath(ID, "m 1"), values: { project_id: ID, id: "m 1" } },
+  chatUnread: { build: () => chatUnreadPath(), values: {} },
+  chatMarkRead: { build: () => chatReadPath(ID), values: { project_id: ID } },
 };
 
 describe("request path builders match the vendored contract routes", () => {

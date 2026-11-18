@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import contract from "../api-contract.json";
 import { chatSocketUrl, CLOSE_UNAUTHORIZED, parseChatFrame } from "@/lib/chatSocket";
+import { CHAT_SSE_EVENT } from "@/lib/notificationStream";
+import { formatUnread } from "@/lib/query/chatUnread";
 import { CHAT_MESSAGES_PAGE_SIZE } from "../../api/chatRequests";
 import {
   ChatMemberSchema,
   ChatMembersSchema,
   ChatMessageSchema,
   ChatMessagesPageSchema,
+  ChatReadSchema,
+  ChatUnreadSchema,
   SharedProjectSchema,
 } from "../responses";
 import { LIMITS, PATTERNS } from "../common";
@@ -67,6 +71,20 @@ describe("FEAT-05 chat matches the contract's chat section", () => {
     expect(keys(SharedProjectSchema)).toEqual([...C.fields.sharedProject].sort());
     expect(keys(ChatMessageSchema)).toEqual([...C.fields.message].sort());
     expect(keys(ChatMessagesPageSchema)).toEqual([...C.fields.messagesPage].sort());
+  });
+
+  it("FEAT-08 unread: schemas have exactly the contract's fields", () => {
+    expect(keys(ChatUnreadSchema)).toEqual([...C.fields.unread].sort());
+    expect(keys(ChatUnreadSchema.shape.items.element)).toEqual([...C.fields.unreadItem].sort());
+    expect(keys(ChatReadSchema)).toEqual([...C.fields.readPoint].sort());
+  });
+
+  it("FEAT-08 unread: the SSE event type and the cap the badge text relies on", () => {
+    expect(CHAT_SSE_EVENT).toBe(C.sseEventType);
+    // The server caps each count at 100, so "99+" means "100 or more" and is never cut short.
+    expect(C.unreadCap).toBe(100);
+    expect(formatUnread(C.unreadCap)).toBe("99+");
+    expect(formatUnread(C.unreadCap - 1)).toBe("99");
   });
 
   it("the page size stays within the contract maximum", () => {
