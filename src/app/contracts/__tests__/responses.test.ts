@@ -3,7 +3,10 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { ZodType } from "zod";
 import {
+  ApiTokenListSchema,
+  ApiTokenSchema,
   ChatReadSchema,
+  CreatedApiTokenSchema,
   ChatUnreadSchema,
   DashboardDataSchema,
   DistributionSchema,
@@ -47,6 +50,10 @@ const CASES: [string, ZodType, "envelope" | "raw"][] = [
   ["notifications-empty", NotificationsPageSchema, "envelope"],
   ["chat-unread", ChatUnreadSchema, "envelope"],
   ["chat-read", ChatReadSchema, "envelope"],
+  // FEAT-07 personal access tokens
+  ["tokens-list", ApiTokenListSchema, "envelope"],
+  ["token-created", CreatedApiTokenSchema, "envelope"],
+  ["token-revoked", ApiTokenSchema, "envelope"],
 ];
 
 const payload = (name: string) => {

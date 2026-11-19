@@ -4,8 +4,12 @@ import { chatSocketUrl, CLOSE_UNAUTHORIZED, parseChatFrame } from "@/lib/chatSoc
 import { CHAT_SSE_EVENT } from "@/lib/notificationStream";
 import { formatUnread } from "@/lib/query/chatUnread";
 import { CHAT_MESSAGES_PAGE_SIZE } from "../../api/chatRequests";
+import { MCP_PATH, mcpServerUrl } from "@/lib/mcpSetup";
+import { DEFAULT_EXPIRY } from "../../components/apiTokens/tokenCopy";
 import {
+  ApiTokenSchema,
   ChatMemberSchema,
+  CreatedApiTokenSchema,
   ChatMembersSchema,
   ChatMessageSchema,
   ChatMessagesPageSchema,
@@ -13,8 +17,10 @@ import {
   ChatUnreadSchema,
   SharedProjectSchema,
 } from "../responses";
-import { LIMITS, PATTERNS } from "../common";
+import { API_TOKEN_RULES, LIMITS, PATTERNS } from "../common";
 import {
+  API_TOKEN_EXPIRY_DAYS,
+  API_TOKEN_STATUSES,
   BOOLEAN_STRINGS,
   NEW_TASK_STATUSES,
   NOTIFICATION_TYPES,
@@ -89,5 +95,30 @@ describe("FEAT-05 chat matches the contract's chat section", () => {
 
   it("the page size stays within the contract maximum", () => {
     expect(CHAT_MESSAGES_PAGE_SIZE).toBeLessThanOrEqual(contract.limits.chatMessagesPageMax);
+  });
+});
+
+describe("FEAT-07 personal access tokens match the contract's tokens section", () => {
+  const T = contract.tokens;
+  const keys = (schema: { shape: Record<string, unknown> }) => Object.keys(schema.shape).sort();
+
+  it("schemas have exactly the contract's fields", () => {
+    expect(keys(ApiTokenSchema)).toEqual([...T.fields.token].sort());
+    expect(keys(CreatedApiTokenSchema)).toEqual([...T.fields.createdToken].sort());
+  });
+
+  it("statuses, expiry choices, default, cap, prefix and name limit", () => {
+    expect([...API_TOKEN_STATUSES]).toEqual(T.statuses);
+    expect([...API_TOKEN_EXPIRY_DAYS]).toEqual(T.expiresInDays);
+    expect(API_TOKEN_RULES.defaultExpiryDays).toBe(T.defaultExpiresInDays);
+    expect(DEFAULT_EXPIRY).toBe(T.defaultExpiresInDays);
+    expect(API_TOKEN_RULES.maxActive).toBe(T.maxActive);
+    expect(API_TOKEN_RULES.prefix).toBe(T.prefix);
+    expect(API_TOKEN_RULES.nameMax).toBe(contract.limits.tokenNameMax);
+  });
+
+  it("the MCP path sits at the API origin, not under /api", () => {
+    expect(MCP_PATH).toBe(T.mcpPath);
+    expect(mcpServerUrl("https://api.example.com/api")).toBe(`https://api.example.com${T.mcpPath}`);
   });
 });

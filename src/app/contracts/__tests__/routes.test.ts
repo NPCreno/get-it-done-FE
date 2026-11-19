@@ -13,6 +13,8 @@ import {
   notificationsReadAllPath,
   subTaskStatusPath,
   taskStatusPath,
+  apiTokenPath,
+  apiTokensPath,
 } from "../../api/paths";
 
 // One encodeURIComponent per :param, the same rule apiPath applies.
@@ -43,6 +45,9 @@ const builders: Record<string, { build: () => string; values: Record<string, str
   chatMessageDelete: { build: () => chatMessagePath(ID, "m 1"), values: { project_id: ID, id: "m 1" } },
   chatUnread: { build: () => chatUnreadPath(), values: {} },
   chatMarkRead: { build: () => chatReadPath(ID), values: { project_id: ID } },
+  tokensList: { build: () => apiTokensPath(), values: {} },
+  tokenCreate: { build: () => apiTokensPath(), values: {} },
+  tokenRevoke: { build: () => apiTokenPath(ID), values: { id: ID } },
 };
 
 describe("request path builders match the vendored contract routes", () => {

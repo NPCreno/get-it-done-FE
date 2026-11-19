@@ -15,6 +15,7 @@ export const LIMITS = {
   chatMessageMax: 2000,
   chatMessagesPageMax: 50,
   chatMembersMax: 20,
+  tokenNameMax: 60,
 } as const;
 
 /** Regex sources, compared with the contract JSON by a test. */
@@ -49,7 +50,7 @@ export const OptionalText = z
 /** FEAT-07 personal access token rules (plan 38a §B). Not part of `LIMITS`, which mirrors the contract's `limits`. */
 export const API_TOKEN_RULES = {
   nameMin: 1,
-  nameMax: 60,
+  nameMax: LIMITS.tokenNameMax,
   /** Active tokens per user; the backend refuses an 11th. */
   maxActive: 10,
   defaultExpiryDays: 90,
