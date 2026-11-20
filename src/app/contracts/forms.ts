@@ -32,9 +32,6 @@ export interface ProjectFormValues {
   due_date: IsoDate | null;
 }
 
-/** The projects page edits projects and tasks with one form. */
-export type ProjectOrTaskFormValues = TaskFormValues & ProjectFormValues;
-
 export interface SubTaskFormValues {
   title: string;
   task_id: string;

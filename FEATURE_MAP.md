@@ -22,10 +22,10 @@ Request chains per feature. Backend paths are shown without the `/api` prefix, b
 - `/demo`: `demo/page.tsx` → `DemoRuntimeBoundary` (in-browser fake API installed through `installApiTransport`, no backend requests) → `DemoLayout` → `DemoBody` → the shared `components/dashboard/DashboardView`. Reset demo swaps in a fresh store. Linked from `/login` and `/signup` ("Try the demo"). The Pomodoro timer uses `localStorage` and is shared with the real dashboard in the same browser (accepted, DEMO-01).
 
 ## Projects
-- List: `dashboard/page.tsx` and `projects/page.tsx` → `projectCard.tsx` → `getProjectsForUser()` → BE `/projects/getAll/:user_id`
-- Create and edit: `projects/page.tsx` with `modals/projectModal.tsx` → `createProject()`, `updateProject()` → BE `/projects/create`, `/projects/:project_id`
-- Delete: `projects/page.tsx` → `deleteProjectById()` → BE `DELETE /projects/:project_id`
-- Detail: `projects/page.tsx` → `modals/viewProject.tsx` → `getProjectById()` → BE `/projects/:project_id`
+- List: `dashboard/page.tsx` and `projects/page.tsx` (`components/projects/ProjectGrid.tsx`) → `projectCard.tsx` → `getProjectsForUser()` → BE `/projects/getAll/:user_id`
+- Create and edit: `components/projects/useProjectEditor.ts` + `ProjectEditorDialog.tsx` (`modals/projectModal.tsx`) → `createProject()`, `updateProject()` → BE `/projects/create`, `/projects/:project_id`. Edit prefills from `getProjectById()` (BE `/projects/:project_id`) once per editing session, never over the user's edits
+- Delete: `useProjectEditor.remove` → `deleteProjectById()` → BE `DELETE /projects/:project_id`
+- Detail: `components/projects/ProjectsView.tsx` → `modals/viewProject.tsx` with `useProjectTasks` → `getTasksByProject()`; task actions through `useTaskEditor` and `useTaskDelete`
 
 ## Tasks
 - By project: `projects/page.tsx` → `taskItem.tsx` → `getTasksByProject()` → BE `/tasks/getTasksByProj/:project_id`
