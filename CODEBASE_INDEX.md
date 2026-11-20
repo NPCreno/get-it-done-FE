@@ -9,7 +9,7 @@ One line per significant source file. Paths are relative to the repo root.
 - `src/app/(auth)/signup/page.tsx` — signup page, hosts `SignupForm`
 - `src/app/(auth)/forgot-password/page.tsx` — forgot-password page, a static placeholder (self-service reset is not available yet)
 - `src/app/(routes)/dashboard/page.tsx` — dashboard: `<MainLayout><DashboardView/></MainLayout>` only
-- `src/app/(routes)/projects/page.tsx` — project list and tasks per project
+- `src/app/(routes)/projects/page.tsx` — projects: `<MainLayout><ProjectsView/></MainLayout>` only
 - `src/app/(routes)/notifications/page.tsx` — notifications list
 - `src/app/(routes)/profileSettings/page.tsx` — profile editing and logout
 
@@ -101,6 +101,7 @@ shadcn (`shadcn/`)
 - `src/hooks/useTimer.ts` — timer hook
 - `src/app/components/tasks/` — the one task editor (ARCH-01 PR B): `useTaskEditor.ts` (`open`/`close`/`submit`, own Formik form, the only writer of `selectedTaskData`), `TaskEditorDialog.tsx` (renders the unchanged `TaskModal`), `taskSaveOutcome.ts` (pure `outcomeOf`: failure keeps the modal open and the values), tests in `__tests__/`, `useTaskDelete.ts` (single and recurring delete, takes the page's toast and editor)
 - `src/app/components/dashboard/` — the layout-free dashboard body shared by `/dashboard` and `/demo` (ARCH-01 PR C): `DashboardView.tsx` (no props; toast, editor, loader, Pomodoro, recurring-delete dialog), `DashboardHeader.tsx`, `StatsRow.tsx`, `TaskBoard.tsx`, `AnalyticsGrid.tsx`, `useDashboardData.ts` (the 7 queries and load states). A lint override blocks layout hooks, `MainLayout` and token reads here and in `tasks/`
+- `src/app/components/projects/` — the projects page body (ARCH-01 PR D): `ProjectsView.tsx` (no props; toast, task editor, project editor, loader, selected project, the view-project flow with `ProjectChatActions`), `ProjectGrid.tsx` (header, cards with unread badges, empty state, `LoadError`), `ProjectEditorDialog.tsx` (renders the unchanged `ProjectModal`), `useProjectEditor.ts` (own Formik form for the project fields, `open(projectId?)`/`close`/`submit`/`remove`, one prefill per editing session), `projectPrefill.ts` (pure `shouldPrefill`, `projectFormValuesOf`), tests in `__tests__/`
 - `src/hooks/toastController.ts` (framework-independent, owns timers), `useToastController.ts` (one per page, disposed on unmount) — toast state; tests in `src/hooks/__tests__/`
 - `src/lib/timerService.ts` — pomodoro timer state, persisted in `localStorage` key `pomodoroTimerState`
 - `src/lib/timerPhase.ts` — `timerPhase()` (`idle | running | paused`) and `timerCopy()`: every Pomodoro label comes from the phase
