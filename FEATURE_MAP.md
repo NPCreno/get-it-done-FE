@@ -50,12 +50,19 @@ Request chains per feature. Backend paths are shown without the `/api` prefix, b
 - Unread badges (FEAT-08): `useChatUnread()` → `getChatUnread()` → BE `GET /chat/unread` (per project, capped at 100, plus a total). Shown on the sidebar's Projects link (`badge`, `badgeLabel`), each project card, each "Shared with me" card and the Chat button (`chat/UnreadBadge.tsx`: 1-99, "99+", none at 0). An open `ChatPanel` reads 0 and `useMarkChatReadWhileOpen` → `markChatRead()` → BE `PUT /chat/projects/:project_id/read` (optimistic, debounced 500 ms, only while the tab is visible). Live: a `chat` event on the notifications SSE stream invalidates the counts.
 
 ## Connect an AI assistant (FEAT-07, phase 1)
-- Profile settings → `apiTokens/ApiTokensSection.tsx`: what it is, the read-only MCP **server URL** (`mcpServerUrl(NEXT_PUBLIC_API_URL)` in `src/lib/mcpSetup.ts`: the backend origin + `/mcp`, beside its `/api` prefix), the token table (name, created, last used, expires, status) and the phase-2 note (claude.ai connector sign-in is coming).
+- Profile settings → `apiTokens/ApiTokensSection.tsx`: what it is, the read-only MCP **server URL** (`mcpServerUrl(NEXT_PUBLIC_API_URL)` in `src/lib/mcpSetup.ts`: the backend origin + `/mcp`, beside its `/api` prefix), the claude.ai connector steps with the "wait a minute and try again" line (FEAT-07d), Connected apps, and the token table (name, created, last used, expires, status).
 - List: `useApiTokens()` → `getApiTokens()` → BE `GET /tokens` (every status; never a secret or hash).
 - Create: `apiTokens/CreateTokenDialog.tsx` (name 1-60, expiry 30 / 90 / 365 days / none, 90 preselected) → `useCreateApiToken()` → `createApiToken()` → BE `POST /tokens`. The 10-active-token limit, validation and the rate limit show as fixed copy in the form (`tokenCopy.ts` `createErrorCopy`); the button is disabled at 10 active tokens.
 - Shown once: `apiTokens/TokenCreatedDialog.tsx` — the token with a copy button, "Copy it now. You won't see it again.", and copy-ready Claude Code (`claude mcp add --transport http get-it-done <url> --header "Authorization: Bearer <token>"`) and Cursor (`mcp.json`) snippets from `mcpSetup.ts`. A click outside does not close it; Done, Close and Esc do, and that drops the token.
 - Revoke: `apiTokens/RevokeTokenDialog.tsx` (confirm, focus on Cancel) → `useRevokeApiToken()` (optimistic: the row shows Revoked, compare-and-swap rollback) → `revokeApiToken()` → BE `DELETE /tokens/:id`.
 - The secret never enters the React Query cache, storage or logs (see `CLAUDE.md`). Not in `/demo`.
+
+## Connector sign-in (FEAT-07d, MCP phase 2)
+- Consent: claude.ai (or any MCP client) opens `/oauth/authorize?…` → signed out: middleware → `/login?next=<that URL>` (signup keeps `next`) → back. `components/oauth/ConsentView.tsx` → `useOAuthCheck()` → `checkOAuthAuthorize()` → BE `GET /oauth/authorize/check` (`ok` shows the app name, return host, loopback warning, capabilities, "Signed in as"; `redirect` leaves for the BE-built error URL; `fatal` or a 4xx shows "This connection request isn't valid").
+- Allow / Deny: `useOAuthDecision()` → `sendOAuthDecision()` → FE `POST /api/oauth/decision` (`isSameOrigin`) → BE `POST /oauth/authorize` with the raw params + `decision` → `{ redirect_to }` → `window.location.assign` only if `isSafeRedirectTarget`.
+- "Not you? Sign out": `POST /api/auth/logout` → `/login?next=<the consent URL>`.
+- Connected apps: `apiTokens/ConnectedAppsList.tsx` → `useOAuthGrants()` → `getOAuthGrants()` → BE `GET /oauth/grants` (name, returns to host, connected, last used). Disconnect → `DisconnectAppDialog.tsx` → `useRevokeOAuthGrant()` (optimistic removal, rollback) → `revokeOAuthGrant()` → BE `DELETE /oauth/grants/:id`.
+- Not in `/demo`.
 
 ## Pomodoro timer
 - `PomodoroButton.tsx` → `modals/pomodoro.tsx` → `hooks/useTimer.ts` → `lib/timerService.ts`; labels from `lib/timerPhase.ts` (a paused timer says "Paused" / "Resume")

@@ -57,3 +57,25 @@ export function createErrorCopy(f: ApiFailure): CreateErrorCopy | null {
 export function nameRuleCopy(): string {
   return `Enter a name of ${API_TOKEN_RULES.nameMin} to ${API_TOKEN_RULES.nameMax} characters.`;
 }
+
+// ------------------------------------------- Connected apps (FEAT-07d)
+
+/** "Disconnect Claude?" — the name comes from the app, so it is shown as text only. */
+export function disconnectTitle(appName: string): string {
+  return `Disconnect ${appName}?`;
+}
+
+export const DISCONNECT_DESCRIPTION = "It stops working until you connect it again.";
+
+export const NO_CONNECTED_APPS_COPY = "No connected apps.";
+
+/** The Render free tier sleeps when idle; Claude gives up on the first connect after ~10 s. */
+export const WAKE_UP_RETRY_COPY =
+  "If Claude says it couldn't connect, our server was waking up. Wait a minute and try again.";
+
+/** The claude.ai steps, in order. The last one is followed by the server URL field. */
+export const CONNECTOR_STEPS = [
+  "In claude.ai, open Settings → Connectors.",
+  "Choose Add custom connector.",
+  "Paste the server URL above, then sign in here and choose Allow.",
+] as const;

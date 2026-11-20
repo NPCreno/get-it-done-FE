@@ -12,6 +12,7 @@ One line per significant source file. Paths are relative to the repo root.
 - `src/app/(routes)/projects/page.tsx` — projects: `<MainLayout><ProjectsView/></MainLayout>` only
 - `src/app/(routes)/notifications/page.tsx` — notifications list
 - `src/app/(routes)/profileSettings/page.tsx` — profile editing and logout
+- `src/app/oauth/layout.tsx`, `oauth/authorize/page.tsx` — FEAT-07d OAuth consent page (no sidebar, noindex); the body is `components/oauth/ConsentView.tsx`
 
 ## Middleware and BFF
 - `src/middleware.ts` — open routes first (`isOpenRoute`), then the public-route allowlist, `jwtVerify`, proactive and expired-token refresh. Its `config.matcher` skips `public/` files by extension; `src/__tests__/middlewareMatcher.test.ts` pins which paths run it
@@ -20,11 +21,15 @@ One line per significant source file. Paths are relative to the repo root.
 - `src/app/api/auth/signup/route.ts` (+ `payload.ts`) — BFF signup, forwards the attested client IP to BE `/user/create`
 - `src/app/api/auth/login/route.ts` — BFF login, sets httpOnly refresh cookie and readable access cookie
 - `src/app/api/auth/logout/route.ts` — BFF logout, revokes the token family on the BE, clears cookies
+- `src/app/api/oauth/decision/route.ts` (+ `payload.ts`: `buildDecisionBody`, `bearerToken`, `toDecisionResponse`) — FEAT-07d consent decision BFF, same-origin only, forwards to BE `POST /oauth/authorize`
 
 ## Browser API client (`src/lib/`)
 - `apiClient.ts` — `apiClient()` never throws, returns `ApiResult<T>`; `apiPath`, `isUserFacing`, `describeFailure`
 - `apiTransport.ts` — `installApiTransport(transport) → release`, `getActiveApiTransport()`: optional seam that replaces the network (one owner, ownership-checked idempotent release); used only by the demo
 - `openRoutes.ts` — `openRoutes = ["/demo"]`, pure `isOpenRoute(pathname)` used by the middleware
+- `safeNext.ts` — FEAT-07d `safeNext` (only the consent page may be a post-login target), `loginPathFor` (middleware), `withNext`, `currentNext`
+- `oauthConsent.ts` — FEAT-07d `readAuthorizeParams`, `isSafeRedirectTarget`, `isLoopbackHost`, `isFatalConsentFailure`, `consentPathOf`
+- `__tests__/safeNext.test.ts`, `oauthConsent.test.ts`, `oauthGrants.test.ts` — FEAT-07d
 - `__tests__/` — `apiClient` characterization and transport tests (`apiClient.test.ts`, `apiTransport.test.ts`), `openRoutes.test.ts`
 - `clientSession.ts` — `refreshSession()` (in-tab singleton + Web Lock `gid-session`), `expireSession()`
 
@@ -80,6 +85,8 @@ Dashboard and data display
 - `chat/` (FEAT-05): `ChatPanel.tsx` (side panel: `role="log"` message list, load older, composer, delete), `MembersDialog.tsx` (owner: list, add by username, remove), `SharedProjectsSection.tsx` ("Shared with me" cards: Open chat, Leave), `ProjectChatActions.tsx` (Members and Chat buttons in the owner's project view), `UnreadBadge.tsx` (FEAT-08 unread count with an accessible name)
 - `src/lib/chatSocket.ts`, `useChatRoom.ts` — the managed chat WebSocket (one per tab) and the hook that keeps a project's message cache live; `src/lib/query/chat.ts` (members, shared projects, messages, the four mutations), `chatCache.ts` (pure message-cache helpers), `chatUnread.ts` (FEAT-08 pure unread helpers: `formatUnread`, `selectUnread`, optimistic clear/restore); `chat.ts` also holds `useChatUnread`, `useMarkChatRead`, `useMarkChatReadWhileOpen` and the per-tab open-chats store; `src/app/api/chatRequests.ts`
 - `apiTokens/` (FEAT-07): `ApiTokensSection.tsx` (Profile's "Connect an AI assistant": server URL, token table, create and revoke), `CreateTokenDialog.tsx`, `TokenCreatedDialog.tsx` (the secret once, with setup snippets), `RevokeTokenDialog.tsx`, `TokenDialogShell.tsx` (their shared dialog frame), `CopyButton.tsx` (clipboard, "Copied" in a live region, selects the text if the clipboard fails), `tokenCopy.ts` (pure labels, dates, expiry choices, fixed error copy)
+- `apiTokens/ConnectedAppsList.tsx`, `DisconnectAppDialog.tsx` (FEAT-07d) — Profile's "Connected apps" list and its confirm dialog; `tokenCopy.ts` also holds the connector steps and the wake-up copy
+- `oauth/ConsentView.tsx` (FEAT-07d) — the consent screen, the invalid-request page and the loading/retry states; `src/lib/query/oauth.ts` — `useOAuthCheck`, `useOAuthDecision`, `useOAuthGrants`, `useRevokeOAuthGrant`; `src/app/api/oauthRequests.ts`
 - `src/lib/mcpSetup.ts` — pure MCP setup builders (`mcpServerUrl`, `claudeCodeCommand`, `cursorConfig`); `src/lib/query/apiTokens.ts` — token list, create (never caches the secret) and optimistic revoke; `src/app/api/tokensRequests.ts`; tests in `src/lib/__tests__/apiTokens.test.ts`
 - `src/lib/notificationStream.ts`, `useNotificationStream.ts` — the managed SSE stream; `notificationRoutes.ts` — action-route allowlist; `relativeTime.ts`; `src/lib/query/notifications.ts`, `notificationsOptimistic.ts` — list, read-state and clear hooks; `src/app/api/notificationsRequests.ts`
 

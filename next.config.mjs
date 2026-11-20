@@ -9,7 +9,21 @@ const nextConfig = (phase) => {
       throw new Error('NEXT_PUBLIC_API_URL must be set to an absolute http(s) URL at build time.');
     }
   }
-  return { output: 'standalone' };
+  return {
+    output: 'standalone',
+    // FEAT-07d: the OAuth consent page must never be framed (clickjacking an Allow click).
+    async headers() {
+      return [
+        {
+          source: '/oauth/:path*',
+          headers: [
+            { key: 'X-Frame-Options', value: 'DENY' },
+            { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+          ],
+        },
+      ];
+    },
+  };
 };
 
 export default nextConfig;

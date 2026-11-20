@@ -265,3 +265,45 @@ export const ApiTokenSecret = z
 /** POST /tokens: the list item plus the secret. The only time the secret leaves the server. */
 export const CreatedApiTokenSchema = ApiTokenSchema.extend({ token: ApiTokenSecret });
 export type CreatedApiToken = z.infer<typeof CreatedApiTokenSchema>;
+
+// ------------------------------------------- OAuth connector consent (FEAT-07d)
+
+/**
+ * GET /oauth/authorize/check: what the consent page shows. Display only: the decision re-sends
+ * the raw parameters and the backend validates them again.
+ * - `ok`: show the consent screen.
+ * - `redirect`: the request is wrong but the client is known, so the backend built the error
+ *   redirect (`error=` and `state` already in it).
+ * - `fatal`: unknown app or an unregistered `redirect_uri`. Show the error page, never redirect.
+ */
+export const OAuthCheckOkSchema = z.object({
+  outcome: z.literal("ok"),
+  client_name: z.string(),
+  redirect_host: z.string(),
+  loopback_only: z.boolean(),
+  scopes: z.array(z.string()),
+});
+export const OAuthCheckResultSchema = z.discriminatedUnion("outcome", [
+  OAuthCheckOkSchema,
+  z.object({ outcome: z.literal("redirect"), error: z.string(), redirect_to: z.string() }),
+  z.object({ outcome: z.literal("fatal"), error: z.string() }),
+]);
+export type OAuthCheckOk = z.infer<typeof OAuthCheckOkSchema>;
+export type OAuthCheckResult = z.infer<typeof OAuthCheckResultSchema>;
+
+/** POST /oauth/authorize (through the FE BFF): where the browser goes next. */
+export const OAuthDecisionResultSchema = z.object({ redirect_to: z.string().min(1) });
+export type OAuthDecisionResult = z.infer<typeof OAuthDecisionResultSchema>;
+
+/** GET /oauth/grants: one connected app. Never a token or a hash; unknown keys are stripped. */
+export const OAuthGrantSchema = z.object({
+  id: z.string(),
+  client_name: z.string(),
+  redirect_host: z.string(),
+  created_at: ApiDate,
+  last_used_at: ApiDate.nullable(),
+});
+export type OAuthGrant = z.infer<typeof OAuthGrantSchema>;
+
+export const OAuthGrantListSchema = OAuthGrantSchema.array();
+export type OAuthGrantList = z.infer<typeof OAuthGrantListSchema>;

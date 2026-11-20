@@ -10,7 +10,8 @@ export type DataEvent =
   | "project-deleted"
   | "profile"
   | "notifications" // read state changed, or cleared
-  | "api-tokens"; // created or revoked (FEAT-07)
+  | "api-tokens" // created or revoked (FEAT-07)
+  | "oauth-grants"; // an app connected (consent allowed) or disconnected (FEAT-07d)
 
 export function invalidationsFor(event: DataEvent, userId: string): QueryKey[] {
   switch (event) {
@@ -29,6 +30,8 @@ export function invalidationsFor(event: DataEvent, userId: string): QueryKey[] {
       return [qk.notifications(userId)];
     case "api-tokens":
       return [qk.apiTokens(userId)];
+    case "oauth-grants":
+      return [qk.oauthGrants(userId)];
   }
 }
 

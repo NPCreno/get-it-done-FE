@@ -37,3 +37,12 @@ export const chatMessagePath = (projectId: string, messageId: string) =>
 export const apiTokensPath = () => "/tokens";
 
 export const apiTokenPath = (tokenId: string) => apiPath`/tokens/${tokenId}`;
+
+// FEAT-07d OAuth connector consent and "Connected apps" (website only: the JWT authorizes these).
+export const oauthAuthorizeCheckPath = () => "/oauth/authorize/check";
+
+export const oauthAuthorizePath = () => "/oauth/authorize";
+
+export const oauthGrantsPath = () => "/oauth/grants";
+
+export const oauthGrantPath = (grantId: string) => apiPath`/oauth/grants/${grantId}`;

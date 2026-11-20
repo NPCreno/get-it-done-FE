@@ -3,20 +3,25 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import SignupForm from "@/app/components/auth/SignupForm";
+import { currentNext, DEFAULT_AFTER_LOGIN, safeNext, withNext } from "@/lib/safeNext";
 
 export default function SignupPage() {
   const router = useRouter();
   const [isSignedUp, setIsSignedUp] = useState(false);
+  const [resumingConsent, setResumingConsent] = useState(false);
 
   // Handle view changes (e.g., switch to login)
   const handleViewChange = (view: string) => {
     if (view === "login") {
-      router.push("/login");
+      router.push(withNext("/login", currentNext()));
     } else if (view === "signedUp") {
       setIsSignedUp(true);
-      // Redirect to dashboard after showing success message for 3 seconds
+      // After the success message, go to the dashboard, or back to the OAuth consent page when
+      // a validated `next` points there (FEAT-07d).
+      const next = safeNext(currentNext());
+      setResumingConsent(next !== DEFAULT_AFTER_LOGIN);
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push(next);
       }, 3000);
     }
   };
@@ -42,7 +47,11 @@ export default function SignupPage() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold tracking-tight">Congratulations!</h2>
-          <p className="text-muted-foreground">You&apos;ve successfully signed up. Redirecting to your dashboard...</p>
+          <p className="text-muted-foreground">
+            {resumingConsent
+              ? "You've successfully signed up. Taking you back to the connection request..."
+              : "You've successfully signed up. Redirecting to your dashboard..."}
+          </p>
         </div>
       </div>
     );

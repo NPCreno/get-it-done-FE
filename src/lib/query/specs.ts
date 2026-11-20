@@ -10,6 +10,8 @@ import {
 import { getProjectById, getProjectsForUser } from "@/app/api/projectsRequests";
 import { getUser } from "@/app/api/userRequests";
 import { getApiTokens } from "@/app/api/tokensRequests";
+import { checkOAuthAuthorize, getOAuthGrants } from "@/app/api/oauthRequests";
+import type { OAuthAuthorizeParams } from "@/app/contracts/requests";
 import { getChatMembers, getChatMessagesPage, getChatUnread, getSharedProjects } from "@/app/api/chatRequests";
 import { qk } from "./keys";
 import { unwrap } from "./unwrap";
@@ -106,4 +108,16 @@ export const chatMessagesSpec = (id: string, projectId: string) => ({
 export const apiTokensSpec = (id: string) => ({
   queryKey: qk.apiTokens(id),
   queryFn: async ({ signal }: Ctx) => unwrap(await getApiTokens({ signal })),
+});
+
+/** FEAT-07d connected apps. */
+export const oauthGrantsSpec = (id: string) => ({
+  queryKey: qk.oauthGrants(id),
+  queryFn: async ({ signal }: Ctx) => unwrap(await getOAuthGrants({ signal })),
+});
+
+/** FEAT-07d the consent page's check; the request sends exactly the params in the key. */
+export const oauthCheckSpec = (id: string, params: OAuthAuthorizeParams) => ({
+  queryKey: qk.oauthCheck(id, params),
+  queryFn: async ({ signal }: Ctx) => unwrap(await checkOAuthAuthorize(params, { signal })),
 });

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import LoginForm from "@/app/components/auth/LoginForm";
+import { currentNext, withNext } from "@/lib/safeNext";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -9,7 +10,8 @@ export default function LoginPage() {
   // Handle view changes (e.g., switch to signup)
   const handleViewChange = (view: string) => {
     if (view === "signup") {
-      router.push("/signup");
+      // Signup keeps a validated `next` (FEAT-07d), so a new user still reaches the consent page.
+      router.push(withNext("/signup", currentNext()));
     }
   };
 
