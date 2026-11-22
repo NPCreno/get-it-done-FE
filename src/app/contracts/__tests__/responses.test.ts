@@ -7,6 +7,10 @@ import {
   ApiTokenSchema,
   ChatReadSchema,
   CreatedApiTokenSchema,
+  OAuthCheckResultSchema,
+  OAuthDecisionResultSchema,
+  OAuthGrantListSchema,
+  OAuthGrantSchema,
   ChatUnreadSchema,
   DashboardDataSchema,
   DistributionSchema,
@@ -54,6 +58,15 @@ const CASES: [string, ZodType, "envelope" | "raw"][] = [
   ["tokens-list", ApiTokenListSchema, "envelope"],
   ["token-created", CreatedApiTokenSchema, "envelope"],
   ["token-revoked", ApiTokenSchema, "envelope"],
+  // FEAT-07d OAuth. FE-only (the BE exports no oauth fixtures): captured on 2026-11-22 from a local
+  // copy of BE staging ddb822f during the 40b end-to-end run.
+  ["oauth-check-ok", OAuthCheckResultSchema, "envelope"],
+  ["oauth-check-redirect", OAuthCheckResultSchema, "envelope"],
+  ["oauth-check-fatal", OAuthCheckResultSchema, "envelope"],
+  ["oauth-decision-deny", OAuthDecisionResultSchema, "envelope"],
+  ["oauth-grants-list", OAuthGrantListSchema, "envelope"],
+  ["oauth-grants-empty", OAuthGrantListSchema, "envelope"],
+  ["oauth-grant-revoked", OAuthGrantSchema, "envelope"],
 ];
 
 const payload = (name: string) => {
@@ -204,3 +217,18 @@ describe("unknown extra keys are tolerated", () => {
 function firstTaskOf() {
   return clone(payload("tasks-list")[0]);
 }
+
+describe("FEAT-07d OAuth fixtures", () => {
+  it("each check outcome parses to its own branch", () => {
+    expect(OAuthCheckResultSchema.parse(payload("oauth-check-ok")).outcome).toBe("ok");
+    expect(OAuthCheckResultSchema.parse(payload("oauth-check-redirect")).outcome).toBe("redirect");
+    expect(OAuthCheckResultSchema.parse(payload("oauth-check-fatal")).outcome).toBe("fatal");
+  });
+
+  it("the deny redirect carries access_denied and the state, and no code", () => {
+    const url = new URL(OAuthDecisionResultSchema.parse(payload("oauth-decision-deny")).redirect_to);
+    expect(url.searchParams.get("error")).toBe("access_denied");
+    expect(url.searchParams.get("state")).toBe("fixture-state");
+    expect(url.searchParams.has("code")).toBe(false);
+  });
+});

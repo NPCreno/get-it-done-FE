@@ -6,6 +6,9 @@ import { formatUnread } from "@/lib/query/chatUnread";
 import { CHAT_MESSAGES_PAGE_SIZE } from "../../api/chatRequests";
 import { MCP_PATH, mcpServerUrl } from "@/lib/mcpSetup";
 import { DEFAULT_EXPIRY } from "../../components/apiTokens/tokenCopy";
+import { AUTHORIZE_PARAM_KEYS } from "@/lib/oauthConsent";
+import { CONSENT_PATH } from "@/lib/safeNext";
+import { OAUTH_DECISIONS, OAuthAuthorizeParamsSchema } from "../requests";
 import {
   ApiTokenSchema,
   ChatMemberSchema,
@@ -16,6 +19,9 @@ import {
   ChatReadSchema,
   ChatUnreadSchema,
   SharedProjectSchema,
+  OAuthCheckResultSchema,
+  OAuthDecisionResultSchema,
+  OAuthGrantSchema,
 } from "../responses";
 import { API_TOKEN_RULES, LIMITS, PATTERNS } from "../common";
 import {
@@ -120,5 +126,30 @@ describe("FEAT-07 personal access tokens match the contract's tokens section", (
   it("the MCP path sits at the API origin, not under /api", () => {
     expect(MCP_PATH).toBe(T.mcpPath);
     expect(mcpServerUrl("https://api.example.com/api")).toBe(`https://api.example.com${T.mcpPath}`);
+  });
+});
+
+describe("FEAT-07d OAuth consent and connected apps match the contract's oauth section", () => {
+  const O = contract.oauth;
+  const keys = (schema: { shape: Record<string, unknown> }) => Object.keys(schema.shape).sort();
+  const option = (outcome: string) => OAuthCheckResultSchema.options.find((o) => o.shape.outcome.value === outcome)!;
+
+  it("the consent page is the authorization endpoint the BE advertises", () => {
+    expect(CONSENT_PATH).toBe(O.authorizePath);
+  });
+
+  it("check outcomes and their fields", () => {
+    expect(OAuthCheckResultSchema.options.map((o) => o.shape.outcome.value)).toEqual(O.checkOutcomes);
+    expect(keys(option("ok"))).toEqual([...O.fields.authorizeCheck].sort());
+    expect(keys(option("redirect"))).toEqual([...O.fields.authorizeCheckRedirect].sort());
+    expect(keys(option("fatal"))).toEqual([...O.fields.authorizeCheckFatal].sort());
+  });
+
+  it("decision, forwarded parameters and the grant row", () => {
+    expect([...OAUTH_DECISIONS]).toEqual(O.decisions);
+    expect([...AUTHORIZE_PARAM_KEYS]).toEqual(O.authorizeParams);
+    expect(keys(OAuthAuthorizeParamsSchema)).toEqual([...O.authorizeParams].sort());
+    expect(keys(OAuthDecisionResultSchema)).toEqual([...O.fields.authorizeDecision].sort());
+    expect(keys(OAuthGrantSchema)).toEqual([...O.fields.grant].sort());
   });
 });

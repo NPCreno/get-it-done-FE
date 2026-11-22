@@ -15,6 +15,10 @@ import {
   taskStatusPath,
   apiTokenPath,
   apiTokensPath,
+  oauthAuthorizeCheckPath,
+  oauthAuthorizePath,
+  oauthGrantPath,
+  oauthGrantsPath,
 } from "../../api/paths";
 
 // One encodeURIComponent per :param, the same rule apiPath applies.
@@ -48,6 +52,11 @@ const builders: Record<string, { build: () => string; values: Record<string, str
   tokensList: { build: () => apiTokensPath(), values: {} },
   tokenCreate: { build: () => apiTokensPath(), values: {} },
   tokenRevoke: { build: () => apiTokenPath(ID), values: { id: ID } },
+  // FEAT-07d OAuth consent and connected apps
+  oauthAuthorizeCheck: { build: () => oauthAuthorizeCheckPath(), values: {} },
+  oauthAuthorize: { build: () => oauthAuthorizePath(), values: {} },
+  oauthGrantsList: { build: () => oauthGrantsPath(), values: {} },
+  oauthGrantRevoke: { build: () => oauthGrantPath(ID), values: { id: ID } },
 };
 
 describe("request path builders match the vendored contract routes", () => {

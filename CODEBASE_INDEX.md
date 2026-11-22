@@ -27,9 +27,10 @@ One line per significant source file. Paths are relative to the repo root.
 - `apiClient.ts` — `apiClient()` never throws, returns `ApiResult<T>`; `apiPath`, `isUserFacing`, `describeFailure`
 - `apiTransport.ts` — `installApiTransport(transport) → release`, `getActiveApiTransport()`: optional seam that replaces the network (one owner, ownership-checked idempotent release); used only by the demo
 - `openRoutes.ts` — `openRoutes = ["/demo"]`, pure `isOpenRoute(pathname)` used by the middleware
+- `resumeConsent.ts` — FEAT-07d `resumeConsentIfSignedIn()`: the login page continues a signed-in user to the consent page after a cross-site arrival (SameSite=Strict cookies were not sent)
 - `safeNext.ts` — FEAT-07d `safeNext` (only the consent page may be a post-login target), `loginPathFor` (middleware), `withNext`, `currentNext`
 - `oauthConsent.ts` — FEAT-07d `readAuthorizeParams`, `isSafeRedirectTarget`, `isLoopbackHost`, `isFatalConsentFailure`, `consentPathOf`
-- `__tests__/safeNext.test.ts`, `oauthConsent.test.ts`, `oauthGrants.test.ts` — FEAT-07d
+- `__tests__/safeNext.test.ts`, `oauthConsent.test.ts`, `oauthGrants.test.ts`, `resumeConsent.test.ts` — FEAT-07d; the `oauth-*.json` fixtures are FE-only, captured from a local BE (the BE exports none)
 - `__tests__/` — `apiClient` characterization and transport tests (`apiClient.test.ts`, `apiTransport.test.ts`), `openRoutes.test.ts`
 - `clientSession.ts` — `refreshSession()` (in-tab singleton + Web Lock `gid-session`), `expireSession()`
 

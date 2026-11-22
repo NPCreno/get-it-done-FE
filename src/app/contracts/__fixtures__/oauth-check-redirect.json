@@ -1,0 +1,8 @@
+{
+  "status": "success",
+  "data": {
+    "outcome": "redirect",
+    "error": "invalid_scope",
+    "redirect_to": "https://claude.ai/api/mcp/auth_callback?error=invalid_scope&error_description=scope+may+contain+only+mcp+and+offline_access&state=fixture-state&iss=http%3A%2F%2Flocalhost%3A8000"
+  }
+}

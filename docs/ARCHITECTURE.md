@@ -31,6 +31,8 @@ Browser → Vercel edge → Next.js middleware → page or BFF route handler →
 - The BE is the OAuth authorization server for MCP connectors, but its authorization endpoint is the FE page `/oauth/authorize`, because the user's session lives on the FE domain.
 - The page checks the parameters (display only), then sends the raw parameters and the decision through the same-origin BFF `POST /api/oauth/decision`, which forwards them with the user's access token. The BE re-validates everything and returns `redirect_to`; the page navigates only to `https:` or loopback `http:` URLs.
 - `next.config.mjs` `headers()` forbids framing `/oauth/:path*` (`X-Frame-Options: DENY`, `frame-ancestors 'none'`).
+- The client opens the page cross-site, so the `SameSite=Strict` session cookies are not sent and the middleware shows `/login?next=…` even to a signed-in user. The login page checks the session in the browser (`resumeConsentIfSignedIn`) and continues with a same-origin navigation, which sends the cookies.
+- `apiClient` sends cookies to same-origin BFF routes only (the middleware guards them like pages); backend calls stay `credentials: "omit"`.
 
 ## Client IP
 The client IP is audit data only. `getClientIp()` reads `x-real-ip`, then the leftmost `x-forwarded-for`, only when `TRUSTED_PROXY=vercel` (set in Vercel only); otherwise it returns an empty string. It is sent as `X-Client-IP` together with `X-Internal-Secret` (`INTERNAL_API_SECRET`), which lets the backend trust it. Without the secret nothing is sent. No third-party lookup is used and nothing waits on IP resolution.
