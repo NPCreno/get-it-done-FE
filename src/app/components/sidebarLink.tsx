@@ -1,8 +1,21 @@
 "use client";
-import { useFormState } from "../context/FormProvider";
 import Image from "next/image";
-import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useFormState } from "../context/FormProvider";
 
+/**
+ * The link's accessible name when it carries a badge ("Projects, 3 unread chat messages"); without
+ * a badge the visible label is the name, so nothing is set. Pure, for tests.
+ */
+export function sidebarLinkLabel(text: string, badge: number, badgeLabel: string): string | undefined {
+  return badge > 0 ? `${text}, ${badge > 99 ? "more than 99" : badge} ${badgeLabel}` : undefined;
+}
+
+/**
+ * One sidebar item (BUG-05): a real Next `<Link>`, so Enter, middle-click and "open in new tab"
+ * work natively. The icons are decorative (`alt=""`), so the name is read once.
+ */
 export default function SidebarLink({
   href,
   icon,
@@ -18,6 +31,7 @@ export default function SidebarLink({
   icon: string;
   iconHover: string;
   text: string;
+  /** Runs before navigation (the mobile drawer closes itself). */
   onClick?: () => void;
   forceShowText?: boolean;
   className?: string;
@@ -29,48 +43,24 @@ export default function SidebarLink({
   const { isSidebarExpanded, sidebarAnimated } = useFormState();
   // The mobile drawer always shows its labels; the desktop labels follow the toggle (UX-02).
   const showText = forceShowText || isSidebarExpanded;
-  const router = useRouter();
   const pathname = usePathname();
-  
-  // Determine if current route matches the link's href
   const isActive = pathname === href;
 
-  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    
-    // Call the provided onClick handler if it exists
-    if (onClick) {
-      onClick();
-    }
-    
-    // Navigate to the new route
-    router.push(href);
-  };
-
-  // Handle keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleClick(e as unknown as React.MouseEvent<HTMLDivElement>);
-    }
-  };
-
   return (
-    <div
-      role="menuitem"
-      tabIndex={0}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
+    <Link
+      href={href}
+      onClick={onClick}
       title={showText ? undefined : text}
       className={`flex items-center gap-2 rounded-[10px] h-[35px] w-full flex-shrink-0 justify-start linkbtn cursor-pointer
-        ${isActive 
-          ? "bg-primary-default shadow-[0px_4px_10.9px_0px_rgba(0,_0,_0,0.25)]" 
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2
+        ${isActive
+          ? "bg-primary-default shadow-[0px_4px_10.9px_0px_rgba(0,_0,_0,0.25)]"
           : "hover:bg-primary-default/10"
         } ${className}`}
-      aria-current={isActive ? 'page' : undefined}
-      aria-label={badge > 0 ? `${text}, ${badge > 99 ? "more than 99" : badge} ${badgeLabel}` : undefined}
+      aria-current={isActive ? "page" : undefined}
+      aria-label={sidebarLinkLabel(text, badge, badgeLabel)}
     >
-      <div className="relative ml-2 w-5 h-5 flex-shrink-0">
+      <span className="relative ml-2 w-5 h-5 flex-shrink-0">
         {badge > 0 && (
           <span
             aria-hidden="true"
@@ -81,19 +71,19 @@ export default function SidebarLink({
         )}
         <Image
           src={icon}
-          alt={text}
+          alt=""
           width={20}
           height={20}
-          className={`absolute transition-opacity duration-300 ${isActive ? 'opacity-0' : 'opacity-100'}`}
+          className={`absolute transition-opacity duration-300 ${isActive ? "opacity-0" : "opacity-100"}`}
         />
         <Image
           src={iconHover}
-          alt={text}
+          alt=""
           width={20}
           height={20}
-          className={`absolute transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute transition-opacity duration-300 ${isActive ? "opacity-100" : "opacity-0"}`}
         />
-      </div>
+      </span>
       {/* Always rendered (clipped by the collapsed panel, never display:none), so the link keeps
           its name; a short fade stops letters being cut mid-glyph at rest. */}
       <span
@@ -105,6 +95,6 @@ export default function SidebarLink({
       >
         {text}
       </span>
-    </div>
+    </Link>
   );
 }

@@ -5,11 +5,24 @@ import { isUserFacing } from "@/lib/apiClient";
 import { useDeleteRecurringTasks, useDeleteTask } from "@/lib/query/mutations";
 import { settled } from "@/lib/query/unwrap";
 import type { ToastController } from "@/hooks/toastController";
+import {
+  cancelDelete,
+  confirmDelete,
+  DELETE_TASK_TITLE,
+  deleteTaskDescription,
+  requestDelete as requestDeleteState,
+  type PendingDelete,
+} from "./deleteConfirmState";
 import type { TaskEditor } from "./useTaskEditor";
 
 /**
  * Single and recurring task deletion. The caller owns the toast controller and the editor;
  * `headingRef` is where focus goes if the delete removes the button that opened the dialog.
+ *
+ * BUG-05: a single delete always asks first. `requestDelete(taskId, title)` opens the confirm
+ * (`deleteConfirmation`, rendered by `TaskDeleteConfirm`); only its Delete runs the request. The
+ * function that deletes is private to this hook, so no call site can skip the confirm. The
+ * recurring "this one or all" dialog is its own confirm.
  */
 export function useTaskDelete(
   toast: ToastController,
@@ -21,6 +34,7 @@ export function useTaskDelete(
   const [taskTemplateIdToDelete, setTaskTemplateIdToDelete] = useState<string>("");
   const [taskIdToDelete, setTaskIdToDelete] = useState<string>("");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pending, setPending] = useState<PendingDelete | null>(null);
 
   const deleteTask = async (taskId: string) => {
     try {
@@ -39,6 +53,9 @@ export function useTaskDelete(
       toast.unexpected(error);
     }
   };
+
+  /** Opens "Delete this task?". Nothing is deleted until its Delete is chosen. */
+  const requestDelete = (taskId: string, title: string) => setPending((p) => requestDeleteState(p, taskId, title));
 
   // Opens the "this one or all" dialog for a recurring task.
   const requestRecurringDelete = (taskTemplateId: string, taskId: string) => {
@@ -64,11 +81,23 @@ export function useTaskDelete(
   };
 
   return {
-    deleteTask,
+    requestDelete,
     requestRecurringDelete,
+    deleteConfirmation: {
+      open: pending !== null,
+      title: DELETE_TASK_TITLE,
+      description: pending ? deleteTaskDescription(pending.title) : "",
+      confirm: () => {
+        const { next, deleteTaskId } = confirmDelete(pending);
+        setPending(next);
+        if (deleteTaskId) void deleteTask(deleteTaskId);
+      },
+      cancel: () => setPending(cancelDelete().next),
+    },
     confirmation: {
       open: showConfirmation,
       close: () => setShowConfirmation(false),
+      // The recurring dialog already asked, so "this one" deletes directly.
       deleteThisOnly: () => {
         void deleteTask(taskIdToDelete);
         setShowConfirmation(false);
@@ -80,3 +109,5 @@ export function useTaskDelete(
     },
   };
 }
+
+export type TaskDeleteFlow = ReturnType<typeof useTaskDelete>;

@@ -46,10 +46,15 @@ export function subTaskView(s: SubTaskRow) {
 const projectOf = (store: DemoStore, id: string | null): ProjectRow | undefined =>
   id === null ? undefined : store.projects.find((p) => p.project_id === id);
 
+/** A task's row id as the backend sends it since OPS-04: a uuid string. */
+export function demoTaskUuid(n: number): string {
+  return `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+}
+
 /** The `getTasksByUser` row shape. */
 export function taskView(store: DemoStore, t: TaskRow) {
   return {
-    id: t.id,
+    id: demoTaskUuid(t.id),
     task_id: t.task_id,
     title: t.title,
     description: t.description,

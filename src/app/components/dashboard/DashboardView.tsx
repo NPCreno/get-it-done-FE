@@ -8,6 +8,7 @@ import ConfirmationModal from "@/app/components/modals/confirmation";
 import TaskEditorDialog from "@/app/components/tasks/TaskEditorDialog";
 import { useTaskEditor } from "@/app/components/tasks/useTaskEditor";
 import { useTaskDelete } from "@/app/components/tasks/useTaskDelete";
+import TaskDeleteConfirm from "@/app/components/tasks/TaskDeleteConfirm";
 import { useToastController } from "@/hooks/useToastController";
 import AnalyticsGrid from "./AnalyticsGrid";
 import DashboardHeader from "./DashboardHeader";
@@ -31,7 +32,8 @@ export default function DashboardView() {
   const data = useDashboardData();
   // Where focus goes if a delete removes the button that opened the dialog.
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const { deleteTask, requestRecurringDelete, confirmation } = useTaskDelete(toast, editor, headingRef);
+  const taskDelete = useTaskDelete(toast, editor, headingRef);
+  const { requestDelete, requestRecurringDelete, confirmation } = taskDelete;
   const [showLoader, setShowLoader] = useState(true);
   const [isPomodoroModalOpen, setIsPomodoroModalOpen] = useState(false);
 
@@ -86,7 +88,7 @@ export default function DashboardView() {
                   headingRef={headingRef}
                   onNewTask={() => editor.open({ mode: "create" })}
                   onEditTask={(task) => editor.open({ mode: "update", task })}
-                  onDeleteTask={(taskId) => void deleteTask(taskId)}
+                  onDeleteTask={requestDelete}
                   onDeleteRecurring={requestRecurringDelete}
                   notify={notify}
                 />
@@ -98,6 +100,8 @@ export default function DashboardView() {
       </div>
 
       <TaskEditorDialog editor={editor} projects={data.projectOptions} />
+
+      <TaskDeleteConfirm flow={taskDelete} />
 
       {isPomodoroModalOpen && (
         <PomodoroModal onClose={() => setIsPomodoroModalOpen(false)} />

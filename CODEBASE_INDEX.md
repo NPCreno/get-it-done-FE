@@ -71,7 +71,8 @@ Modals (`modals/`)
 
 Layout and navigation
 - `MainLayout.tsx` — page shell with sidebar
-- `Sidebar.tsx`, `MobileSidebar.tsx`, `sidebarLink.tsx`, `HamburgerButton.tsx` — navigation
+- `Sidebar.tsx`, `MobileSidebar.tsx`, `sidebarLink.tsx` (a Next `<Link>`, `sidebarLinkLabel`), `HamburgerButton.tsx` — navigation
+- `tasks/TaskDeleteConfirm.tsx`, `tasks/deleteConfirmState.ts` — BUG-05 "Delete this task?" (pure request/confirm/cancel and copy); tests in `components/__tests__/bug05.test.ts`
 - `sidebarWidths.ts` — desktop sidebar widths (60/146 px panel, +20 px wrapper); `src/lib/sidebarPreference.ts` — the remembered expand choice (`localStorage` `gid.sidebar.expanded`, never throws, default collapsed)
 - `DashboardSearch.tsx` — expandable search box with its own state, so typing does not re-render the dashboard page (it filters nothing yet)
 

@@ -44,7 +44,8 @@ export default function MobileSidebar() {
   useEffect(() => {
     if (isMobileSidebarOpen) {
       // Focus on first focusable element when sidebar opens
-      const firstFocusable = document.querySelector<HTMLElement>('.mobile-sidebar [role="menuitem"]');
+      // BUG-05: the items are links now (no menuitem role).
+      const firstFocusable = document.querySelector<HTMLElement>('.mobile-sidebar nav a[href]');
       firstFocusable?.focus();
       
       // Trap focus inside the sidebar when open
@@ -58,7 +59,7 @@ export default function MobileSidebar() {
         
         if (e.key === 'Tab') {
           const focusableElements = Array.from(
-            document.querySelectorAll('.mobile-sidebar [role="menuitem"], .mobile-sidebar button, .mobile-sidebar [href]')
+            document.querySelectorAll('.mobile-sidebar button, .mobile-sidebar [href]')
           ) as HTMLElement[];
           
           if (!focusableElements.length) return;
@@ -116,16 +117,7 @@ export default function MobileSidebar() {
       >
         <div 
           className="h-full flex flex-col py-5 px-4 overflow-y-auto w-full"
-          role="menu"
           tabIndex={-1}
-          aria-label="Main menu"
-          aria-orientation="vertical"
-          onKeyDown={(e) => {
-            // Prevent default tab behavior, we handle it in the effect
-            if (e.key === 'Tab') {
-              e.preventDefault();
-            }
-          }}
         >
           {/* Logo and Title */}
           <div className="flex items-center mb-10 px-2">

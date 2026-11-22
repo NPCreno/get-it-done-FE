@@ -18,7 +18,8 @@ import { canDeleteTask } from './tasks/assignee';
 interface TaskItemProps {
   task: ITask;
   handleUpdateTask: () => void;
-  handleDeleteTask: (taskId: string) => void;
+  /** BUG-05: asks first (`useTaskDelete().requestDelete`); the title goes into the confirm. */
+  handleDeleteTask: (taskId: string, title: string) => void;
   handleDeleteRecurringTasks: (taskTemplate_id: string, taskId: string) => void;
   /** Toast only. */
   notify?: (message: string, type: 'info' | 'success' | 'error' | 'warning') => void;
@@ -45,7 +46,6 @@ export function TaskItem({
   const createSubTask = useCreateSubTask(task.task_id);
   const deleteSubTask = useDeleteSubTask(task.task_id);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isDeleting, setIsDeleting] = useState<{[key: string]: boolean}>({});
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const subtaskInputRef = useRef<HTMLInputElement>(null);
   // Focus lands here if deleting a subtask removes the button that was focused.
@@ -109,44 +109,6 @@ export function TaskItem({
     }
   }, [isAddingSubtask]);
 
-  const handleDelete = useCallback(async (taskId: string) => {
-    // Prevent multiple delete attempts for the same task
-    if (isDeleting[taskId]) return;
-    
-    try {
-      // Mark this task as being deleted
-      setIsDeleting(prev => ({ ...prev, [taskId]: true }));
-      
-      // Create a promise with a timeout
-      const deletePromise = handleDeleteTask(taskId);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Delete operation timed out')), 10000)
-      );
-      
-      // Race between the delete operation and timeout
-      await Promise.race([deletePromise, timeoutPromise]);
-      
-      // If we get here, the delete was successful
-      notify?.('Task deleted successfully', 'success');
-      return true;
-      
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete task';
-      notify?.(`Delete failed: ${errorMessage}`, 'error');
-      
-      // Re-throw to allow parent component to handle the error if needed
-      throw error;
-      
-    } finally {
-      // Clean up the loading state
-      setIsDeleting(prev => {
-        const newState = { ...prev };
-        delete newState[taskId];
-        return newState;
-      });
-    }
-  }, [handleDeleteTask, isDeleting, notify]);
 
   const handleDeleteSub = useCallback((taskSubInstance_id: string) => {
     if (deleteSubTask.isPending) return;
@@ -283,29 +245,28 @@ export function TaskItem({
               <AssigneeChip task={task} dark={userData?.theme === 'dark'} />
             </div>
             <div className="flex flex-row gap-2">            
-              {/* FEAT-09: the server decides who may delete (the owner, or the task's creator). */}
-              {showDeleteModal && canDeleteTask(task) && (
+              {/* FEAT-09: the server decides who may delete (the owner, or the task's creator).
+                  BUG-05: always mounted (shown on hover or focus), so focus can return to it when
+                  the confirm closes. */}
+              {canDeleteTask(task) && (
                 <button
                   type="button"
-                  aria-label={isDeleting[task.task_id] ? 'Deleting task' : `Delete task ${task.title}`}
-                  className={`cursor-pointer ${isDeleting ? 'opacity-50' : ''}`} 
+                  aria-label={`Delete task ${task.title}`}
+                  className={`cursor-pointer transition-opacity ${showDeleteModal ? "opacity-100" : "opacity-0 focus-visible:opacity-100"}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if(task.template_id){
-                      handleDeleteRecurringTasks(task.template_id, task.task_id);
-                    }
-                    else{
-                      handleDelete(task.task_id);
-                    }
+                    // Both paths ask first: "this one or all" for a recurring task, otherwise the
+                    // BUG-05 confirm.
+                    if (task.template_id) handleDeleteRecurringTasks(task.template_id, task.task_id);
+                    else handleDeleteTask(task.task_id, task.title);
                   }}
-                  title={isDeleting ? 'Deleting...' : 'Delete task'}
+                  title="Delete task"
                 >
                   <Image 
                     src="/svgs/trash-outline.svg" 
                     alt=""
                     width={20} 
                     height={20} 
-                    className={isDeleting ? 'animate-pulse' : ''}
                   />
                 </button>
               )}

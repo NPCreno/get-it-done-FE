@@ -12,7 +12,8 @@ interface TaskBoardProps {
   headingRef: RefObject<HTMLHeadingElement | null>;
   onNewTask: () => void;
   onEditTask: (task: ITask) => void;
-  onDeleteTask: (taskId: string) => void;
+  /** Asks first (BUG-05). */
+  onDeleteTask: (taskId: string, title: string) => void;
   onDeleteRecurring: (taskTemplateId: string, taskId: string) => void;
   notify: (message: string, type: "info" | "success" | "error" | "warning") => void;
 }
@@ -160,7 +161,7 @@ export default function TaskBoard({
               key={`active-${task.task_id}-${task.status}`}
               task={task}
               handleUpdateTask={() => onEditTask(task)}
-              handleDeleteTask={(taskId: string) => onDeleteTask(taskId)}
+              handleDeleteTask={onDeleteTask}
               handleDeleteRecurringTasks={
                 (taskTemplate_id: string, taskId: string) =>
                 onDeleteRecurring(taskTemplate_id, taskId)
@@ -212,7 +213,7 @@ export default function TaskBoard({
                         key={`completed-${task.task_id}-${task.status}`}
                         task={task}
                         handleUpdateTask={() => onEditTask(task)}
-                        handleDeleteTask={() => onDeleteTask(task.task_id)}
+                        handleDeleteTask={onDeleteTask}
                         handleDeleteRecurringTasks={(taskTemplate_id: string, taskId: string) =>
                           onDeleteRecurring(taskTemplate_id, taskId)
                         }
