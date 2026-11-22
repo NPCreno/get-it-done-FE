@@ -3,6 +3,7 @@ import { jwtVerify, errors } from "jose";
 import { getClientIp } from "./app/utils/clientIp";
 import { refreshWithBackend, setSessionCookies } from "./app/api/auth/session";
 import { isOpenRoute } from "./lib/openRoutes";
+import { loginPathFor, safeNext } from "./lib/safeNext";
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_ALGORITHM = 'HS256';
 
@@ -36,8 +37,13 @@ function verifyAccessToken(token: string) {
   return jwtVerify(token, secretKey, { algorithms: [JWT_ALGORITHM] });
 }
 
+/** `/login`, plus `next` only for the OAuth consent page (FEAT-07d): other routes behave as before. */
+function loginUrl(req: NextRequest) {
+  return new URL(loginPathFor(req.nextUrl.pathname, req.nextUrl.search), req.url);
+}
+
 function redirectToLogin(req: NextRequest) {
-  const response = NextResponse.redirect(new URL("/login", req.url));
+  const response = NextResponse.redirect(loginUrl(req));
   response.cookies.delete("access_token");
   response.cookies.delete("refresh_token");
   return response;
@@ -74,12 +80,13 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Public pages: allow anyone, send signed-in users to the dashboard
+  // Public pages: allow anyone, send signed-in users to the dashboard, or back to the consent
+  // page when a validated `next` points there (FEAT-07d).
   if (pathname === "/" || publicRoutes.some(route => isRoute(pathname, route))) {
     if (token) {
       try {
         await verifyAccessToken(token);
-        return NextResponse.redirect(new URL("/dashboard", req.url));
+        return NextResponse.redirect(new URL(safeNext(req.nextUrl.searchParams.get("next")), req.url));
       } catch (err) {
         // Expired tokens are left alone so the user can sign in again.
         // Forged or malformed tokens are cleared.
@@ -96,7 +103,7 @@ export async function middleware(req: NextRequest) {
 
   // Everything else requires a cryptographically valid access token
   if (!token && !refreshToken) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(loginUrl(req));
   }
 
   // No access token (e.g. the cookie expired) but a refresh token exists

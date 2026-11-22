@@ -4,6 +4,7 @@ import { useFormik } from "formik";
 import { loginSchema } from "@/app/schemas/loginSchema";
 import { Loader2 } from "lucide-react";
 import InputBox from "@/app/components/inputBox";
+import { currentNext, safeNext } from "@/lib/safeNext";
 
 interface LoginFormValues {
   usernameOrEmail: string;
@@ -53,7 +54,9 @@ export default function LoginForm({
         
         // Add a small delay to ensure the UI updates before navigation
         setTimeout(() => {
-          window.location.href = '/dashboard'; // Navigate to dashboard with a hard refresh to ensure all data is fresh
+          // A hard navigation so all data is fresh. Back to the OAuth consent page when a
+          // validated `next` points there (FEAT-07d), otherwise the dashboard.
+          window.location.href = safeNext(currentNext());
         }, 100);
       } catch (error) {
         console.error("Login error:", error);

@@ -1,0 +1,6 @@
+{
+  "status": "success",
+  "data": {
+    "redirect_to": "https://claude.ai/api/mcp/auth_callback?error=access_denied&error_description=The+user+denied+access.&state=fixture-state&iss=http%3A%2F%2Flocalhost%3A8000"
+  }
+}

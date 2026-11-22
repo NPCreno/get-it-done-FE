@@ -335,7 +335,9 @@ async function execute<T>(path: string, opts: ApiRequestOptions<T>, isRetry: boo
       headers,
       body: hasBody ? JSON.stringify(requestBody) : undefined,
       cache: "no-store",
-      credentials: "omit",
+      // The backend never gets cookies. A same-origin BFF route does: the middleware needs the
+      // session cookies to let a protected route handler run (FEAT-07d /api/oauth/decision).
+      credentials: opts.sameOrigin ? "same-origin" : "omit",
       signal: composed.signal,
     });
     status = res.status;

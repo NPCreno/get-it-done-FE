@@ -2,14 +2,23 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import LoginForm from "@/app/components/auth/LoginForm";
+import { useEffect } from "react";
+import { resumeConsentIfSignedIn } from "@/lib/resumeConsent";
+import { currentNext, withNext } from "@/lib/safeNext";
 
 export default function LoginPage() {
   const router = useRouter();
 
+  // A signed-in user sent here by a cross-site OAuth navigation goes straight back to consent.
+  useEffect(() => {
+    void resumeConsentIfSignedIn();
+  }, []);
+
   // Handle view changes (e.g., switch to signup)
   const handleViewChange = (view: string) => {
     if (view === "signup") {
-      router.push("/signup");
+      // Signup keeps a validated `next` (FEAT-07d), so a new user still reaches the consent page.
+      router.push(withNext("/signup", currentNext()));
     }
   };
 

@@ -247,6 +247,17 @@ describe("apiClient: sameOrigin (BFF routes)", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("/api/auth/signup");
     expect(init.headers.Authorization).toBeUndefined();
+    // Same-origin only: the middleware needs the session cookies for a protected BFF route.
+    expect(init.credentials).toBe("same-origin");
+  });
+
+  it("a protected BFF route gets the bearer and the session cookies (FEAT-07d)", async () => {
+    fetchMock.mockResolvedValue(res(200, envelope({ redirect_to: "https://claude.ai/cb" })));
+    await apiClient("/api/oauth/decision", opts({ method: "POST", body: { a: 1 }, sameOrigin: true }));
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("/api/oauth/decision");
+    expect(init.headers.Authorization).toBe("Bearer tok");
+    expect(init.credentials).toBe("same-origin");
   });
 
   it("maps a 429 to an http failure carrying the server message", async () => {

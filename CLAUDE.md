@@ -13,17 +13,19 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `src/middleware.ts` protects every route except the public list, verifies the access token with `jose` `jwtVerify` (HS256), and refreshes tokens silently
 - The backend `AuthorizeGuard` is the real security boundary; the middleware is a UX layer
 
-## Routes (8 pages, plus the public `/demo`)
+## Routes (9 pages, plus the public `/demo`)
 - `/` — landing page (`src/app/page.tsx`)
 - `/login`, `/signup`, `/forgot-password` (placeholder: reset not available yet) — `src/app/(auth)/`
 - `/dashboard`, `/projects`, `/notifications`, `/profileSettings` — `src/app/(routes)/`
 - `/demo` — public, signed-out dashboard on an in-browser fake API (`src/app/demo/`, listed in `openRoutes`)
+- `/oauth/authorize` — protected OAuth consent page for MCP connectors (FEAT-07d), no sidebar (`src/app/oauth/`)
 
-## API route handlers (4)
+## API route handlers (5)
 - `POST /api/auth/refresh` — silent refresh from the browser; never clears cookies
 - `POST /api/auth/login` — validates input, calls backend `/user/loginEmail` or `/user/loginUsername`, sets both cookies, forwards the client IP as `X-Client-IP`
 - `POST /api/auth/signup` — validates with `CreateUserRequestSchema`, forwards only the four signup fields to BE `/user/create` with the attested client IP (SEC-09: the BE rate limits signup per client IP), passes the envelope and a 429 `Retry-After` through
 - `POST /api/auth/logout` — revokes the family on the BE, clears both cookies
+- `POST /api/oauth/decision` — FEAT-07d consent Allow/Deny: `isSameOrigin`, the access token from the `Authorization: Bearer` header (sent by `apiClient`), forwards only the known authorize params + `decision` to BE `POST /oauth/authorize`, returns `{ redirect_to }` only; failures are fixed copy, a TOKEN_* 401 keeps its `code` so `apiClient` refreshes and retries
 
 ## Key files
 - `src/middleware.ts` — route protection, JWT verification, silent refresh
@@ -38,7 +40,7 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - `src/app/(routes)/` — dashboard, projects, notifications, profileSettings
 - `src/app/api/auth/` — BFF route handlers and `authRequests.ts`
 - `src/app/api/` — request helpers
-- `src/app/components/` — `apiTokens/` (7), `auth/` (2), `chat/` (5), `modals/` (5), `shadcn/` (11), top level (23)
+- `src/app/components/` — `apiTokens/` (9), `auth/` (2), `chat/` (5), `modals/` (5), `oauth/` (1), `shadcn/` (11), top level (23)
 - `src/app/context/` — `FormProvider`
 - `src/app/contracts/` — transport contract: `enums.ts`, `common.ts`, `requests.ts` and `responses.ts` (zod), `forms.ts`, `mappers.ts`, vendored `api-contract.json`, `__fixtures__/`, `__tests__/`
 - `src/app/interface/` — component-facing types (derived from the zod response schemas) plus `forms/` re-exports
@@ -53,8 +55,10 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - Forms use Formik + yup. Transport uses zod 4 (`contracts/`); type a schema parameter as `ZodType<T>`. Form value types are separate from transport types; `mappers.ts` converts one to the other. `react-hook-form` was removed
 - Desktop sidebar (UX-02): only its toggle button expands it (`isSidebarExpanded` / `toggleSidebar` in `FormProvider`, remembered in `localStorage`); hover does nothing. Only the panel's width animates (widths from `sidebarWidths.ts`); the logo title and link labels are always rendered and clipped, never `display:none`. Below 768 px the hamburger drawer is the only navigation and the only dialog
 - Any new page is protected by default; add it to `publicRoutes` in `middleware.ts` only if it must be open
+- Login `next` (FEAT-07d): only `safeNext()` (`src/lib/safeNext.ts`) decides a post-login target, and it accepts only `/oauth/authorize` or `/oauth/authorize?…` (no `//`, `\`, schemes, whitespace or encoded tricks); anything else is `/dashboard`. The middleware adds `next` only for `/oauth/authorize` (`loginPathFor`), sends a signed-in visitor of `/login?next=…` to `safeNext(next)`, and login/signup links carry it with `withNext`. Never widen this list without a plan. Clients open the consent page with a cross-site navigation, which does not carry our `SameSite=Strict` cookies, so the middleware sends even a signed-in user to `/login?next=…`; the login page then calls `resumeConsentIfSignedIn()` (`src/lib/resumeConsent.ts`: a live session, at most once per `next` per tab) and continues same-origin
 - Files in `public/` skip the middleware by extension (the `config.matcher` list in `middleware.ts`: svg, png, jpg, jpeg, gif, webp, avif, ico, mp3, wav, ogg, woff, woff2). A new asset type must be added there, or signed-out visitors get a redirect to `/login` instead of the file
 - Client IP is derived on the server only. Never fetch it from a third party
+- `apiClient` sends cookies only to same-origin BFF routes (`sameOrigin: true` → `credentials: "same-origin"`), because the middleware needs them to let a protected route handler run; the backend never gets cookies (`"omit"`)
 - Data calls use `apiClient` helpers and return `ApiResult<T>`: check `result.ok`, toast only if `isUserFacing(result)`, reset spinners in `finally`
 - Mappers never put `user_id` in a create body (the backend takes the owner from the token). Update mappers turn `''` into `null` so a value can be cleared. Dates in forms are ISO strings or null
 - Response schemas: a nullable column is `.nullable()`, never `.optional()`; endpoint-specific shapes get their own schema; check them against fixtures
@@ -69,6 +73,7 @@ Vercel. The backend is a separate NestJS service on Railway (repo `get-it-done-B
 - Task completion from the project view now uses the status endpoint, so it triggers notifications
 - Task create/update goes through `useTaskEditor(toast)` (`components/tasks/`): `open({mode, task?, projectId?})` fully initializes, `close()` fully clears, and it is the only writer of `selectedTaskData`. A failed save keeps the modal open and the values; only success closes. The editor has its own form, separate from the projects page's project form
 - The projects page body lives in `components/projects/` (ARCH-01 PR D): `ProjectsView` composes `ProjectGrid`, `ProjectEditorDialog` and the view-project flow; `page.tsx` only wraps it in `MainLayout`. `useProjectEditor` owns the project form (project fields only) and fills it from `useProject` once per editing session, only for the project being edited and never when dirty (`shouldPrefill` in `projectPrefill.ts`), so a refetch can't overwrite edits and project values can't reach the task form
+- OAuth consent (FEAT-07d): `/oauth/authorize` (`components/oauth/ConsentView`) reads only the known authorize params (`readAuthorizeParams`; a repeated param is invalid), shows the BE check (`useOAuthCheck`, display only, 60 s timeout for a Render cold start) and re-sends the RAW params with the decision through `POST /api/oauth/decision`. The browser leaves only for a URL passing `isSafeRedirectTarget` (`https:`, or `http:` on `localhost`/`127.0.0.1`/`[::1]`, no userinfo); otherwise, and for any fatal check (`isFatalConsentFailure`), it shows the fixed "isn't valid" page and never redirects. `next.config.mjs` sends `X-Frame-Options: DENY` and `frame-ancestors 'none'` for `/oauth/:path*`. No OAuth token, code or verifier is ever in the FE: grants list without them (`OAuthGrantSchema` strips unknown keys) and the decision mutation has `gcTime: 0`. "Connected apps" (`apiTokens/ConnectedAppsList`, `DisconnectAppDialog`) uses `useOAuthGrants` / `useRevokeOAuthGrant` (optimistic removal, rollback only while the row is still absent). Not in `/demo`
 - API tokens (FEAT-07, Profile → "Connect an AI assistant"): a token secret (`gid_pat_…`) exists only in the `POST /tokens` response. It never enters the React Query cache (the create mutation has `gcTime: 0`, writes no query data, refetches the list instead, and the dialog calls `reset()` once it has the token), `localStorage`, `sessionStorage` or a log; it lives in the section's React state until the "created" dialog closes. `ApiTokenSchema` strips unknown keys, so a list can't carry one. `src/lib/__tests__/apiTokens.test.ts` searches the whole cache for `gid_pat_`. The MCP URL is built from `NEXT_PUBLIC_API_URL` by `mcpServerUrl()`, never hard-coded. Tokens are not in `/demo`
 - Toasts: a page calls `useToastController()` once and passes that instance to `<ToastHost controller>` and to every handler (`toast.success/failure/unexpected/error/show`). Never keep `showToast`/`setTimeout` toast state in a page; a new toast cancels the previous one's timers
 

@@ -15,7 +15,8 @@ import CopyButton from "./CopyButton";
 import CreateTokenDialog, { type NewToken } from "./CreateTokenDialog";
 import RevokeTokenDialog from "./RevokeTokenDialog";
 import TokenCreatedDialog from "./TokenCreatedDialog";
-import { LIMIT_REACHED_COPY, STATUS_LABEL, tokenDate } from "./tokenCopy";
+import ConnectedAppsList from "./ConnectedAppsList";
+import { CONNECTOR_STEPS, LIMIT_REACHED_COPY, STATUS_LABEL, tokenDate, WAKE_UP_RETRY_COPY } from "./tokenCopy";
 
 // Read once at build time, like every other use of the public API URL.
 const SERVER_URL = mcpServerUrl(process.env.NEXT_PUBLIC_API_URL);
@@ -26,7 +27,10 @@ const STATUS_CLASS: Record<ApiToken["status"], string> = {
   revoked: "bg-red-100 text-red-800",
 };
 
-/** FEAT-07 "Connect an AI assistant": server URL, the token list, create and revoke. */
+/**
+ * FEAT-07 "Connect an AI assistant": server URL, the claude.ai connector steps and Connected apps
+ * (FEAT-07d), then the token list, create and revoke.
+ */
 export default function ApiTokensSection({ toast }: { toast: ToastController }) {
   const { userData } = useFormState();
   const dark = userData?.theme === "dark";
@@ -66,8 +70,8 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
           Connect an AI assistant
         </h2>
         <p className={`font-lato text-[13px] ${dark ? "text-white" : "text-text"}`}>
-          Your AI assistant (Claude Code, Cursor and others) can read and manage your tasks and projects. Deletes can be
-          recovered. Treat a token like a password: anyone who has it can use your account through an assistant.
+          Your AI assistant (Claude, Claude Code, Cursor and others) can read and manage your tasks and projects. Deletes
+          can be recovered. Treat a token like a password: anyone who has it can use your account through an assistant.
         </p>
       </div>
 
@@ -90,8 +94,28 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
         </div>
       )}
 
+      {SERVER_URL && (
+        <div className="flex flex-col gap-1">
+          <h3 className="font-lato text-lg font-bold">Add it to claude.ai</h3>
+          <p className={`font-lato text-[13px] ${muted}`}>
+            Works in claude.ai and the Claude desktop and phone apps. No token needed: you sign in and approve here.
+          </p>
+          <ol className="list-decimal pl-5 font-lato text-[13px]">
+            {CONNECTOR_STEPS.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+          <p className={`font-lato text-xs ${muted}`}>{WAKE_UP_RETRY_COPY}</p>
+        </div>
+      )}
+
+      <ConnectedAppsList toast={toast} dark={dark} theme={userData?.theme} />
+
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="font-lato text-lg font-bold">Your tokens</h3>
+        <div className="flex flex-col">
+          <h3 className="font-lato text-lg font-bold">Your tokens</h3>
+          <p className={`font-lato text-xs ${muted}`}>For Claude Code, Cursor and other assistants that take a token.</p>
+        </div>
         <button
           ref={createButtonRef}
           type="button"
@@ -175,9 +199,6 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
         </>
       )}
 
-      <p className={`font-lato text-xs ${muted}`}>
-        Using claude.ai, the Claude desktop or phone app? Connector sign-in is coming soon.
-      </p>
 
       {creating && (
         <CreateTokenDialog

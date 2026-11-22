@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "data": {
+    "outcome": "ok",
+    "client_name": "Claude",
+    "redirect_host": "claude.ai",
+    "loopback_only": false,
+    "scopes": [
+      "mcp",
+      "offline_access"
+    ]
+  }
+}

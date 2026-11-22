@@ -13,7 +13,7 @@ Browser → Vercel edge → Next.js middleware → page or BFF route handler →
 - **Middleware decision order:**
   1. `/api/auth/login`, `/api/auth/signup`, `/api/auth/logout` and `/api/auth/refresh` pass through.
   2. `/`, `/login`, `/signup`, `/forgot-password`: allowed. A valid token redirects to `/dashboard`. An expired token is ignored. A forged or malformed token has its cookies cleared.
-  3. Everything else needs a valid token. No tokens means redirect to `/login`.
+  3. Everything else needs a valid token. No tokens means redirect to `/login` (for `/oauth/authorize` only, `/login?next=<path+query>`; a signed-in visitor of a public page with a `next` that passes `safeNext` goes there instead of `/dashboard`).
   4. A missing access token with a refresh token triggers a refresh.
   5. A valid token with under 60 seconds left triggers a proactive refresh; if that refresh fails the request continues.
   6. An expired token triggers a refresh. Any other verification error (bad signature, malformed token, wrong claims) clears cookies and redirects to `/login`.
@@ -26,6 +26,13 @@ Browser → Vercel edge → Next.js middleware → page or BFF route handler →
 - Cookies are cleared only on a definitive backend verdict (`invalid`). Network errors, timeouts, 5xx, 429 and malformed responses never touch cookies.
 - `POST /api/auth/refresh` is listed in the middleware `authApiRoutes`, otherwise middleware would rotate the cookie first.
 - Client: in-tab singleton plus Web Lock `gid-session`; logout only if the access cookie is unchanged since the attempt began.
+
+## OAuth consent (FEAT-07d)
+- The BE is the OAuth authorization server for MCP connectors, but its authorization endpoint is the FE page `/oauth/authorize`, because the user's session lives on the FE domain.
+- The page checks the parameters (display only), then sends the raw parameters and the decision through the same-origin BFF `POST /api/oauth/decision`, which forwards them with the user's access token. The BE re-validates everything and returns `redirect_to`; the page navigates only to `https:` or loopback `http:` URLs.
+- `next.config.mjs` `headers()` forbids framing `/oauth/:path*` (`X-Frame-Options: DENY`, `frame-ancestors 'none'`).
+- The client opens the page cross-site, so the `SameSite=Strict` session cookies are not sent and the middleware shows `/login?next=…` even to a signed-in user. The login page checks the session in the browser (`resumeConsentIfSignedIn`) and continues with a same-origin navigation, which sends the cookies.
+- `apiClient` sends cookies to same-origin BFF routes only (the middleware guards them like pages); backend calls stay `credentials: "omit"`.
 
 ## Client IP
 The client IP is audit data only. `getClientIp()` reads `x-real-ip`, then the leftmost `x-forwarded-for`, only when `TRUSTED_PROXY=vercel` (set in Vercel only); otherwise it returns an empty string. It is sent as `X-Client-IP` together with `X-Internal-Secret` (`INTERNAL_API_SECRET`), which lets the backend trust it. Without the secret nothing is sent. No third-party lookup is used and nothing waits on IP resolution.
