@@ -48,22 +48,26 @@ afterEach(() => vi.restoreAllMocks());
 
 describe("FEAT-09 schemas", () => {
   it("tasks-shared parses with every new field", () => {
+    // Captured as member B: B's own task in A's project, and A's task assigned to B.
     const rows = TaskListItemSchema.array().parse(load("tasks-shared").data);
-    expect(rows[0]).toMatchObject({
-      assignee_id: "user-member",
-      assignee_username: "member",
+    expect(rows[0]).toMatchObject({ title: "Member task", assignee_id: null, can_delete: true, creator_username: "ebcd7324" });
+    expect(rows[1]).toMatchObject({
+      title: "Owner task one",
+      assignee_username: "ebcd7324",
       can_delete: false,
-      project_owner_username: "owner",
-      creator_username: "owner",
+      project_owner_username: "eacdb5c3",
+      creator_username: "eacdb5c3",
     });
-    expect(rows[1].assignee_id).toBeNull();
   });
 
   it("a row from a backend without the new fields still parses: unassigned and deletable", () => {
-    const old = load("tasks-list").data[0];
+    const { creator_username, assignee_id, assignee_username, can_delete, project_owner_username, ...old } = load("tasks-list").data[0];
+    void [creator_username, assignee_id, assignee_username, can_delete, project_owner_username];
     const row = TaskListItemSchema.parse(old);
     expect(row).toMatchObject({ assignee_id: null, assignee_username: null, can_delete: true, project_owner_username: null });
-    const projectRow = ProjectTaskSchema.parse(load("tasks-by-project")[0]);
+    const { can_delete: _cd, assignee_id: _a, assignee_username: _au, creator_username: _c, user_id: _u, ...oldProjectRow } = load("tasks-by-project")[0];
+    void [_cd, _a, _au, _c, _u];
+    const projectRow = ProjectTaskSchema.parse(oldProjectRow);
     expect(projectRow.can_delete).toBe(true);
   });
 
@@ -94,7 +98,7 @@ describe("the bell tolerates notification types it does not know", () => {
       next_cursor: null,
     };
     const parsed = NotificationsPageSchema.parse(page);
-    expect(parsed.items.map((n) => n.notif_id)).toEqual(["notif-000000101", "n3"]);
+    expect(parsed.items.map((n) => n.notif_id)).toEqual([known.notif_id, "n3"]);
     expect(parsed.unread_count).toBe(3);
     NotificationsPageSchema.parse(page);
     expect(warn.mock.calls.length).toBeLessThanOrEqual(1);
@@ -214,9 +218,11 @@ describe("rows", () => {
     expect(initialsOf("bo")).toBe("BO");
   });
 
-  it("in <project> · <owner> only for someone else's project", () => {
-    expect(sharedProjectLabel({ project_title: "Launch", project_owner_username: "owner" })).toBe("in Launch · owner");
-    expect(sharedProjectLabel({ project_title: "Mine", project_owner_username: null })).toBeNull();
+  it("in <project> · <owner> only for someone else's project (the BE sends the owner for mine too)", () => {
+    expect(sharedProjectLabel({ project_title: "Launch", project_owner_username: "owner" }, "me")).toBe("in Launch · owner");
+    expect(sharedProjectLabel({ project_title: "Mine", project_owner_username: "me" }, "me")).toBeNull();
+    expect(sharedProjectLabel({ project_title: "Mine", project_owner_username: null }, "me")).toBeNull();
+    expect(sharedProjectLabel({ project_title: "Launch", project_owner_username: "owner" }, undefined)).toBeNull();
   });
 });
 

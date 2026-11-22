@@ -70,9 +70,16 @@ export function assigneeChip(
   return { initials: initialsOf(name), text: task.assignee_id === meId ? "You" : `Assigned to ${name}` };
 }
 
-/** "in <project> · <owner>" for a task from someone else's project, else null. */
-export function sharedProjectLabel(task: { project_title?: string | null; project_owner_username?: string | null }): string | null {
-  if (!task.project_owner_username) return null;
+/**
+ * "in <project> · <owner>" for a task from someone else's project, else null. The backend sends
+ * the owner for every task with a project (mine too), so it is compared with my username; while
+ * that is unknown nothing is shown.
+ */
+export function sharedProjectLabel(
+  task: { project_title?: string | null; project_owner_username?: string | null },
+  myUsername: string | undefined
+): string | null {
+  if (!task.project_owner_username || !myUsername || task.project_owner_username === myUsername) return null;
   return `in ${task.project_title || "a shared project"} · ${task.project_owner_username}`;
 }
 

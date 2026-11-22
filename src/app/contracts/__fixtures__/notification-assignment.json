@@ -3,13 +3,13 @@
   "data": {
     "items": [
       {
-        "notif_id": "notif-000000101",
+        "notif_id": "notif-d2fa2154-56bc-4ffd-8777-9047656028e8",
         "type": "assignment",
         "title": "New task assigned",
-        "message": "owner assigned you \"Write the brief\" in Launch",
+        "message": "eacdb5c3 assigned you \"Owner task one\" in Launch plan",
         "read": false,
         "actionType": "acknowledge",
-        "createdAt": "2026-01-15T09:00:00.000Z"
+        "createdAt": "2026-11-22T02:37:13.525Z"
       }
     ],
     "unread_count": 1,

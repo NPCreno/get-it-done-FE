@@ -35,7 +35,7 @@ import {
 } from "../query/chat";
 import { clearUnread, formatUnread, restoreUnread, selectUnread, unreadLabel } from "../query/chatUnread";
 import { addMessage, isEmptyChat, oldestFirst, removeMessage, type ChatMessagePages } from "../query/chatCache";
-import { chatInvalidationsFor } from "../query/invalidation";
+import { chatInvalidationsFor, tasksInvalidationsFor } from "../query/invalidation";
 import { qk, resourceOf } from "../query/keys";
 import { chatMembersSpec, chatMessagesSpec, chatUnreadSpec, sharedProjectsSpec } from "../query/specs";
 import { failResult, flush, okResult, testClient } from "../query/__tests__/helpers";
@@ -105,6 +105,7 @@ describe("CH1: keys and specs (the key equals the request parameters)", () => {
 
   it("each chat event declares what it invalidates", () => {
     expect(chatInvalidationsFor("chat-members", U, P)).toEqual([qk.chatMembers(U, P), qk.sharedProjects(U)]);
+    expect(chatInvalidationsFor("chat-member-removed", U, P)).toEqual([qk.chatMembers(U, P), qk.sharedProjects(U), ...tasksInvalidationsFor(U, P)]);
     expect(chatInvalidationsFor("chat-message", U, P)).toEqual([]);
   });
 });
@@ -189,7 +190,7 @@ describe("CH3: mutations", () => {
     expect(chatApi.removeChatMember).toHaveBeenCalledWith(P, U);
     expect(qc.getQueryData(qk.chatMessages(U, P))).toBeUndefined();
     expect(qc.getQueryData(qk.chatMembers(U, P))).toBeUndefined();
-    expect(spy.mock.calls.map(([f]) => f?.queryKey)).toEqual([qk.sharedProjects(U), qk.chatUnread(U)]);
+    expect(spy.mock.calls.map(([f]) => f?.queryKey)).toEqual([qk.sharedProjects(U), qk.chatUnread(U), ...tasksInvalidationsFor(U, P)]);
   });
 
   it("the owner removing someone else keeps the chat and refreshes members", async () => {
@@ -200,7 +201,7 @@ describe("CH3: mutations", () => {
     await new MutationObserver(qc, removeMemberOptions(qc, U, P)).mutate("u9");
     await flush();
     expect(qc.getQueryData(qk.chatMessages(U, P))).toBeDefined();
-    expect(spy.mock.calls.map(([f]) => f?.queryKey)).toEqual([qk.chatMembers(U, P), qk.sharedProjects(U)]);
+    expect(spy.mock.calls.map(([f]) => f?.queryKey)).toEqual([qk.chatMembers(U, P), qk.sharedProjects(U), ...tasksInvalidationsFor(U, P)]);
   });
 });
 
@@ -267,7 +268,7 @@ describe("CH5: unread keys, spec and invalidation (FEAT-08)", () => {
 
   it("mark-read invalidates only the counts; leaving also drops the badge", () => {
     expect(chatInvalidationsFor("chat-read", U, P)).toEqual([qk.chatUnread(U)]);
-    expect(chatInvalidationsFor("chat-left", U, P)).toEqual([qk.sharedProjects(U), qk.chatUnread(U)]);
+    expect(chatInvalidationsFor("chat-left", U, P)).toEqual([qk.sharedProjects(U), qk.chatUnread(U), ...tasksInvalidationsFor(U, P)]);
   });
 });
 

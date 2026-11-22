@@ -147,7 +147,7 @@ export function removeMemberOptions(
       gatedInvalidate(
         qc,
         CHAT_DATA_KEY,
-        chatInvalidationsFor(memberId === userId ? "chat-left" : "chat-members", userId, projectId)
+        chatInvalidationsFor(memberId === userId ? "chat-left" : "chat-member-removed", userId, projectId)
       ),
   };
 }

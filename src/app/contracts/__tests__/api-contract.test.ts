@@ -8,7 +8,8 @@ import { MCP_PATH, mcpServerUrl } from "@/lib/mcpSetup";
 import { DEFAULT_EXPIRY } from "../../components/apiTokens/tokenCopy";
 import { AUTHORIZE_PARAM_KEYS } from "@/lib/oauthConsent";
 import { CONSENT_PATH } from "@/lib/safeNext";
-import { OAUTH_DECISIONS, OAuthAuthorizeParamsSchema } from "../requests";
+import { OAUTH_DECISIONS, OAuthAuthorizeParamsSchema, SetTaskAssigneeRequestSchema } from "../requests";
+import { TASKS_SSE_EVENT } from "@/lib/notificationStream";
 import {
   ApiTokenSchema,
   ChatMemberSchema,
@@ -22,6 +23,8 @@ import {
   OAuthCheckResultSchema,
   OAuthDecisionResultSchema,
   OAuthGrantSchema,
+  ProjectTaskSchema,
+  TaskListItemSchema,
 } from "../responses";
 import { API_TOKEN_RULES, LIMITS, PATTERNS } from "../common";
 import {
@@ -151,5 +154,27 @@ describe("FEAT-07d OAuth consent and connected apps match the contract's oauth s
     expect(keys(OAuthAuthorizeParamsSchema)).toEqual([...O.authorizeParams].sort());
     expect(keys(OAuthDecisionResultSchema)).toEqual([...O.fields.authorizeDecision].sort());
     expect(keys(OAuthGrantSchema)).toEqual([...O.fields.grant].sort());
+  });
+});
+
+describe("FEAT-09 shared tasks match the contract's tasks section", () => {
+  const T = contract.tasks;
+  const keys = (schema: { shape: Record<string, unknown> }) => Object.keys(schema.shape);
+
+  it("the SSE event name", () => {
+    expect(TASKS_SSE_EVENT).toBe(T.sseEventType);
+  });
+
+  it("every task row schema has the sharing fields; the user list has its extras", () => {
+    for (const f of T.fields.sharing) {
+      expect(keys(ProjectTaskSchema)).toContain(f);
+      expect(keys(TaskListItemSchema)).toContain(f);
+    }
+    for (const f of T.fields.userRowExtra) expect(keys(TaskListItemSchema)).toContain(f);
+  });
+
+  it("the assignee body and the tasks event fields", () => {
+    expect(keys(SetTaskAssigneeRequestSchema).sort()).toEqual([...T.fields.assigneeBody].sort());
+    expect(T.fields.tasksEvent).toEqual(["project_id"]);
   });
 });

@@ -51,7 +51,8 @@ export function gatedInvalidate(qc: QueryClient, mutationKey: MutationKey, keys:
 
 /** FEAT-05 chat events. They name a project, so they have their own table. */
 export type ChatDataEvent =
-  | "chat-members" // added or removed by the owner
+  | "chat-members" // added by the owner
+  | "chat-member-removed" // removed by the owner (FEAT-09: their tasks go back to the owner)
   | "chat-left" // this user left the project
   | "chat-message" // sent or deleted
   | "chat-read"; // this user's read point moved (FEAT-08)
@@ -60,9 +61,13 @@ export function chatInvalidationsFor(event: ChatDataEvent, userId: string, proje
   switch (event) {
     case "chat-members":
       return [qk.chatMembers(userId, projectId), qk.sharedProjects(userId)];
+    case "chat-member-removed":
+      // FEAT-09: the removed member's tasks go back to the owner, and the owner (the actor) gets no
+      // `tasks` event, so the task data is refreshed here too.
+      return [qk.chatMembers(userId, projectId), qk.sharedProjects(userId), ...tasksInvalidationsFor(userId, projectId)];
     case "chat-left":
-      // That chat's badge goes too.
-      return [qk.sharedProjects(userId), qk.chatUnread(userId)];
+      // That chat's badge goes too; and (FEAT-09) the tasks I was responsible for there leave my board.
+      return [qk.sharedProjects(userId), qk.chatUnread(userId), ...tasksInvalidationsFor(userId, projectId)];
     case "chat-read":
       return [qk.chatUnread(userId)];
     case "chat-message":

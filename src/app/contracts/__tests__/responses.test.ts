@@ -67,7 +67,9 @@ const CASES: [string, ZodType, "envelope" | "raw"][] = [
   ["oauth-grants-list", OAuthGrantListSchema, "envelope"],
   ["oauth-grants-empty", OAuthGrantListSchema, "envelope"],
   ["oauth-grant-revoked", OAuthGrantSchema, "envelope"],
-  // FEAT-09 shared tasks. FE-only until the BE exports its own: built from the 41a shapes.
+  // FEAT-09 shared tasks. task-assignee is the BE's (PATCH /tasks/:id/assignee); tasks-shared and
+  // notification-assignment are FE-only, captured from a local BE copy (the BE exports neither).
+  ["task-assignee", TaskListItemSchema, "envelope"],
   ["tasks-shared", TaskListItemSchema.array(), "envelope"],
   ["notification-assignment", NotificationsPageSchema, "envelope"],
 ];

@@ -1,4 +1,5 @@
 "use client";
+import { useFormState } from "@/app/context/FormProvider";
 import { useSessionUserId } from "@/lib/query/queries";
 import { assigneeChip, sharedProjectLabel } from "./assignee";
 
@@ -19,8 +20,9 @@ interface TaskSharingMetaProps {
  */
 export default function AssigneeChip({ task, dark }: TaskSharingMetaProps) {
   const me = useSessionUserId();
+  const { userData } = useFormState();
   const chip = assigneeChip(task, me);
-  const where = sharedProjectLabel(task);
+  const where = sharedProjectLabel(task, userData?.username);
   if (!chip && !where) return null;
   const muted = dark ? "text-gray-400" : "text-[#676767]";
   return (

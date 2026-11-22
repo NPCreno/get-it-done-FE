@@ -56,7 +56,7 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
     const result = await settled(add.mutateAsync(parsed.data.username));
     if (result.ok) {
       setUsername("");
-      toast.success("Member added", `${parsed.data.username} can now open this project's chat`);
+      toast.success("Member added", `${parsed.data.username} can now work on this project's tasks and chat`);
       return;
     }
     const copy = addErrorCopy(result.failure);
@@ -66,7 +66,7 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
 
   const removeMember = async (member: ChatMember) => {
     const result = await settled(remove.mutateAsync(member.user_id));
-    if (result.ok) toast.success("Member removed", `${member.username} no longer has access to this chat`);
+    if (result.ok) toast.success("Member removed", `${member.username} no longer has access to this project`);
     else toast.failure(result.failure);
   };
 
@@ -84,7 +84,7 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
           <div>
             <DialogTitle className="font-lato text-[20px] font-bold">Members of {projectTitle || "this project"}</DialogTitle>
             <DialogDescription className={`font-lato text-sm ${muted}`}>
-              Members can read and write this project&apos;s chat. They can&apos;t see its tasks.
+              Members can work on this project&apos;s tasks and use its chat. Removing someone gives their tasks back to you.
             </DialogDescription>
           </div>
           <DialogClose asChild>
