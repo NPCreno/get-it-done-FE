@@ -6,6 +6,7 @@ import {
   deleteRecurringTasksApi,
   deleteSubTaskApi,
   deleteTaskApi,
+  setTaskAssignee,
   updateSubTaskStatus,
   updateTaskApi,
   updateTaskStatus,
@@ -22,7 +23,7 @@ import type {
   UpdateTaskDraft,
 } from "@/app/contracts/mappers";
 import type { UpdateUserRequest } from "@/app/contracts/requests";
-import { gatedInvalidate, invalidationsFor, type DataEvent } from "./invalidation";
+import { gatedInvalidate, invalidationsFor, tasksInvalidationsFor, type DataEvent } from "./invalidation";
 import { qk } from "./keys";
 import {
   applyPatch,
@@ -190,6 +191,32 @@ export function useUpdateTask() {
 export function useDeleteTask() {
   const { qc, userId } = useCtx();
   return useMutation(dataMutationOptions(qc, userId, TASK_DATA_KEY, "task", (taskId: string) => deleteTaskApi(taskId)));
+}
+
+export interface SetTaskAssigneeVars {
+  taskId: string;
+  /** The task's project; an assignment is only possible inside one. */
+  projectId: string;
+  assigneeId: string | null;
+}
+
+/** FEAT-09: not optimistic. Refreshes that project's tasks, my board and the dashboard. */
+export function setTaskAssigneeOptions(
+  qc: QueryClient,
+  userId: string
+): UseMutationOptions<void, ApiError, SetTaskAssigneeVars> {
+  return {
+    mutationKey: TASK_DATA_KEY,
+    mutationFn: async ({ taskId, assigneeId }) => {
+      must(await setTaskAssignee(taskId, assigneeId));
+    },
+    onSettled: (_d, _e, vars) => gatedInvalidate(qc, TASK_DATA_KEY, tasksInvalidationsFor(userId, vars.projectId)),
+  };
+}
+
+export function useSetTaskAssignee() {
+  const { qc, userId } = useCtx();
+  return useMutation(setTaskAssigneeOptions(qc, userId));
 }
 
 export function useDeleteRecurringTasks() {

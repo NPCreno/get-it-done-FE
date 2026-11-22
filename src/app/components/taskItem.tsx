@@ -12,6 +12,8 @@ import { FormikErrors, useFormik } from 'formik';
 import { createSubTaskSchema } from '../schemas/createSubTaskSchema';
 import { ISubTaskFormValues } from '../interface/forms/ISubTaskFormValues';
 import InputBox from './inputBox';
+import AssigneeChip from './tasks/AssigneeChip';
+import { canDeleteTask } from './tasks/assignee';
 
 interface TaskItemProps {
   task: ITask;
@@ -278,9 +280,11 @@ export function TaskItem({
                   {task.description}
                 </p>
               )}
+              <AssigneeChip task={task} dark={userData?.theme === 'dark'} />
             </div>
             <div className="flex flex-row gap-2">            
-              {showDeleteModal && (
+              {/* FEAT-09: the server decides who may delete (the owner, or the task's creator). */}
+              {showDeleteModal && canDeleteTask(task) && (
                 <button
                   type="button"
                   aria-label={isDeleting[task.task_id] ? 'Deleting task' : `Delete task ${task.title}`}

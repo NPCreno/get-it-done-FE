@@ -44,7 +44,7 @@ No global store. Component state, `FormProvider` context for form handling, and 
 - `userRequests.ts` → backend `UserController` (`/user/*`)
 - `projectsRequests.ts` → `ProjectsController` (`/projects/*`)
 - `taskRequests.ts` → `TaskController` (`/tasks/*`)
-- Notifications: a paged list plus read state (source of truth), and one SSE stream per tab that only signals "refetch". See `CLAUDE.md`.
+- Notifications: a paged list plus read state (source of truth), and one SSE stream per tab that only signals "refetch". See `CLAUDE.md`. The same stream carries `chat` (FEAT-08) and `tasks` (FEAT-09: `{project_id}`, refetch that project's tasks, my board and the dashboard) events. Unknown notification types are dropped from the list, never fatal.
 - `chatRequests.ts` → `ChatController` (`/chat/*`, FEAT-05) plus one WebSocket per tab at `/chat/ws` (`chatSocket.ts`). Unlike notifications, a chat event carries the message and patches the cache directly; only a (re)connect refetches. When SEC-10 adds a CSP, `connect-src` must allow the API's `wss:` origin.
 
 ## Transport contract (DATA-02)

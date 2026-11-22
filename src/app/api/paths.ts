@@ -46,3 +46,6 @@ export const oauthAuthorizePath = () => "/oauth/authorize";
 export const oauthGrantsPath = () => "/oauth/grants";
 
 export const oauthGrantPath = (grantId: string) => apiPath`/oauth/grants/${grantId}`;
+
+// FEAT-09 shared tasks: set or clear a task's assignee.
+export const taskAssigneePath = (taskId: string) => apiPath`/tasks/${taskId}/assignee`;

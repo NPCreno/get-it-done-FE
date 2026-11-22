@@ -1,0 +1,50 @@
+{
+  "status": "success",
+  "message": "Tasks fetched successfully",
+  "data": [
+    {
+      "id": "00000000-0000-4000-8000-000000000101",
+      "task_id": "task-00000000-0000-4000-8000-000000000101",
+      "subInstances": [],
+      "title": "Write the brief",
+      "description": null,
+      "priority": "High",
+      "status": "Pending",
+      "due_date": "2026-01-15T09:00:00.000Z",
+      "createdAt": "2026-01-15T09:00:00.000Z",
+      "updatedAt": "2026-01-15T09:00:00.000Z",
+      "deletedAt": null,
+      "user_id": "user-owner",
+      "creator_username": "owner",
+      "project_id": "PRJ-00000000-0000-4000-8000-000000000001",
+      "project_title": "Launch",
+      "project_owner_username": "owner",
+      "template_id": null,
+      "assignee_id": "user-member",
+      "assignee_username": "member",
+      "can_delete": false
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000102",
+      "task_id": "task-00000000-0000-4000-8000-000000000102",
+      "subInstances": [],
+      "title": "My own task",
+      "description": "personal",
+      "priority": "Low",
+      "status": "Complete",
+      "due_date": null,
+      "createdAt": "2026-01-15T09:00:00.000Z",
+      "updatedAt": "2026-01-15T09:00:00.000Z",
+      "deletedAt": null,
+      "user_id": "user-member",
+      "creator_username": "member",
+      "project_id": null,
+      "project_title": null,
+      "project_owner_username": null,
+      "template_id": null,
+      "assignee_id": null,
+      "assignee_username": null,
+      "can_delete": true
+    }
+  ]
+}

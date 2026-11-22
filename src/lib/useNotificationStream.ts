@@ -4,7 +4,9 @@ import { useEffect } from "react";
 import { getAccessToken } from "@/app/utils/utils";
 import { refreshSession } from "./clientSession";
 import { createNotificationStream, type NotificationStream } from "./notificationStream";
+import { invalidateUnlessMutating, tasksInvalidationsFor } from "./query/invalidation";
 import { qk } from "./query/keys";
+import { TASK_DATA_KEY } from "./query/mutations";
 import { useSessionUserId } from "./query/queries";
 
 let shared: NotificationStream | null = null;
@@ -38,7 +40,10 @@ function stream(): NotificationStream {
 
 /**
  * Mount once (MainLayout). A `notification` event refetches the notifications list; a `chat`
- * event refetches the unread chat counts (FEAT-08); a reconnect refetches both.
+ * event refetches the unread chat counts (FEAT-08); a `tasks` event refetches that project's tasks,
+ * my task board and the dashboard (FEAT-09), unless a task mutation of mine is in flight. A
+ * reconnect refetches the lists and counts, and the task data too (events may have been missed);
+ * the first connect after mounting does not, since the page has just loaded it.
  */
 export function useNotificationStream(): void {
   const qc = useQueryClient();
@@ -48,12 +53,16 @@ export function useNotificationStream(): void {
     const s = stream();
     const refetch = () => void qc.invalidateQueries({ queryKey: qk.notifications(userId) });
     const refetchChat = () => void qc.invalidateQueries({ queryKey: qk.chatUnread(userId) });
+    let connectedBefore = false;
     const unsubscribe = s.subscribe({
       onNotification: refetch,
       onChat: refetchChat,
+      onTasks: (projectId) => void invalidateUnlessMutating(qc, TASK_DATA_KEY, tasksInvalidationsFor(userId, projectId)),
       onConnected: () => {
         refetch();
         refetchChat();
+        if (connectedBefore) void invalidateUnlessMutating(qc, TASK_DATA_KEY, [qk.tasks(userId), qk.analytics(userId)]);
+        connectedBefore = true;
       },
     });
     const onVisibility = () => s.setHidden(document.hidden);

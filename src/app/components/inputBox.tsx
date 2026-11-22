@@ -8,6 +8,8 @@ export interface DropdownOption {
   name: string;
   color?: string;
   project_id?: string;
+  /** Options with a group are listed under that heading, after the ungrouped ones. */
+  group?: string;
 }
 
 interface InputBoxProps {
@@ -32,6 +34,7 @@ interface InputBoxProps {
     color?: string;
     title?: string;
     project_id?: string;
+    group?: string;
   }[];  
   customClass?: string;
   labelCustomClass?: string;

@@ -5,6 +5,7 @@ import { Button } from "@/app/components/shadcn/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -16,6 +17,8 @@ interface CustomDropdownMenuProps {
     name: string;
     color?: string;
     project_id?: string;
+    /** A heading shown above the first option of each group (FEAT-09 "Shared with me"). */
+    group?: string;
   }[]
   selectedOption: {
     name: string;
@@ -92,8 +95,13 @@ export function CustomDropdownMenu({
             }
           }}
         >
-          {options.map((option) => (
+          {options.map((option, i) => (
             <React.Fragment key={option.name}>
+              {option.group && option.group !== options[i - 1]?.group && (
+                <DropdownMenuLabel className={`px-2 pt-2 font-lato text-xs font-bold ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-[#676767]'}`}>
+                  {option.group}
+                </DropdownMenuLabel>
+              )}
               <DropdownMenuRadioItem 
                 value={option.name} 
                 className={`${userData?.theme === 'dark' ? 'bg-foreground-dark hover:bg-gray-800' : 'bg-white hover:bg-gray-100'}`} 

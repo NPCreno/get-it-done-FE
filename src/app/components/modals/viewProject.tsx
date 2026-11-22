@@ -9,6 +9,8 @@ import LoadError from '../LoadError';
 import type { LoadState } from '@/lib/query/loadState';
 import Image from 'next/image';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/app/components/shadcn/dialog';
+import AssigneeChip from '@/app/components/tasks/AssigneeChip';
+import { canDeleteTask } from '@/app/components/tasks/assignee';
 interface ViewProjectModalProps {
   onClose: () => void;
   project: IProject;
@@ -20,6 +22,11 @@ interface ViewProjectModalProps {
   handleDeleteTask: (taskId: string) => void;
   /** Extra footer actions (the owner's chat buttons). */
   extraActions?: React.ReactNode;
+  /**
+   * FEAT-09: false for a project someone shared with me. Owner-only actions (the members and
+   * project buttons in `extraActions`) are not shown; tasks can still be added, edited and toggled.
+   */
+  canManageProject?: boolean;
 }
 
 export default function ViewProjectModal({ 
@@ -32,6 +39,7 @@ export default function ViewProjectModal({
   onStatusError,
   handleDeleteTask,
   extraActions,
+  canManageProject = true,
 }: ViewProjectModalProps) {
  
   const { userData } = useFormState();
@@ -94,7 +102,7 @@ export default function ViewProjectModal({
           </button>
 
           <div className="flex flex-row gap-2 items-center">
-          {extraActions}
+          {canManageProject ? extraActions : null}
           <button className={`border ${isDarkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-700' : 'border-primary-200 text-primary-default hover:bg-gray-50'} 
             rounded-[5px] flex justify-center items-center font-lato text-xs p-[10px] px-4 transition-colors duration-200`} 
             onClick={onClose}>
@@ -212,11 +220,15 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
                 {task.description}
               </p>
             )}
+            <div className="w-full">
+              <AssigneeChip task={task} dark={isDarkMode} />
+            </div>
           </div>
         </div>
 
         <div className="h-full flex items-center w-[60px] gap-[10px] justify-end">
-          {showDeleteModal && (
+          {/* FEAT-09: the server decides who may delete (the owner, or the task's creator). */}
+          {showDeleteModal && canDeleteTask(task) && (
             <button
               type="button"
               aria-label={`Delete task ${task.title}`}

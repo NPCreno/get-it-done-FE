@@ -22,6 +22,8 @@ export interface TaskFormValues {
   start_date: IsoDate | null;
   end_date: IsoDate | null;
   task_id?: string;
+  /** FEAT-09: "" = unassigned. Only used with a project, never for a recurring task. */
+  assignee_id?: string;
 }
 
 export interface ProjectFormValues {

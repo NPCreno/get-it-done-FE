@@ -37,6 +37,14 @@ Request chains per feature. Backend paths are shown without the `/api` prefix, b
 - Subtasks: `taskItem.tsx` → `createSubTaskApi()`, `updateSubTaskStatus()`; `dashboard/page.tsx` → `deleteSubTaskApi()` → BE subtask endpoints
 - Recurring: `deleteRecurringTasksApi()` → BE `/tasks/deleteRecurringTasks/:taskTemplate_id`
 
+## Shared tasks (FEAT-09)
+- View: projects page → `chat/SharedProjectsSection.tsx` **View project** → `ProjectsView` → `modals/viewProject.tsx` (`canManageProject={false}`) with `useProjectTasks` → `getTasksByProject()` → BE `/tasks/getTasksByProj/:project_id` (members allowed). Add, edit and toggle as in your own projects; Delete only when `can_delete`. A 403 on delete shows the server's text and the list refetches.
+- Assign: task editor `tasks/AssigneeSelect.tsx` (`useChatMembers` → BE `GET /chat/projects/:id/members`). Create → `createTaskApi()` with `assignee_id`. Edit → `useSetTaskAssignee()` → `setTaskAssignee()` → BE `PATCH /tasks/:task_id/assignee`, only when changed.
+- Rows: `tasks/AssigneeChip.tsx` in `taskItem.tsx` (dashboard board) and the project view.
+- Live: the notifications SSE stream's `tasks` event (`{project_id}`) → `tasksInvalidationsFor` (that project's tasks, my board, the dashboard), via `invalidateUnlessMutating`.
+- Bell: an `assignment` notification ("<user> assigned you …") with an "Open projects" link to `/projects`.
+- Not in `/demo` (`SharingContext` off).
+
 ## Notifications
 - List: `notifications/page.tsx` → `notificationCard.tsx`
 - Data: `GET /notifications` (paged, `unread_count`), `PATCH /notifications/:id/read`, `PATCH /notifications/read-all`, `DELETE /notifications/clear/:user_id` through `notificationsRequests.ts` and `src/lib/query/notifications.ts`. Page actions: mark one read (card or button), Mark all as read, Clear all (confirmation dialog), Load more.

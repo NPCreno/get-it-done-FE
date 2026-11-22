@@ -97,11 +97,15 @@ describe("F5: query layer", () => {
 });
 
 describe("F5: action routes allowlist", () => {
-  it("every known type and any unknown type navigates nowhere", () => {
+  it("the old types and any unknown type navigate nowhere", () => {
     for (const t of ["achievement", "milestone", "streak", "levelUp", "reward", "taskDue"]) {
       expect(routeForNotification(t)).toBeNull();
     }
     expect(routeForNotification("somethingNew")).toBeNull();
     expect(routeForNotification("__proto__")).toBeNull();
+  });
+
+  it("an assignment (FEAT-09) leads to the projects page", () => {
+    expect(routeForNotification("assignment")).toBe("/projects");
   });
 });

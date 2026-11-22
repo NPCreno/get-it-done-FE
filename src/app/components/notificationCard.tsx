@@ -2,6 +2,8 @@
 import { INotificationProps } from "../interface/INotification";
 import type { NotificationType } from "../contracts/enums";
 import Image from "next/image";
+import Link from "next/link";
+import { routeForNotification } from "@/lib/notificationRoutes";
 
 const ICONS: Record<NotificationType, string> = {
   achievement: "/svgs/notifIcons/trophy-yellow.svg",
@@ -10,12 +12,15 @@ const ICONS: Record<NotificationType, string> = {
   levelUp: "/svgs/notifIcons/star-teal.svg",
   reward: "/svgs/notifIcons/medal-red.svg",
   taskDue: "/svgs/notifIcons/calendar-yellow.svg",
+  assignment: "/svgs/notifIcons/checkmark-circle-outline.svg",
 };
 
 export default function NotificationCard({ notification, time, onMarkRead, pending }: INotificationProps) {
   const { notif_id, type, title, message, read, actionType } = notification;
   const unread = !read;
   const label = actionType === "acknowledge" || actionType === "claim" || actionType === "complete" ? "Acknowledge" : "Mark as read";
+  // Where it leads comes from the FE allowlist only, never from the notification's data.
+  const route = routeForNotification(type);
 
   return (
     // The card click is a mouse convenience; the button below is the keyboard path.
@@ -41,6 +46,18 @@ export default function NotificationCard({ notification, time, onMarkRead, pendi
             </h2>
             <span className="font-lato font-normal text-xs text-black">{message}</span>
           </div>
+          {route && (
+            <Link
+              href={route}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (unread && !pending) onMarkRead(notif_id);
+              }}
+              className="w-fit font-lato text-[11px] font-bold text-primary-default underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
+            >
+              Open projects
+            </Link>
+          )}
           {unread && (
             <button
               type="button"
