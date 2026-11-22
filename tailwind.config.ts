@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+// An ES import, not require(): Node 24 loads this config as ESM, where require is undefined (BUG-05).
+import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
@@ -157,6 +159,6 @@ const config: Config = {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 };
 export default config;

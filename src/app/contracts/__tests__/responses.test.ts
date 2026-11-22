@@ -188,7 +188,7 @@ describe("negative cases are rejected", () => {
 
 // OPS-04: production sends uuid task ids, old local databases send integers.
 // Tighten to string only after the BE contract sync.
-describe("task id accepts a uuid string or an integer", () => {
+describe("task id is a uuid string (BUG-05)", () => {
   const uuid = "3f2b8c1e-9a4d-4e7b-8c21-5d6f7a8b9c0d";
 
   it("TaskListItem: the uuid fixture keeps its string id", () => {
@@ -196,17 +196,17 @@ describe("task id accepts a uuid string or an integer", () => {
     expect(t.id).toBe(uuid);
   });
 
-  it("TaskListItem: string and number ids both parse; other types do not", () => {
-    for (const id of [uuid, 1]) expect(TaskListItemSchema.safeParse({ ...firstTaskOf(), id }).success).toBe(true);
-    for (const id of [null, true, undefined]) {
+  it("TaskListItem: a string id parses; a number or anything else does not", () => {
+    expect(TaskListItemSchema.safeParse({ ...firstTaskOf(), id: uuid }).success).toBe(true);
+    for (const id of [1, null, true, undefined]) {
       expect(TaskListItemSchema.safeParse({ ...firstTaskOf(), id }).success).toBe(false);
     }
   });
 
-  it("ProjectTask: string and number ids both parse; other types do not", () => {
+  it("ProjectTask: a string id parses; a number or anything else does not", () => {
     const base = () => clone(payload("tasks-by-project")[0]);
-    for (const id of [uuid, 1]) expect(ProjectTaskSchema.safeParse({ ...base(), id }).success).toBe(true);
-    for (const id of [null, true, undefined]) {
+    expect(ProjectTaskSchema.safeParse({ ...base(), id: uuid }).success).toBe(true);
+    for (const id of [1, null, true, undefined]) {
       expect(ProjectTaskSchema.safeParse({ ...base(), id }).success).toBe(false);
     }
   });

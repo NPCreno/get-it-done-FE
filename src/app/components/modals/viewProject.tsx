@@ -19,7 +19,8 @@ interface ViewProjectModalProps {
   tasksLoad: { state: LoadState<unknown>; onRetry: () => void; retrying: boolean };
   handleUpdateTask: (task: ITask) => void;
   onStatusError: (message: string) => void;
-  handleDeleteTask: (taskId: string) => void;
+  /** Asks first (BUG-05): `useTaskDelete().requestDelete`. */
+  handleDeleteTask: (taskId: string, title: string) => void;
   /** Extra footer actions (the owner's chat buttons). */
   extraActions?: React.ReactNode;
   /**
@@ -119,7 +120,7 @@ interface TaskCardProps {
   task: ITask;
   handleUpdateTask: (task: ITask) => void;
   onStatusError: (message: string) => void;
-  handleDeleteTask: (taskId: string) => void;
+  handleDeleteTask: (taskId: string, title: string) => void;
 }
 
 const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: TaskCardProps) => {
@@ -227,15 +228,17 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
         </div>
 
         <div className="h-full flex items-center w-[60px] gap-[10px] justify-end">
-          {/* FEAT-09: the server decides who may delete (the owner, or the task's creator). */}
-          {showDeleteModal && canDeleteTask(task) && (
+          {/* FEAT-09: the server decides who may delete (the owner, or the task's creator).
+              BUG-05: always mounted (shown on hover or focus), so focus can return to it when the
+              confirm closes. */}
+          {canDeleteTask(task) && (
             <button
               type="button"
               aria-label={`Delete task ${task.title}`}
-              className="cursor-pointer hover:opacity-80 transition-opacity" 
+              className={`cursor-pointer hover:opacity-80 transition-opacity ${showDeleteModal ? "opacity-100" : "opacity-0 focus-visible:opacity-100"}`}
               onClick={(e) => {
                 e.stopPropagation();
-                handleDeleteTask(task.task_id);
+                handleDeleteTask(task.task_id, task.title);
               }}
             >
               <Image 

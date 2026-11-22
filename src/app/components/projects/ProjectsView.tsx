@@ -9,6 +9,7 @@ import SharedProjectsSection from "@/app/components/chat/SharedProjectsSection";
 import TaskEditorDialog from "@/app/components/tasks/TaskEditorDialog";
 import { useTaskEditor } from "@/app/components/tasks/useTaskEditor";
 import { useTaskDelete } from "@/app/components/tasks/useTaskDelete";
+import TaskDeleteConfirm from "@/app/components/tasks/TaskDeleteConfirm";
 import type { IProject } from "@/app/interface/IProject";
 import type { ITask } from "@/app/interface/ITask";
 import { useToastController } from "@/hooks/useToastController";
@@ -37,7 +38,7 @@ export default function ProjectsView() {
   const headingRef = useRef<HTMLHeadingElement>(null);
   // The project form, separate from the task form.
   const projectEditor = useProjectEditor(toast, editor, headingRef);
-  const { deleteTask } = useTaskDelete(toast, editor, headingRef);
+  const taskDelete = useTaskDelete(toast, editor, headingRef);
   const [isViewProjectModalOpen, setIsViewProjectModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
   // FEAT-09: the open project is someone else's (opened from "Shared with me").
@@ -153,13 +154,15 @@ export default function ProjectsView() {
             editor.open({ mode: "update", task });
           }}
           onStatusError={setStatusError}
-          handleDeleteTask={(taskId: string) => void deleteTask(taskId)}
+          handleDeleteTask={taskDelete.requestDelete}
           canManageProject={!selectedIsShared}
           extraActions={selectedProject && !selectedIsShared ? <ProjectChatActions project={selectedProject} toast={toast} /> : null}
         />
       )}
 
       <TaskEditorDialog editor={editor} projects={projectOptions} preselectedProject={selectedProject} />
+
+      <TaskDeleteConfirm flow={taskDelete} />
     </>
   );
 }
