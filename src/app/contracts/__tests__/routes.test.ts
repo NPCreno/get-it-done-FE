@@ -19,6 +19,7 @@ import {
   oauthAuthorizePath,
   oauthGrantPath,
   oauthGrantsPath,
+  taskAssigneePath,
 } from "../../api/paths";
 
 // One encodeURIComponent per :param, the same rule apiPath applies.
@@ -57,6 +58,8 @@ const builders: Record<string, { build: () => string; values: Record<string, str
   oauthAuthorize: { build: () => oauthAuthorizePath(), values: {} },
   oauthGrantsList: { build: () => oauthGrantsPath(), values: {} },
   oauthGrantRevoke: { build: () => oauthGrantPath(ID), values: { id: ID } },
+  // FEAT-09 shared tasks
+  taskAssignee: { build: () => taskAssigneePath(ID), values: { task_id: ID } },
 };
 
 describe("request path builders match the vendored contract routes", () => {

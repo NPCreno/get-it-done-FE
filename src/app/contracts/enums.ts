@@ -19,7 +19,9 @@ export const WEEKDAYS = [
 ] as const;
 export const THEMES = ["light", "dark"] as const;
 export const BOOLEAN_STRINGS = ["true", "false"] as const;
-export const NOTIFICATION_TYPES = ["achievement", "milestone", "streak", "levelUp", "reward", "taskDue"] as const;
+// FEAT-09: `assignment` ("<user> assigned you <task>"). A type the FE does not list is dropped from the
+// bell, never fatal (see NotificationsPageSchema).
+export const NOTIFICATION_TYPES = ["achievement", "milestone", "streak", "levelUp", "reward", "taskDue", "assignment"] as const;
 export const NOTIFICATION_ACTION_TYPES = ["acknowledge", "complete", "claim"] as const;
 
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];

@@ -8,9 +8,10 @@ import type { ITask } from "@/app/interface/ITask";
 import type { ITaskFormErrors } from "@/app/interface/forms/ITaskFormErrors";
 import type { ITaskFormValues } from "@/app/interface/forms/ITaskFormValues";
 import type { ToastController } from "@/hooks/toastController";
-import { useCreateTask, useUpdateTask } from "@/lib/query/mutations";
+import { useCreateTask, useSetTaskAssignee, useUpdateTask } from "@/lib/query/mutations";
 import { settled } from "@/lib/query/unwrap";
-import { outcomeOf, outcomeOfException, showToast, type SaveMode } from "./taskSaveOutcome";
+import { assigneeChange, UNASSIGNED } from "./assignee";
+import { outcomeOf, outcomeOfException, outcomeWithAssignee, showToast, type SaveMode } from "./taskSaveOutcome";
 
 const INITIAL_VALUES: ITaskFormValues = {
   title: "",
@@ -27,6 +28,7 @@ const INITIAL_VALUES: ITaskFormValues = {
   start_date: null,
   end_date: null,
   project: "",
+  assignee_id: UNASSIGNED,
 };
 
 export interface OpenTaskEditor {
@@ -46,6 +48,7 @@ export function useTaskEditor(toast: ToastController) {
   const { userData, setSelectedTaskData } = useFormState();
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
+  const setAssignee = useSetTaskAssignee();
   const [session, setSession] = useState<{ open: boolean; mode: SaveMode; task: ITask | null; projectId: string | undefined }>({
     open: false,
     mode: "create",
@@ -77,6 +80,7 @@ export function useTaskEditor(toast: ToastController) {
               due_date: edited.due_date || null,
               project_id: edited.project_id || "",
               isRecurring: false,
+              assignee_id: edited.assignee_id ?? UNASSIGNED,
             }
           : { ...INITIAL_VALUES, status: "Pending" },
       });
@@ -112,9 +116,18 @@ export function useTaskEditor(toast: ToastController) {
           return;
         }
         result = await settled(updateTask.mutateAsync({ taskId, body: toUpdateTaskRequest(values) }));
-      } else {
-        result = await settled(createTask.mutateAsync(toCreateTaskRequest(values, { projectId: session.projectId })));
+        // FEAT-09: the assignee has its own route, called after the fields and only when it changed.
+        const change = assigneeChange(session.task?.assignee_id, values.assignee_id, session.task?.project_id);
+        const assigned =
+          result.ok && change.changed && session.task?.project_id
+            ? await settled(setAssignee.mutateAsync({ taskId, projectId: session.task.project_id, assigneeId: change.assigneeId }))
+            : null;
+        const outcome = outcomeWithAssignee(result, assigned);
+        showToast(toast, outcome.toast);
+        if (outcome.close) close();
+        return;
       }
+      result = await settled(createTask.mutateAsync(toCreateTaskRequest(values, { projectId: session.projectId })));
       const outcome = outcomeOf(session.mode, result);
       showToast(toast, outcome.toast);
       if (outcome.close) close();
@@ -124,12 +137,17 @@ export function useTaskEditor(toast: ToastController) {
       setIsLoading(false);
       setSubmitting(false);
     }
-  }, [userData, validateForm, setSubmitting, session, updateTask, createTask, values, toast, close]);
+  }, [userData, validateForm, setSubmitting, session, updateTask, setAssignee, createTask, values, toast, close]);
+
+  // FEAT-09: the project the assignee is chosen from. Edit: the task's own (it can't move here).
+  const assigneeProjectId =
+    session.mode === "update" ? session.task?.project_id || undefined : session.projectId || values.project_id || undefined;
 
   return {
     isOpen: session.open,
     mode: session.mode,
     isLoading,
+    assigneeProjectId,
     formik: {
       values,
       errors: errors as ITaskFormErrors,

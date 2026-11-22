@@ -22,6 +22,18 @@ export const SubTaskSchema = z.object({
 });
 export type SubTask = z.infer<typeof SubTaskSchema>;
 
+/**
+ * FEAT-09 shared-task fields, on every task row. `.default()` keeps a row from a backend without
+ * them (the release window, old fixtures) parsing: unassigned, and deletable as before, since the
+ * old backend only ever returned your own tasks. `can_delete` always comes from the server.
+ */
+const sharedTaskFields = {
+  creator_username: z.string().nullable().default(null),
+  assignee_id: z.string().nullable().default(null),
+  assignee_username: z.string().nullable().default(null),
+  can_delete: z.boolean().default(true),
+};
+
 /** getTasksByUser (envelope). project_id is null for tasks without a project. */
 export const TaskListItemSchema = z.object({
   id: z.union([z.string(), z.number()]), // OPS-04: tighten after BE contract sync
@@ -39,6 +51,9 @@ export const TaskListItemSchema = z.object({
   project_title: z.string().nullable(),
   template_id: z.string().nullable(),
   subInstances: z.array(SubTaskSchema),
+  ...sharedTaskFields,
+  /** Set when the project is someone else's (FEAT-09): "in <project> · <owner>". */
+  project_owner_username: z.string().nullable().default(null),
 });
 export type TaskListItem = z.infer<typeof TaskListItemSchema>;
 
@@ -55,6 +70,9 @@ export const ProjectTaskSchema = z.object({
   updatedAt: ApiDate,
   deletedAt: ApiDate.nullable(),
   project_id: z.string(),
+  /** The creator (FEAT-09); members see other people's tasks here. */
+  user_id: z.string().optional(),
+  ...sharedTaskFields,
 });
 export type ProjectTask = z.infer<typeof ProjectTaskSchema>;
 
@@ -149,9 +167,27 @@ export const NotificationSchema = z.object({
 });
 export type Notification = z.infer<typeof NotificationSchema>;
 
+let warnedUnknownType = false;
+
+/**
+ * Drops rows whose `type` this FE does not know (a newer backend, or the minutes between the BE and
+ * FE releases), warning once. A row with a known type that is otherwise malformed still fails.
+ */
+export function dropUnknownNotificationTypes(rows: unknown[]): unknown[] {
+  return rows.filter((row) => {
+    const type = typeof row === "object" && row !== null ? (row as { type?: unknown }).type : undefined;
+    if (typeof type !== "string" || (NOTIFICATION_TYPES as readonly string[]).includes(type)) return true;
+    if (!warnedUnknownType) {
+      warnedUnknownType = true;
+      console.warn("[notifications] dropped a row with an unknown type");
+    }
+    return false;
+  });
+}
+
 /** GET /notifications (envelope data). */
 export const NotificationsPageSchema = z.object({
-  items: NotificationSchema.array(),
+  items: z.array(z.unknown()).transform(dropUnknownNotificationTypes).pipe(NotificationSchema.array()),
   unread_count: Count,
   next_cursor: z.string().nullable(),
 });

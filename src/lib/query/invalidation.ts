@@ -51,7 +51,8 @@ export function gatedInvalidate(qc: QueryClient, mutationKey: MutationKey, keys:
 
 /** FEAT-05 chat events. They name a project, so they have their own table. */
 export type ChatDataEvent =
-  | "chat-members" // added or removed by the owner
+  | "chat-members" // added by the owner
+  | "chat-member-removed" // removed by the owner (FEAT-09: their tasks go back to the owner)
   | "chat-left" // this user left the project
   | "chat-message" // sent or deleted
   | "chat-read"; // this user's read point moved (FEAT-08)
@@ -60,9 +61,13 @@ export function chatInvalidationsFor(event: ChatDataEvent, userId: string, proje
   switch (event) {
     case "chat-members":
       return [qk.chatMembers(userId, projectId), qk.sharedProjects(userId)];
+    case "chat-member-removed":
+      // FEAT-09: the removed member's tasks go back to the owner, and the owner (the actor) gets no
+      // `tasks` event, so the task data is refreshed here too.
+      return [qk.chatMembers(userId, projectId), qk.sharedProjects(userId), ...tasksInvalidationsFor(userId, projectId)];
     case "chat-left":
-      // That chat's badge goes too.
-      return [qk.sharedProjects(userId), qk.chatUnread(userId)];
+      // That chat's badge goes too; and (FEAT-09) the tasks I was responsible for there leave my board.
+      return [qk.sharedProjects(userId), qk.chatUnread(userId), ...tasksInvalidationsFor(userId, projectId)];
     case "chat-read":
       return [qk.chatUnread(userId)];
     case "chat-message":
@@ -70,4 +75,25 @@ export function chatInvalidationsFor(event: ChatDataEvent, userId: string, proje
       // delivers everyone else's. A refetch would reload every loaded page of history.
       return [];
   }
+}
+
+/**
+ * FEAT-09: what a change to a task in one project refreshes: that project's task list, my task
+ * board and the dashboard widgets. Used by the assignee mutation and by the `tasks` SSE event.
+ */
+export function tasksInvalidationsFor(userId: string, projectId: string): QueryKey[] {
+  return [qk.projectTasksOf(userId, projectId), qk.upcomingAll(userId), qk.analytics(userId)];
+}
+
+/**
+ * For changes made by someone else (the SSE `tasks` event): invalidate now unless one of my own
+ * mutations with this key is in flight. That mutation's settle invalidates (a superset) when it
+ * ends, so nothing is lost, and its optimistic state is not overwritten by a mid-flight refetch.
+ */
+export function invalidateUnlessMutating(
+  qc: QueryClient,
+  mutationKey: MutationKey,
+  keys: QueryKey[]
+): Promise<void> | undefined {
+  return qc.isMutating({ mutationKey }) === 0 ? invalidateAll(qc, keys) : undefined;
 }

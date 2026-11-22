@@ -3,12 +3,25 @@ import InputBox from "../inputBox";
 import { IProject } from "@/app/interface/IProject";
 import { useFormState } from "@/app/context/FormProvider";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/app/components/shadcn/dialog";
+import { assigneeAfterProjectChange } from "@/app/components/tasks/assignee";
+
+/** FEAT-09: a project someone shared with me, listed under "Shared with me". */
+export interface SharedProjectOption {
+  project_id: string;
+  title: string;
+  color: string;
+  owner_username: string;
+}
 
 interface taskModalProps {
   onClose: () => void;
   formik: FormikType;
   handleCreateTask: (values: FormValues) => void;
   project: IProject[];
+  /** FEAT-09: shared projects, shown as a second group in the project picker. */
+  sharedProjects?: SharedProjectOption[];
+  /** FEAT-09: the Assignee field (it loads the project's members itself). */
+  assigneeField?: React.ReactNode;
   preselectedProject?: IProject | null;
   isUpdate?: boolean;
   handleUpdateTask: (values: FormValues) => void;
@@ -30,6 +43,7 @@ interface FormValues {
   repeat_days: string[];
   start_date: string | null;
   end_date: string | null;
+  assignee_id?: string;
 }
 
 interface FormErrors {
@@ -71,6 +85,8 @@ export default function TaskModal({
   handleCreateTask,
   handleUpdateTask,
   project,
+  sharedProjects = [],
+  assigneeField,
   preselectedProject,
   isUpdate,
   isLoading,
@@ -96,11 +112,20 @@ export default function TaskModal({
     { name: "Month" },
   ];
 
-  const projectOptions = project.map((option: IProject) => ({
-    name: option.title,
-    project_id: option.project_id,
-    color: option.color,
-  }));
+  const projectOptions = [
+    ...project.map((option: IProject) => ({
+      name: option.title,
+      project_id: option.project_id,
+      color: option.color,
+    })),
+    // Names must be unique in the picker, so a shared project carries its owner.
+    ...sharedProjects.map((option) => ({
+      name: `${option.title || "Untitled project"} (@${option.owner_username})`,
+      project_id: option.project_id,
+      color: option.color,
+      group: "Shared with me",
+    })),
+  ];
 
   const clearAllData = () => {
     formik.setFieldValue("title", "");
@@ -243,6 +268,11 @@ export default function TaskModal({
                 formik.setFieldValue("project_title", option.name);
                 formik.setFieldValue("project_color", option.color ?? "");
                 formik.setFieldValue("project_id", option.project_id ?? "");
+                // FEAT-09: a new project has different people, so the assignee starts over.
+                formik.setFieldValue(
+                  "assignee_id",
+                  assigneeAfterProjectChange(formik.values.project_id, option.project_id ?? "", formik.values.assignee_id ?? "")
+                );
               }}
               isLabelVisible={true}
               placeholder="Select project (optional)"
@@ -252,6 +282,8 @@ export default function TaskModal({
               disabled={preselectedProject ? true : false}
             />
           </div>
+
+          {assigneeField && <div className="fade-in-delay-3">{assigneeField}</div>}
 
           <div className="flex flex-row gap-5 fade-in-delay-3">
             <InputBox

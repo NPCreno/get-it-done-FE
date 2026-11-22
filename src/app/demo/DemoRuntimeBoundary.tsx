@@ -2,6 +2,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { FormProvider, useFormState } from "@/app/context/FormProvider";
+import { SharingContext } from "@/lib/sharing";
 import { demoUserRecord } from "./demoUser";
 import { systemClock } from "./fake/clock";
 import { DEMO_USER_ID } from "./fake/seed";
@@ -60,7 +61,10 @@ export default function DemoRuntimeBoundary({ children }: { children: ReactNode 
     <RuntimeContext.Provider value={runtime}>
       <FormProvider>
         <DemoIdentity>
-          <QueryClientProvider client={runtime.queryClient}>{children}</QueryClientProvider>
+          {/* FEAT-09: no shared projects or chat routes in the demo. */}
+          <SharingContext.Provider value={false}>
+            <QueryClientProvider client={runtime.queryClient}>{children}</QueryClientProvider>
+          </SharingContext.Provider>
         </DemoIdentity>
       </FormProvider>
     </RuntimeContext.Provider>

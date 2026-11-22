@@ -18,6 +18,7 @@ import { isEmptyList } from "@/lib/query/emptiness";
 import ProjectEditorDialog from "./ProjectEditorDialog";
 import ProjectGrid from "./ProjectGrid";
 import { useProjectEditor } from "./useProjectEditor";
+import { sharedAsProject } from "./sharedProject";
 
 const NO_PROJECTS: IProject[] = [];
 const NO_TASKS: ITask[] = [];
@@ -39,6 +40,8 @@ export default function ProjectsView() {
   const { deleteTask } = useTaskDelete(toast, editor, headingRef);
   const [isViewProjectModalOpen, setIsViewProjectModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
+  // FEAT-09: the open project is someone else's (opened from "Shared with me").
+  const [selectedIsShared, setSelectedIsShared] = useState(false);
   // Server data is owned by query hooks (src/lib/query). Mutations declare what they
   // invalidate, so nothing here refetches because of a modal or a toast.
   const projectsQuery = useProjects();
@@ -57,6 +60,7 @@ export default function ProjectsView() {
   useEffect(() => {
     if (!editor.isOpen && !isViewProjectModalOpen) {
       setSelectedProject(null);
+      setSelectedIsShared(false);
     }
   }, [isViewProjectModalOpen, editor.isOpen]);
 
@@ -89,17 +93,28 @@ export default function ProjectsView() {
           onNewProject={() => projectEditor.open()}
           onOpenProject={(project) => {
             setSelectedProject(project);
+            setSelectedIsShared(false);
             setIsViewProjectModalOpen(true);
           }}
           onAddTask={(project) => {
             setSelectedProject(project);
+            setSelectedIsShared(false);
             editor.open({ mode: "create", projectId: project.project_id });
           }}
           onEditProject={(project) => projectEditor.open(project.project_id)}
           onDeleteProject={(projectId) => void projectEditor.remove(projectId)}
         />
 
-        {!pageLoading && <SharedProjectsSection toast={toast} />}
+        {!pageLoading && (
+          <SharedProjectsSection
+            toast={toast}
+            onViewProject={(shared) => {
+              setSelectedProject(sharedAsProject(shared));
+              setSelectedIsShared(true);
+              setIsViewProjectModalOpen(true);
+            }}
+          />
+        )}
         </div>
       </div>
 
@@ -139,7 +154,8 @@ export default function ProjectsView() {
           }}
           onStatusError={setStatusError}
           handleDeleteTask={(taskId: string) => void deleteTask(taskId)}
-          extraActions={selectedProject ? <ProjectChatActions project={selectedProject} toast={toast} /> : null}
+          canManageProject={!selectedIsShared}
+          extraActions={selectedProject && !selectedIsShared ? <ProjectChatActions project={selectedProject} toast={toast} /> : null}
         />
       )}
 

@@ -36,6 +36,9 @@ export const qk = {
   projects: (id: string) => [...u(id), "projects"] as const,
   project: (id: string, projectId: string) => [...u(id), "projects", projectId] as const,
   tasks: (id: string) => [...u(id), "tasks"] as const, // prefix
+  /** FEAT-09 prefixes for a targeted refresh: my task board (every window), one project's tasks. */
+  upcomingAll: (id: string) => [...u(id), "tasks", "upcoming"] as const,
+  projectTasksOf: (id: string, projectId: string) => [...u(id), "tasks", "project", projectId] as const,
   upcoming: (id: string, w: TaskWindow) => [...u(id), "tasks", "upcoming", w.start, w.end] as const,
   projectTasks: (id: string, projectId: string, w: TaskWindow) =>
     [...u(id), "tasks", "project", projectId, w.start, w.end] as const,

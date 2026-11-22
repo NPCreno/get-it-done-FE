@@ -5,6 +5,8 @@ import {
   createNotificationStream,
   HEALTHY_AFTER_MS,
   parseSseChunk,
+  parseTasksEvent,
+  TASKS_SSE_EVENT,
   type StreamDeps,
 } from "../notificationStream";
 
@@ -248,5 +250,49 @@ describe("F4: chat events on the same stream (FEAT-08)", () => {
     await tick();
     expect(h.handlers.onNotification).not.toHaveBeenCalled();
     off();
+  });
+});
+
+describe("F5: tasks events on the same stream (FEAT-09)", () => {
+  async function connected() {
+    const h = harness();
+    const live = liveResponse();
+    h.fetchMock.mockResolvedValueOnce(live.response);
+    const handlers = { ...h.handlers, onChat: vi.fn(), onTasks: vi.fn() };
+    const off = createNotificationStream(h.deps).subscribe(handlers);
+    await tick();
+    return { live, handlers, off };
+  }
+  const frame = (event: string, data: string) => `event: ${event}${"\n"}data: ${data}${"\n\n"}`;
+
+  it("the event name is the contract's", () => {
+    expect(TASKS_SSE_EVENT).toBe("tasks");
+  });
+
+  it("a tasks frame calls onTasks with its project id, and nothing else", async () => {
+    const { live, handlers, off } = await connected();
+    live.send(frame("tasks", '{"project_id":"PRJ-1"}'));
+    await tick();
+    expect(handlers.onTasks).toHaveBeenCalledTimes(1);
+    expect(handlers.onTasks).toHaveBeenCalledWith("PRJ-1");
+    expect(handlers.onNotification).not.toHaveBeenCalled();
+    expect(handlers.onChat).not.toHaveBeenCalled();
+    off();
+  });
+
+  it("a bad tasks frame does nothing", async () => {
+    const { live, handlers, off } = await connected();
+    live.send(frame("tasks", "not json") + frame("tasks", "{}") + frame("tasks", '{"project_id":7}'));
+    await tick();
+    expect(handlers.onTasks).not.toHaveBeenCalled();
+    off();
+  });
+
+  it("parseTasksEvent accepts only a non-empty string project_id", () => {
+    expect(parseTasksEvent('{"project_id":"P"}')).toBe("P");
+    for (const bad of ["", "null", "[]", '{"project_id":""}', '{"project_id":null}', '{"projectId":"P"}', "{"]) {
+      expect(parseTasksEvent(bad)).toBeNull();
+    }
+    expect(parseTasksEvent(JSON.stringify({ project_id: "x".repeat(201) }))).toBeNull();
   });
 });

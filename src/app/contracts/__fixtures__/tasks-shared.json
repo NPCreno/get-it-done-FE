@@ -1,0 +1,50 @@
+{
+  "status": "success",
+  "message": "Tasks fetched successfully",
+  "data": [
+    {
+      "id": "ed0e8577-2cac-4123-b710-4d39e99f7b2b",
+      "task_id": "task-b94ead80-8f85-4038-ae75-f91610f137c4",
+      "assignee_id": null,
+      "title": "Member task",
+      "description": null,
+      "priority": "Low",
+      "status": "Pending",
+      "due_date": null,
+      "createdAt": "2026-11-22T02:36:48.340Z",
+      "updatedAt": "2026-11-22T02:36:48.340Z",
+      "deletedAt": null,
+      "project_id": "PRJ-de4f398f-536d-4a24-bc85-1c94e7c4c67a",
+      "project_title": "Launch plan",
+      "project_owner_username": "eacdb5c3",
+      "template_id": null,
+      "subInstances": [],
+      "user_id": "user-f1fea41d-e913-45d9-a74c-b16600efdc24",
+      "creator_username": "ebcd7324",
+      "assignee_username": null,
+      "can_delete": true
+    },
+    {
+      "id": "8ec81454-a6b3-4d5d-99b4-8c29a717a31c",
+      "task_id": "task-a3650343-3ca3-4a6b-a90c-f9d2e3916046",
+      "assignee_id": "user-f1fea41d-e913-45d9-a74c-b16600efdc24",
+      "title": "Owner task one",
+      "description": null,
+      "priority": "High",
+      "status": "Pending",
+      "due_date": "2026-11-22T13:34:11.981Z",
+      "createdAt": "2026-11-22T02:34:12.618Z",
+      "updatedAt": "2026-11-22T02:37:13.525Z",
+      "deletedAt": null,
+      "project_id": "PRJ-de4f398f-536d-4a24-bc85-1c94e7c4c67a",
+      "project_title": "Launch plan",
+      "project_owner_username": "eacdb5c3",
+      "template_id": null,
+      "subInstances": [],
+      "user_id": "user-35dfb6ee-4a0b-4ec0-a776-fa2b4b341f36",
+      "creator_username": "eacdb5c3",
+      "assignee_username": "ebcd7324",
+      "can_delete": false
+    }
+  ]
+}

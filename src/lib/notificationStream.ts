@@ -56,6 +56,20 @@ export function parseSseChunk(rest: string, chunk: string): { messages: SseMessa
 /** FEAT-08: the SSE event type the BE sends when one of this user's chat counts changed. */
 export const CHAT_SSE_EVENT = "chat";
 
+/** FEAT-09: someone else changed a task in a shared project. Data: `{"project_id": "..."}`. */
+export const TASKS_SSE_EVENT = "tasks";
+
+/** Pure. The project id of a `tasks` frame, or null for anything malformed (ignored). */
+export function parseTasksEvent(data: string): string | null {
+  try {
+    const parsed: unknown = JSON.parse(data);
+    const id = typeof parsed === "object" && parsed !== null ? (parsed as { project_id?: unknown }).project_id : undefined;
+    return typeof id === "string" && id.length > 0 && id.length <= 200 ? id : null;
+  } catch {
+    return null;
+  }
+}
+
 // ------------------------------------------------------------------- backoff
 
 export const BACKOFF_BASE_MS = 1_000;
@@ -77,6 +91,8 @@ export interface StreamHandlers {
   onConnected: () => void;
   /** FEAT-08: a `chat` event (some chat's unread count changed). It carries no counts. */
   onChat?: () => void;
+  /** FEAT-09: a `tasks` event for one shared project. It carries no task data. */
+  onTasks?: (projectId: string) => void;
 }
 
 export interface StreamDeps {
@@ -101,7 +117,7 @@ export function createNotificationStream(deps: StreamDeps): NotificationStream {
   let hidden = false;
   let running: AbortController | null = null;
 
-  const emit = (k: keyof StreamHandlers) => subscribers.forEach((h) => h[k]?.());
+  const emit = (k: "onNotification" | "onConnected" | "onChat") => subscribers.forEach((h) => h[k]?.());
   const shouldRun = () => subscribers.size > 0 && !hidden;
 
   async function loop(signal: AbortSignal): Promise<void> {
@@ -161,6 +177,10 @@ export function createNotificationStream(deps: StreamDeps): NotificationStream {
         for (const m of parsed.messages) {
           if (m.event === "notification") emit("onNotification");
           else if (m.event === CHAT_SSE_EVENT) emit("onChat");
+          else if (m.event === TASKS_SSE_EVENT) {
+            const projectId = parseTasksEvent(m.data);
+            if (projectId) subscribers.forEach((h) => h.onTasks?.(projectId));
+          }
         }
       }
     } catch {

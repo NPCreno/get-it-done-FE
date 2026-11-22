@@ -1,6 +1,6 @@
 import { apiClient, apiPath } from "@/lib/apiClient";
 import type { TaskStatus } from "../contracts/enums";
-import { subTaskStatusPath, taskStatusPath } from "./paths";
+import { subTaskStatusPath, taskAssigneePath, taskStatusPath } from "./paths";
 import {
   DashboardDataSchema,
   DistributionSchema,
@@ -13,6 +13,7 @@ import {
 import {
   CreateSubTaskRequestSchema,
   CreateTaskRequestSchema,
+  SetTaskAssigneeRequestSchema,
   UpdateTaskRequestSchema,
 } from "../contracts/requests";
 import type { CreateSubTaskDraft, CreateTaskDraft, UpdateTaskDraft } from "../contracts/mappers";
@@ -138,4 +139,17 @@ export const createSubTaskApi = (payload: CreateSubTaskDraft) =>
     body: payload,
     requestSchema: CreateSubTaskRequestSchema,
     fallbackError: "Failed to create subtask",
+  });
+
+/**
+ * FEAT-09: assign a task in a project to its owner or a member, or `null` to unassign. The response
+ * row is not read: the caller refetches the lists (`tasksInvalidationsFor`).
+ */
+export const setTaskAssignee = (taskId: string, assigneeId: string | null) =>
+  apiClient(taskAssigneePath(taskId), {
+    method: "PATCH",
+    body: { assignee_id: assigneeId },
+    requestSchema: SetTaskAssigneeRequestSchema,
+    expect: "none",
+    fallbackError: "Failed to change the assignee",
   });

@@ -27,9 +27,9 @@ export function useChatMembers(projectId: string | undefined, opts: { enabled?: 
   });
 }
 
-export function useSharedProjects() {
+export function useSharedProjects(opts: { enabled?: boolean } = {}) {
   const id = useSessionUserId();
-  return useQuery({ ...sharedProjectsSpec(id ?? ""), enabled: !!id, staleTime: 60_000 });
+  return useQuery({ ...sharedProjectsSpec(id ?? ""), enabled: !!id && opts.enabled !== false, staleTime: 60_000 });
 }
 
 // ------------------------------------------------------- open chats (FEAT-08)
@@ -147,7 +147,7 @@ export function removeMemberOptions(
       gatedInvalidate(
         qc,
         CHAT_DATA_KEY,
-        chatInvalidationsFor(memberId === userId ? "chat-left" : "chat-members", userId, projectId)
+        chatInvalidationsFor(memberId === userId ? "chat-left" : "chat-member-removed", userId, projectId)
       ),
   };
 }

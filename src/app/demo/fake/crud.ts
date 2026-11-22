@@ -6,6 +6,7 @@ import {
 } from "@/app/contracts/requests";
 import type { TaskStatus } from "@/app/contracts/enums";
 import { iso, utcDay, type Clock } from "./clock";
+import { DEMO_USER } from "./seed";
 import type { DemoStore, ProjectRow, SubTaskRow, TaskRow } from "./store";
 
 export type Out<T> =
@@ -63,6 +64,12 @@ export function taskView(store: DemoStore, t: TaskRow) {
     project_title: projectOf(store, t.project_id)?.title ?? null,
     template_id: t.template_id,
     subInstances: t.subtasks.map(subTaskView),
+    // FEAT-09: the demo has no shared projects: everything is mine, unassigned and deletable.
+    creator_username: DEMO_USER.username,
+    assignee_id: null,
+    assignee_username: null,
+    can_delete: true,
+    project_owner_username: null,
   };
 }
 

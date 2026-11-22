@@ -76,6 +76,8 @@ export function toCreateTaskRequest(
     start_date: recurring ? toIso(v.start_date) : undefined,
     end_date: recurring ? toIso(v.end_date) : undefined,
     due_date: recurring ? undefined : toIso(v.due_date),
+    // FEAT-09: only a non-recurring task in a project can start assigned.
+    assignee_id: recurring ? undefined : emptyToUndefined(v.assignee_id),
   };
 }
 

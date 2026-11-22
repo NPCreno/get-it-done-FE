@@ -16,8 +16,17 @@ import UnreadBadge from "./UnreadBadge";
 
 const HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
-/** Projects other people shared with me: their chat only, never their tasks. */
-export default function SharedProjectsSection({ toast }: { toast: ToastController }) {
+/**
+ * Projects other people shared with me (FEAT-09): open the project to work on its tasks, chat with
+ * its members, or leave. Owner-only actions (edit, delete, members) are not offered.
+ */
+export default function SharedProjectsSection({
+  toast,
+  onViewProject,
+}: {
+  toast: ToastController;
+  onViewProject: (project: SharedProject) => void;
+}) {
   const { userData } = useFormState();
   const dark = userData?.theme === "dark";
   const query = useSharedProjects();
@@ -33,6 +42,7 @@ export default function SharedProjectsSection({ toast }: { toast: ToastControlle
       <h2 ref={headingRef} tabIndex={-1} id={headingId} className={`outline-none font-lato text-xl font-bold ${dark ? "text-white" : "text-text"}`}>
         Shared with me
       </h2>
+      <p className={`-mt-2 font-lato text-sm ${muted}`}>Work on these projects&apos; tasks and chat with their members.</p>
       {state.status === "loading" ? (
         <p role="status" className={`font-lato text-sm ${muted}`}>
           Loading shared projects…
@@ -47,7 +57,7 @@ export default function SharedProjectsSection({ toast }: { toast: ToastControlle
         />
       ) : state.status === "empty" ? (
         <p className={`font-lato text-sm ${muted}`}>
-          Nothing is shared with you yet. When someone adds you to a project, its chat shows up here.
+          Nothing is shared with you yet. When someone adds you to a project, its tasks and chat show up here.
         </p>
       ) : (
         <>
@@ -63,7 +73,15 @@ export default function SharedProjectsSection({ toast }: { toast: ToastControlle
           )}
           <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {state.data.map((p) => (
-              <SharedProjectCard key={p.project_id} project={p} dark={dark} toast={toast} onOpenChat={() => setChat(p)} onLeft={() => focusFallback(headingRef)} />
+              <SharedProjectCard
+                key={p.project_id}
+                project={p}
+                dark={dark}
+                toast={toast}
+                onViewProject={() => onViewProject(p)}
+                onOpenChat={() => setChat(p)}
+                onLeft={() => focusFallback(headingRef)}
+              />
             ))}
           </ul>
         </>
@@ -79,12 +97,14 @@ function SharedProjectCard({
   project,
   dark,
   toast,
+  onViewProject,
   onOpenChat,
   onLeft,
 }: {
   project: SharedProject;
   dark: boolean;
   toast: ToastController;
+  onViewProject: () => void;
   onOpenChat: () => void;
   onLeft: () => void;
 }) {
@@ -116,7 +136,15 @@ function SharedProjectCard({
         <UnreadBadge count={unread} className="ml-auto flex-shrink-0" />
       </div>
       <p className={`font-lato text-xs ${dark ? "text-gray-300" : "text-[#676767]"}`}>Shared by @{project.owner_username}</p>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={onViewProject}
+          aria-label={`View project ${project.title || "this project"}`}
+          className="rounded-[5px] bg-primary-default px-3 py-2 font-lato text-xs text-white transition-colors hover:bg-primary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2"
+        >
+          View project
+        </button>
         <button
           type="button"
           onClick={onOpenChat}
@@ -140,7 +168,7 @@ function SharedProjectCard({
       {confirming && (
         <ConfirmationModal
           title="Leave this project?"
-          description="You will lose access to its chat until the owner adds you again."
+          description="You will lose access to its tasks and chat until the owner adds you again. Tasks you were responsible for go back to the owner."
           onClose={() => setConfirming(false)}
           actions={[
             { label: "Cancel", onClick: () => setConfirming(false), variant: "secondary" },

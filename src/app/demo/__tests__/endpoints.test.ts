@@ -58,6 +58,8 @@ const ALLOW: Record<string, string> = {
   getApiTokens: "account settings are not in the demo",
   createApiToken: "account settings are not in the demo",
   revokeApiToken: "account settings are not in the demo",
+  // FEAT-09 shared tasks (taskRequests.ts)
+  setTaskAssignee: "assignment needs a shared project; not in the demo",
   // FEAT-07d OAuth consent and connected apps (specs.ts and oauthRequests.ts)
   oauthGrantsSpec: "account settings are not in the demo",
   oauthCheckSpec: "account settings are not in the demo (the consent page needs a real sign-in)",
