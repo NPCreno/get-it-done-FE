@@ -9,6 +9,7 @@ import { useProfile } from "@/lib/query/queries";
 import { shallowEqual } from "../utils/shallowEqual";
 import { useNotificationStream } from "@/lib/useNotificationStream";
 import { sidebarWrapperWidth } from "./sidebarWidths";
+import { MAIN_LAYOUT_ROOT_CLASS, MAIN_LAYOUT_SCROLL_CLASS } from "./mainLayoutClasses";
 
 export default function MainLayout({
   children,
@@ -78,7 +79,7 @@ export default function MainLayout({
   }, [profile.data, setUserData]);
 
   return (
-    <div className={`flex ${userData?.theme === "dark" ? "bg-background-dark" : "bg-background-light"} h-screen overflow-hidden`}>
+    <div className={`${MAIN_LAYOUT_ROOT_CLASS} ${userData?.theme === "dark" ? "bg-background-dark" : "bg-background-light"}`}>
       {/* Desktop Sidebar - Hidden on mobile. Its toggle (not hover) sets the width; the content
           moves once, together with the panel (UX-02). */}
       <div 
@@ -105,7 +106,8 @@ export default function MainLayout({
           <HamburgerButton />
         </div>
         
-        <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden pt-16 md:pt-0 ">
+        {/* `relative` (BUG-06): keeps absolute children such as `sr-only` captions inside this box. */}
+        <div className={MAIN_LAYOUT_SCROLL_CLASS}>
           <div className="p-4 md:p-6 flex-1">
             {children}
           </div>

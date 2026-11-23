@@ -154,7 +154,9 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
               variant="compact"
             />
           )}
-          <div className="overflow-x-auto">
+          {/* `relative` (BUG-06): the table is wider than a phone; its `sr-only` (absolute) caption and
+              "Actions" label must overflow this scroller, not the page's scroll box. */}
+          <div className="relative overflow-x-auto">
             <table className="w-full min-w-[560px] border-collapse font-lato text-sm">
               <caption className="sr-only">Your personal access tokens</caption>
               <thead>
