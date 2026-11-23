@@ -71,6 +71,7 @@ Modals (`modals/`)
 
 Layout and navigation
 - `MainLayout.tsx` — page shell with sidebar
+- `mainLayoutClasses.ts` — `MainLayout`'s root and scroll-container classes, both `relative` so `sr-only` (absolute) children can't stretch the window (BUG-06); tests in `components/__tests__/bug06.test.ts`
 - `Sidebar.tsx`, `MobileSidebar.tsx`, `sidebarLink.tsx` (a Next `<Link>`, `sidebarLinkLabel`), `HamburgerButton.tsx` — navigation
 - `tasks/TaskDeleteConfirm.tsx`, `tasks/deleteConfirmState.ts` — BUG-05 "Delete this task?" (pure request/confirm/cancel and copy); tests in `components/__tests__/bug05.test.ts`
 - `sidebarWidths.ts` — desktop sidebar widths (60/146 px panel, +20 px wrapper); `src/lib/sidebarPreference.ts` — the remembered expand choice (`localStorage` `gid.sidebar.expanded`, never throws, default collapsed)
