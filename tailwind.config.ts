@@ -15,6 +15,11 @@ const config: Config = {
 			softBounce: 'softBounce 0.6s ease-out forwards',
 			fillTextLoop: 'fillText 1s ease-in-out infinite',
 			fadeIn: 'fadeIn 1s ease-in-out forwards',
+			// UX-03 wake banner
+			'wake-z': 'wakeZ 2.4s ease-out infinite',
+			'wake-rock': 'wakeRock 3s ease-in-out infinite',
+			'wake-sweep': 'wakeSweep 1.6s cubic-bezier(.4,0,.2,1) infinite',
+			'wake-pop': 'wakePop .2s cubic-bezier(.2,.8,.2,1)',
 		  },
 		  keyframes: {
 			fillText: {
@@ -25,6 +30,24 @@ const config: Config = {
 			fadeIn: {
 			  '0%': { opacity: "0", transform: 'translateY(20px)' },
 			  '100%': { opacity: "1", transform: 'translateY(0)' },
+			},
+			// UX-03 wake banner
+			wakeZ: {
+			  '0%': { opacity: '0', transform: 'translate(0,4px) scale(.7)' },
+			  '25%': { opacity: '1' },
+			  '100%': { opacity: '0', transform: 'translate(8px,-16px) scale(1.15)' },
+			},
+			wakeRock: {
+			  '0%, 100%': { transform: 'rotate(-8deg)' },
+			  '50%': { transform: 'rotate(6deg)' },
+			},
+			wakeSweep: {
+			  '0%': { left: '-28%' },
+			  '100%': { left: '100%' },
+			},
+			wakePop: {
+			  '0%': { transform: 'scale(.6)' },
+			  '100%': { transform: 'scale(1)' },
 			},
 		  },
   		colors: {

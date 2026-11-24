@@ -1,14 +1,20 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SignupForm from "@/app/components/auth/SignupForm";
 import { currentNext, DEFAULT_AFTER_LOGIN, safeNext, withNext } from "@/lib/safeNext";
+import { serverWake } from "@/lib/serverWake";
 
 export default function SignupPage() {
   const router = useRouter();
   const [isSignedUp, setIsSignedUp] = useState(false);
   const [resumingConsent, setResumingConsent] = useState(false);
+
+  // UX-03: start waking a sleeping backend while the visitor types (one ping per 10 minutes).
+  useEffect(() => {
+    serverWake.warmUp();
+  }, []);
 
   // Handle view changes (e.g., switch to login)
   const handleViewChange = (view: string) => {

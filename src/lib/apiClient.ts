@@ -2,6 +2,7 @@ import type { ZodType } from "zod";
 import { getAccessToken } from "@/app/utils/utils";
 import { expireSession, refreshSession } from "./clientSession";
 import { getActiveApiTransport, type ApiTransport } from "./apiTransport";
+import { SLOW_MS, serverWake } from "./serverWake";
 
 export type ApiFailureKind =
   | "network"
@@ -327,6 +328,12 @@ async function execute<T>(path: string, opts: ApiRequestOptions<T>, isRetry: boo
   const composed = composeSignals(timeoutMs, opts.signal);
   if (composed.preAborted) return fail(0, "aborted", "Request aborted");
 
+  // UX-03: a backend request still pending after SLOW_MS, or one that can't reach the server,
+  // tells serverWake (banner + refetch on wake). Same-origin BFF calls report nothing here.
+  const toBackend = !opts.sameOrigin;
+  const startedAt = Date.now();
+  const slowTimer = toBackend ? setTimeout(() => serverWake.reportSlow(startedAt), SLOW_MS) : undefined;
+
   let status: number;
   let text: string;
   try {
@@ -345,12 +352,15 @@ async function execute<T>(path: string, opts: ApiRequestOptions<T>, isRetry: boo
   } catch {
     if (composed.state.timedOut) {
       console.warn("[api]", method, pathForLog, 0, "timeout");
+      if (toBackend) serverWake.reportUnreachable();
       return fail(0, "timeout", "Request timed out");
     }
     if (opts.signal?.aborted) return fail(0, "aborted", "Request aborted");
     console.warn("[api]", method, pathForLog, 0, "network");
+    if (toBackend) serverWake.reportUnreachable();
     return fail(0, "network", "Network error. Check your connection and try again.");
   } finally {
+    clearTimeout(slowTimer);
     composed.cleanup();
   }
 

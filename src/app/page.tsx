@@ -1,10 +1,17 @@
 "use client";
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { serverWake } from '@/lib/serverWake';
 import { Button } from '@/app/components/shadcn/button';
 import { ArrowRight, CheckCircle, Clock, Target, TrendingUp } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
+
+  // UX-03: most visitors read for a while before signing in; wake a sleeping backend now.
+  useEffect(() => {
+    serverWake.warmUp();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">

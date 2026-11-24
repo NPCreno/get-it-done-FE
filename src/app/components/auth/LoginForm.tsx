@@ -5,6 +5,7 @@ import { loginSchema } from "@/app/schemas/loginSchema";
 import { Loader2 } from "lucide-react";
 import InputBox from "@/app/components/inputBox";
 import { currentNext, safeNext } from "@/lib/safeNext";
+import WakeHint from "./WakeHint";
 
 interface LoginFormValues {
   usernameOrEmail: string;
@@ -193,6 +194,8 @@ export default function LoginForm({
           {/* Subtle shine effect on hover */}
           <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
         </button>
+        {/* UX-03: a cold start can take up to a minute; say so after 5 s. */}
+        <WakeHint pending={isLoading} />
       </form>
       
       <div className="text-sm text-center text-gray-600 dark:text-gray-400">

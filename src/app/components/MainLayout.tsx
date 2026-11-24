@@ -10,6 +10,7 @@ import { shallowEqual } from "../utils/shallowEqual";
 import { useNotificationStream } from "@/lib/useNotificationStream";
 import { sidebarWrapperWidth } from "./sidebarWidths";
 import { MAIN_LAYOUT_ROOT_CLASS, MAIN_LAYOUT_SCROLL_CLASS } from "./mainLayoutClasses";
+import ServerWakeBanner from "./ServerWakeBanner";
 
 export default function MainLayout({
   children,
@@ -109,6 +110,8 @@ export default function MainLayout({
         {/* `relative` (BUG-06): keeps absolute children such as `sr-only` captions inside this box. */}
         <div className={MAIN_LAYOUT_SCROLL_CLASS}>
           <div className="p-4 md:p-6 flex-1">
+            {/* UX-03: in the flow above the page, inside the scroll box, so the sidebar never moves. */}
+            <ServerWakeBanner dark={userData?.theme === "dark"} />
             {children}
           </div>
         </div>
