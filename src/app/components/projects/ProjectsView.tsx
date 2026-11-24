@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useFormState } from "@/app/context/FormProvider";
 import ToastHost from "@/app/components/ToastHost";
 import LoadingPage from "@/app/components/loader";
+import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
 import ViewProjectModal from "@/app/components/modals/viewProject";
 import ProjectChatActions from "@/app/components/chat/ProjectChatActions";
 import SharedProjectsSection from "@/app/components/chat/SharedProjectsSection";
@@ -13,6 +14,7 @@ import TaskDeleteConfirm from "@/app/components/tasks/TaskDeleteConfirm";
 import type { IProject } from "@/app/interface/IProject";
 import type { ITask } from "@/app/interface/ITask";
 import { useToastController } from "@/hooks/useToastController";
+import { useFirstLoad, usePageIn, usePresence } from "@/hooks/usePresence";
 import { useProjects, useProjectTasks } from "@/lib/query/queries";
 import { loadStateOf } from "@/lib/query/loadState";
 import { isEmptyList } from "@/lib/query/emptiness";
@@ -56,7 +58,10 @@ export default function ProjectsView() {
   const pageLoading = projectsState.status === "loading";
   // Same title, description and class as before; only the timers moved into the controller.
   const setStatusError = (message: string) => toast.error("Something Went Wrong", message);
-  const [showLoader, setShowLoader] = useState(true);
+  // UX-04: the loader is for the first load only; it plays its exit while the page rises in.
+  const firstLoad = useFirstLoad(pageLoading);
+  const loader = usePresence(firstLoad);
+  const pageIn = usePageIn(loader.leaving);
 
   useEffect(() => {
     if (!editor.isOpen && !isViewProjectModalOpen) {
@@ -65,25 +70,15 @@ export default function ProjectsView() {
     }
   }, [isViewProjectModalOpen, editor.isOpen]);
 
-  useEffect(() => {
-    if (!pageLoading) {
-      setTimeout(() => setShowLoader(false), 500); // Match transition duration
-    }
-  }, [pageLoading]);
-
   return (
     <>
       <ToastHost controller={toast} />
       <div className="main flex justify-center h-full w-full">
         {/* Main Page */}
-        <div className="inside flex flex-col gap-5 max-w-[1440px] w-full mx-auto">
-
-        {showLoader && (
-          <div className={`transition-opacity duration-500 ${!pageLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-            <LoadingPage />
-          </div>
-        )}
-
+        <div
+          className={`inside flex flex-col gap-5 max-w-[1440px] w-full mx-auto ${pageIn.active ? PAGE_IN_CLASS : ""}`}
+          onAnimationEnd={pageIn.onAnimationEnd}
+        >
         <ProjectGrid
           projectsState={projectsState}
           projectData={projectData}
@@ -118,6 +113,9 @@ export default function ProjectsView() {
         )}
         </div>
       </div>
+
+      {/* After the page, outside its root (see DashboardView). */}
+      {loader.mounted && <LoadingPage dark={userData?.theme === "dark"} leaving={loader.leaving} />}
 
       <ProjectEditorDialog editor={projectEditor} />
 

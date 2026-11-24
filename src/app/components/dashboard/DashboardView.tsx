@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useFormState } from "@/app/context/FormProvider";
 import ToastHost from "@/app/components/ToastHost";
 import LoadingPage from "@/app/components/loader";
+import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
 import PomodoroModal from "@/app/components/modals/pomodoro";
 import ConfirmationModal from "@/app/components/modals/confirmation";
 import TaskEditorDialog from "@/app/components/tasks/TaskEditorDialog";
@@ -10,6 +11,7 @@ import { useTaskEditor } from "@/app/components/tasks/useTaskEditor";
 import { useTaskDelete } from "@/app/components/tasks/useTaskDelete";
 import TaskDeleteConfirm from "@/app/components/tasks/TaskDeleteConfirm";
 import { useToastController } from "@/hooks/useToastController";
+import { useFirstLoad, usePageIn, usePresence } from "@/hooks/usePresence";
 import AnalyticsGrid from "./AnalyticsGrid";
 import DashboardHeader from "./DashboardHeader";
 import StatsRow from "./StatsRow";
@@ -34,14 +36,11 @@ export default function DashboardView() {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const taskDelete = useTaskDelete(toast, editor, headingRef);
   const { requestDelete, requestRecurringDelete, confirmation } = taskDelete;
-  const [showLoader, setShowLoader] = useState(true);
   const [isPomodoroModalOpen, setIsPomodoroModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (!data.pageLoading) {
-      setTimeout(() => setShowLoader(false), 500); // Match transition duration
-    }
-  }, [data.pageLoading]);
+  // UX-04: the loader is for the first load only; it plays its exit while the page rises in.
+  const firstLoad = useFirstLoad(data.pageLoading);
+  const loader = usePresence(firstLoad);
+  const pageIn = usePageIn(loader.leaving);
 
   // Toast only. Counts and task lists come from the refetch, never from the message text.
   const notify = (message: string, type: "info" | "success" | "error" | "warning") => {
@@ -66,21 +65,14 @@ export default function DashboardView() {
       <ToastHost controller={toast} />
       <div className="main flex justify-center w-full h-full">
         {/* Main Page */}
-        <div className="inside max-w-[1440px] w-full mx-auto gap-5 flex flex-col">
-          {showLoader && (
-            <div
-              className={`transition-opacity duration-500 ${
-                !data.pageLoading ? "opacity-0 pointer-events-none" : "opacity-100"
-              }`}
-            >
-              <LoadingPage />
-            </div>
-          )}
-
+        <div
+          className={`inside max-w-[1440px] w-full mx-auto gap-5 flex flex-col ${pageIn.active ? PAGE_IN_CLASS : ""}`}
+          onAnimationEnd={pageIn.onAnimationEnd}
+        >
           {/* Once the first-load loader is gone the body stays: a refetch of a query in error with no
               data is "loading" again (TanStack v5), e.g. the UX-03 refetch on wake, and the widgets
               show their own loading state instead of the whole page going blank. */}
-          {(!data.pageLoading || !showLoader) && (
+          {!firstLoad && (
             <>
               <DashboardHeader theme={theme} onPomodoroOpenChange={setIsPomodoroModalOpen} />
               <StatsRow data={data} theme={theme} />
@@ -101,6 +93,10 @@ export default function DashboardView() {
           )}
         </div>
       </div>
+
+      {/* After the page in the DOM, so it paints over it; outside the root, whose page-in transform
+          would otherwise become the overlay's containing block. */}
+      {loader.mounted && <LoadingPage dark={theme === "dark"} leaving={loader.leaving} />}
 
       <TaskEditorDialog editor={editor} projects={data.projectOptions} />
 

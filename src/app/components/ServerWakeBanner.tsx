@@ -86,7 +86,7 @@ export default function ServerWakeBanner({ dark }: { dark: boolean }) {
   return (
     <div
       data-server-wake-banner
-      className={`grid transition-[grid-template-rows,opacity,margin] motion-reduce:transition-opacity motion-reduce:[transition-duration:120ms] ${
+      className={`relative z-10 grid transition-[grid-template-rows,opacity,margin] motion-reduce:transition-opacity motion-reduce:[transition-duration:120ms] ${
         open
           ? "grid-rows-[1fr] opacity-100 mb-5 [transition-duration:220ms] [transition-timing-function:cubic-bezier(.2,.8,.2,1)]"
           : "grid-rows-[0fr] opacity-0 mb-0 [transition-duration:240ms] [transition-timing-function:ease-in]"
