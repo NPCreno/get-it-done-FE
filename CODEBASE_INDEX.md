@@ -16,11 +16,12 @@ One line per significant source file. Paths are relative to the repo root.
 
 ## Middleware and BFF
 - `src/middleware.ts` — open routes first (`isOpenRoute`), then the public-route allowlist, `jwtVerify`, proactive and expired-token refresh. Its `config.matcher` skips `public/` files by extension; `src/__tests__/middlewareMatcher.test.ts` pins which paths run it
-- `src/app/api/auth/session.ts` — edge-safe shared session helpers: `refreshWithBackend` (ok / invalid / unavailable), `setSessionCookies`, `clearSessionCookies`, `revokeWithBackend`, `backendAuthHeaders`, `isSameOrigin`
+- `src/app/api/auth/session.ts` — edge-safe shared session helpers: `BACKEND_COLD_START_MS` (55 s, UX-03), `refreshWithBackend` (ok / invalid / unavailable; `timeoutMs`, 10 s for the middleware), `setSessionCookies`, `clearSessionCookies`, `revokeWithBackend`, `backendAuthHeaders`, `isSameOrigin`
 - `src/app/api/auth/refresh/route.ts` — `POST /api/auth/refresh`, client-side silent refresh (never clears cookies)
 - `src/app/api/auth/signup/route.ts` (+ `payload.ts`) — BFF signup, forwards the attested client IP to BE `/user/create`
 - `src/app/api/auth/login/route.ts` — BFF login, sets httpOnly refresh cookie and readable access cookie
 - `src/app/api/auth/logout/route.ts` — BFF logout, revokes the token family on the BE, clears cookies
+- `src/app/api/auth/__tests__/coldStart.test.ts` — UX-03: the 55 s constant and `maxDuration = 60` in the login, signup, refresh and decision routes
 - `src/app/api/oauth/decision/route.ts` (+ `payload.ts`: `buildDecisionBody`, `bearerToken`, `toDecisionResponse`) — FEAT-07d consent decision BFF, same-origin only, forwards to BE `POST /oauth/authorize`
 
 ## Browser API client (`src/lib/`)
@@ -32,7 +33,9 @@ One line per significant source file. Paths are relative to the repo root.
 - `oauthConsent.ts` — FEAT-07d `readAuthorizeParams`, `isSafeRedirectTarget`, `isLoopbackHost`, `isFatalConsentFailure`, `consentPathOf`
 - `__tests__/safeNext.test.ts`, `oauthConsent.test.ts`, `oauthGrants.test.ts`, `resumeConsent.test.ts` — FEAT-07d; the `oauth-*.json` fixtures are FE-only, captured from a local BE (the BE exports none)
 - `__tests__/` — `apiClient` characterization and transport tests (`apiClient.test.ts`, `apiTransport.test.ts`), `openRoutes.test.ts`
-- `clientSession.ts` — `refreshSession()` (in-tab singleton + Web Lock `gid-session`), `expireSession()`
+- `clientSession.ts` — `refreshSession()` (in-tab singleton + Web Lock `gid-session`, waits `REFRESH_WAIT_MS` 60 s, reports a slow refresh), `expireSession()`
+- `serverWake.ts` — UX-03 cold start: pure `createServerWake(deps)` core (`reportSlow`, `reportUnreachable`, `retry`, `warmUp`, `onAwake`, snapshot `state`/`since`/`wokeAt`/`gaveUp`), `healthUrlFrom`, and the browser instance `serverWake`; `serverWakeView.ts` — `bannerPhase`, `formatElapsed`, `showWaitingForServer`; `useServerWake.ts` (`useSyncExternalStore`); `useTicker.ts` (`useTicker`, `useNextFrame`)
+- `__tests__/serverWake.test.ts`, `serverWakeView.test.ts`, `apiClientWake.test.ts`, `clientSessionWake.test.ts` — UX-03
 
 ## Demo infrastructure (`src/app/demo/`, DEMO-01a; no page or UI yet)
 - `runtime.ts` — `createDemoRuntime({clock}) → { store, transport, queryClient, reset(), start(), stop() }`, framework-free; its `QueryClient` is never registered with `registerQueryClient`
@@ -46,7 +49,8 @@ One line per significant source file. Paths are relative to the repo root.
 - `queries.ts` — `useProfile`, `useProjects`, `useProject`, `useUpcomingTasks`, `useProjectTasks`, `useDashboardSummary`, `useCompletionTrend`, `useTaskDistribution`, `useCalendarHeatmap`, `useStreak`, `useSessionUserId`, `useTaskWindow`
 - `mutations.ts` — task, subtask, project and profile mutations; optimistic `setTaskStatusOptions` / `setSubTaskStatusOptions`
 - `loadState.ts` — `loadStateOf()` (loading / error / empty / ready); `emptiness.ts` — per-resource empty rules; `keys.ts` also has `resourceOf()` (log labels)
-- `../../app/components/LoadError.tsx` — the shared retryable error block and `useRecoveryFocus`
+- `../../app/components/LoadError.tsx` — the shared retryable error block and `useRecoveryFocus`; shows a text-free skeleton instead while the BE wakes (UX-03)
+- `wake.ts` — UX-03 `refetchErroredQueries(client)` (active queries in error only) and `connectServerWake(client)`; tested in `__tests__/wake.test.ts`
 - `invalidation.ts` — event to prefixes matrix and the burst gate; `optimistic.ts` — pure status patches; `unwrap.ts` — `ApiError`, `must`, `unwrap`, `settled`, `isCancellation`
 - `__tests__/` — window, key/request, cancellation, cache behavior, optimistic and status mutation tests
 
@@ -58,6 +62,7 @@ All return `ApiResult<T>`; callers check `result.ok`.
 - `paths.ts` — pure path builders for the status routes; `contracts/__tests__/routes.test.ts` checks them against the vendored contract `routes`
 
 ## Components (`src/app/components/`)
+- `ServerWakeBanner.tsx` — UX-03 "Waking up the server" banner in `MainLayout` (states A–D); `WakeIcon.tsx` — the sleeping-moon circle; `auth/WakeHint.tsx` — the login/signup hint after 5 s pending
 Auth (`auth/`)
 - `LoginForm.tsx` — login form, posts to `/api/auth/login`
 - `SignupForm.tsx` — signup form, creates user then logs in through `/api/auth/login`

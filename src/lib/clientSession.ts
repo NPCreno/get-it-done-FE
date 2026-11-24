@@ -1,5 +1,6 @@
 import { clearQueryCache } from "./query/client";
 import { getAccessToken } from "@/app/utils/utils";
+import { SLOW_MS, serverWake } from "./serverWake";
 
 /**
  * Browser-side session restore. Layers:
@@ -12,6 +13,12 @@ import { getAccessToken } from "@/app/utils/utils";
  */
 
 export type RefreshOutcome = "refreshed" | "invalid" | "unavailable";
+
+/**
+ * UX-03: `/api/auth/refresh` waits up to 55 s for a sleeping backend (`BACKEND_COLD_START_MS`),
+ * so the browser waits a little longer than that.
+ */
+export const REFRESH_WAIT_MS = 60_000;
 
 const LOCK_NAME = "gid-session";
 let inFlight: Promise<RefreshOutcome> | null = null;
@@ -49,7 +56,10 @@ export function refreshSession(stale: string | null): Promise<RefreshOutcome> {
     const current = getAccessToken();
     if (current && current !== stale) return "refreshed"; // another tab already rotated
 
-    const res = await postWithTimeout("/api/auth/refresh", 10_000);
+    // A refresh still pending after SLOW_MS is most likely a cold start: show the banner.
+    const startedAt = Date.now();
+    const slowTimer = setTimeout(() => serverWake.reportSlow(startedAt), SLOW_MS);
+    const res = await postWithTimeout("/api/auth/refresh", REFRESH_WAIT_MS).finally(() => clearTimeout(slowTimer));
     if (res === "network") return "unavailable";
     if (res.ok) return "refreshed";
     if (res.status === 401) {

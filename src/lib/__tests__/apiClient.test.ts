@@ -3,6 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/app/utils/utils", () => ({ getAccessToken: vi.fn() }));
 vi.mock("../clientSession", () => ({ refreshSession: vi.fn(), expireSession: vi.fn() }));
+// UX-03 reporting is covered in apiClientWake.test.ts; keep the real pings out of these tests.
+vi.mock("../serverWake", async (orig) => ({
+  ...(await orig<typeof import("../serverWake")>()),
+  serverWake: { reportSlow: vi.fn(), reportUnreachable: vi.fn() },
+}));
 
 import { getAccessToken } from "@/app/utils/utils";
 import { expireSession, refreshSession } from "../clientSession";

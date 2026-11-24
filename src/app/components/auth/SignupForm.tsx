@@ -6,6 +6,7 @@ import { createUser } from "@/app/api/userRequests";
 import { toSignupRequest } from "@/app/contracts/mappers";
 import { isUserFacing } from "@/lib/apiClient";
 import InputBox from "@/app/components/inputBox";
+import WakeHint from "./WakeHint";
 
 interface SignupFormValues {
   username: string;
@@ -200,6 +201,8 @@ export default function SignupForm({
           >
             {isLoading ? "Creating account..." : "Create account"}
           </button>
+          {/* UX-03: a cold start can take up to a minute; say so after 5 s. */}
+          <WakeHint pending={isLoading} />
         </div>
       </form>
       

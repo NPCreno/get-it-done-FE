@@ -2,6 +2,8 @@
 import { AlertTriangle } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
 import { describeLoadFailure, type ApiFailure } from "@/lib/apiClient";
+import { showWaitingForServer } from "@/lib/serverWakeView";
+import { useServerWake } from "@/lib/useServerWake";
 
 interface LoadErrorProps {
   /** Display name of the widget, e.g. "your tasks". Client-authored. */
@@ -20,8 +22,15 @@ interface LoadErrorProps {
  */
 export default function LoadError({ widget, failure, onRetry, retrying, theme, variant = "full" }: LoadErrorProps) {
   const msgId = useId();
+  const wake = useServerWake();
   const dark = theme === "dark";
   const compact = variant === "compact";
+
+  // UX-03: while the server wakes (or refetches right after it woke), a network/timeout failure
+  // waits quietly instead of showing the error. No button and no live region: the banner speaks.
+  if (showWaitingForServer(failure.kind, wake, retrying, Date.now())) {
+    return <WaitingForServer dark={dark} compact={compact} />;
+  }
   const text = compact
     ? `Couldn't refresh ${widget}. ${describeLoadFailure(failure)}`
     : `Couldn't load ${widget}. ${describeLoadFailure(failure)}`;
@@ -46,6 +55,37 @@ export default function LoadError({ widget, failure, onRetry, retrying, theme, v
       >
         {retrying ? "Retrying…" : "Try again"}
       </button>
+    </div>
+  );
+}
+
+/**
+ * The waiting variant: a skeleton that fills the card (full), or one skeleton line (compact).
+ * No text: the wake banner above already says the app is waiting for the server (user's call,
+ * 2026-11-25, replacing the canvas's "Waiting for the server" caption).
+ */
+function WaitingForServer({ dark, compact }: { dark: boolean; compact: boolean }) {
+  const bar = `block rounded-md motion-safe:animate-pulse ${dark ? "bg-[#242730]" : "bg-[#E4E4E4]"}`;
+  if (compact) {
+    return (
+      <div data-load-waiting aria-hidden="true" className="flex w-full items-center px-3 py-2">
+        <span className={`${bar} h-3 w-1/2`} />
+      </div>
+    );
+  }
+  return (
+    <div
+      data-load-waiting
+      aria-hidden="true"
+      className={`flex h-full min-h-[120px] w-full flex-col gap-3 rounded-[10px] border p-4 ${
+        dark ? "border-gray-700 bg-gray-800/50" : "border-[#E0E0E0] bg-white"
+      }`}
+    >
+      <span className={`${bar} h-3 w-[40%]`} />
+      <span className={`${bar} h-7 w-[55%]`} />
+      <span className={`${bar} h-3 w-full`} />
+      <span className={`${bar} h-3 w-[80%]`} />
+      <span className={`${bar} min-h-3 w-full flex-1`} />
     </div>
   );
 }

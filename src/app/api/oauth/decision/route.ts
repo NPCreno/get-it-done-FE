@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { getClientIp } from "@/app/utils/clientIp";
-import { backendAuthHeaders, isSameOrigin, noStoreJson } from "../../auth/session";
+import { BACKEND_COLD_START_MS, backendAuthHeaders, isSameOrigin, noStoreJson } from "../../auth/session";
 import { bearerToken, buildDecisionBody, toDecisionResponse } from "./payload";
 
-/** Render free can take ~50 s to wake; the browser waits 60 s for this route. */
-const BACKEND_TIMEOUT_MS = 55_000;
+/** Render free can take ~50 s to wake; the browser waits 60 s for this route (UX-03: shared constant). */
+export const maxDuration = 60;
 
 /**
  * FEAT-07d `POST /api/oauth/decision`: the consent page's Allow or Deny.
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       headers: { ...backendAuthHeaders(getClientIp(req.headers)), Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
       cache: "no-store",
-      signal: AbortSignal.timeout(BACKEND_TIMEOUT_MS),
+      signal: AbortSignal.timeout(BACKEND_COLD_START_MS),
     });
   } catch (error) {
     const timedOut = error instanceof Error && error.name === "TimeoutError";

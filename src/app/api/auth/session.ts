@@ -12,6 +12,15 @@ import { NextResponse } from "next/server";
 
 const MAX_LIFETIME_SECONDS = 31 * 24 * 60 * 60;
 
+/**
+ * UX-03: how long a BFF route handler waits for the backend. Render's free instance takes
+ * 30–60 s to wake after ~15 idle minutes. Route files that use it export `maxDuration = 60`.
+ * The middleware does NOT use it: it keeps `MIDDLEWARE_REFRESH_TIMEOUT_MS` and continues on
+ * `unavailable`.
+ */
+export const BACKEND_COLD_START_MS = 55_000;
+export const MIDDLEWARE_REFRESH_TIMEOUT_MS = 10_000;
+
 export interface SessionTokens {
   accessToken: string;
   refreshToken: string;
@@ -68,9 +77,11 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: numbe
   }
 }
 
+/** `timeoutMs`: 10 s by default (the middleware); the refresh route handler passes `BACKEND_COLD_START_MS`. */
 export async function refreshWithBackend(
   refreshToken: string,
-  clientIp: string
+  clientIp: string,
+  timeoutMs: number = MIDDLEWARE_REFRESH_TIMEOUT_MS
 ): Promise<RefreshOutcome> {
   try {
     const res = await fetchWithTimeout(
@@ -80,7 +91,7 @@ export async function refreshWithBackend(
         headers: backendAuthHeaders(clientIp),
         body: JSON.stringify({ refreshToken }),
       },
-      10_000
+      timeoutMs
     );
 
     if (res.status === 401 || res.status === 400) return { kind: "invalid" };

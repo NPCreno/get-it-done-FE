@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClientIp } from "@/app/utils/clientIp";
-import { backendAuthHeaders } from "../session";
+import { BACKEND_COLD_START_MS, backendAuthHeaders } from "../session";
 import { buildSignupPayload, toSignupResponse } from "./payload";
+
+/** UX-03: the backend may take up to a minute to wake; let the function run that long. */
+export const maxDuration = 60;
 
 // Signup goes through the server so the backend sees the attested client IP
 // (SEC-04) and can rate limit by it (SEC-09).
@@ -24,7 +27,7 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: backendAuthHeaders(getClientIp(req.headers)),
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(BACKEND_COLD_START_MS),
     });
   } catch (error) {
     console.error("Signup request failed:", error instanceof Error ? error.message : "network");

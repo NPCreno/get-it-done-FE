@@ -11,6 +11,8 @@ export const createUser = (payload: CreateUserDraft) =>
     requestSchema: CreateUserRequestSchema,
     auth: false,
     sameOrigin: true,
+    // UX-03: the signup route waits up to 55 s for a sleeping backend.
+    timeoutMs: 60_000,
     fallbackError: "Failed to create account",
   });
 
