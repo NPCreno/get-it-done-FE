@@ -13,7 +13,7 @@ Request chains per feature. Backend paths are shown without the `/api` prefix, b
 - Route protection: `middleware.ts` (public-route allowlist, everything else needs a valid token).
 
 ## Server cold start (UX-03)
-- Render's free BE sleeps after ~15 idle minutes. `apiClient` (backend calls only) and `refreshSession` report to `src/lib/serverWake.ts`; while waking it pings BE `GET /` and `MainLayout` shows `ServerWakeBanner`. On the first 2xx, `query/wake.ts` refetches active queries in error and the banner turns green, then folds away. `LoadError` shows "Waiting for the server" for `network`/`timeout` failures meanwhile; after 3 minutes the banner offers Try again and cards show the usual error.
+- Render's free BE sleeps after ~15 idle minutes. `apiClient` (backend calls only) and `refreshSession` report to `src/lib/serverWake.ts`; while waking it pings BE `GET /` and `MainLayout` shows `ServerWakeBanner`. On the first 2xx, `query/wake.ts` refetches active queries in error and the banner turns green, then folds away. `LoadError` shows a skeleton (no text) for `network`/`timeout` failures meanwhile; after 3 minutes the banner offers Try again and cards show the usual error.
 - Login and signup: `auth/WakeHint.tsx` after 5 s pending; BFF routes wait 55 s (`BACKEND_COLD_START_MS`, `maxDuration = 60`); `/`, `/login` and `/signup` call `serverWake.warmUp()` (one `GET /` per tab per 10 min). Not in `/demo`.
 
 ## Dashboard

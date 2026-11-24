@@ -77,7 +77,10 @@ export default function DashboardView() {
             </div>
           )}
 
-          {!data.pageLoading && (
+          {/* Once the first-load loader is gone the body stays: a refetch of a query in error with no
+              data is "loading" again (TanStack v5), e.g. the UX-03 refetch on wake, and the widgets
+              show their own loading state instead of the whole page going blank. */}
+          {(!data.pageLoading || !showLoader) && (
             <>
               <DashboardHeader theme={theme} onPomodoroOpenChange={setIsPomodoroModalOpen} />
               <StatsRow data={data} theme={theme} />

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { serverWake } from "@/lib/serverWake";
 import { AWAKE_HOLD_MS, bannerPhase, formatElapsed, type BannerPhase } from "@/lib/serverWakeView";
 import { useServerWake } from "@/lib/useServerWake";
-import { useNextFrame, useTicker } from "@/lib/useTicker";
+import { onNextFrame, useNextFrame, useTicker } from "@/lib/useTicker";
 import WakeIcon from "./WakeIcon";
 
 /** Unmount this long after folding away (a timeout, so reduced motion is covered too). */
@@ -47,8 +47,7 @@ export default function ServerWakeBanner({ dark }: { dark: boolean }) {
     if (phase !== "hidden") {
       setShown(phase);
       // Mount closed, open on the next frame so the row-height transition runs.
-      const raf = requestAnimationFrame(() => setOpen(true));
-      return () => cancelAnimationFrame(raf);
+      return onNextFrame(() => setOpen(true));
     }
     // Back to awake: if a banner was showing, turn it green, hold, fold away, then unmount.
     setShown((prev) => (prev === null ? null : "awake"));

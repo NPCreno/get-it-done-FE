@@ -59,35 +59,33 @@ export default function LoadError({ widget, failure, onRetry, retrying, theme, v
   );
 }
 
-function WaitingCaption({ dark }: { dark: boolean }) {
-  return (
-    <span className={`flex items-center gap-1.5 text-[13px] leading-[18px] ${dark ? "text-gray-400" : "text-[#676767]"}`}>
-      <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-primary-default motion-safe:animate-pulse" />
-      Waiting for the server
-    </span>
-  );
-}
-
-/** The waiting variant: a skeleton plus a caption (full), or the caption alone (compact). */
+/**
+ * The waiting variant: a skeleton that fills the card (full), or one skeleton line (compact).
+ * No text: the wake banner above already says the app is waiting for the server (user's call,
+ * 2026-11-25, replacing the canvas's "Waiting for the server" caption).
+ */
 function WaitingForServer({ dark, compact }: { dark: boolean; compact: boolean }) {
+  const bar = `block rounded-md motion-safe:animate-pulse ${dark ? "bg-[#242730]" : "bg-[#E4E4E4]"}`;
   if (compact) {
     return (
-      <div data-load-waiting className="flex w-full items-center px-3 py-2 font-lato">
-        <WaitingCaption dark={dark} />
+      <div data-load-waiting aria-hidden="true" className="flex w-full items-center px-3 py-2">
+        <span className={`${bar} h-3 w-1/2`} />
       </div>
     );
   }
-  const bar = `block rounded-md motion-safe:animate-pulse ${dark ? "bg-[#242730]" : "bg-[#E4E4E4]"}`;
   return (
     <div
       data-load-waiting
-      className={`flex w-full flex-col gap-3 rounded-[10px] border p-4 font-lato ${
+      aria-hidden="true"
+      className={`flex h-full min-h-[120px] w-full flex-col gap-3 rounded-[10px] border p-4 ${
         dark ? "border-gray-700 bg-gray-800/50" : "border-[#E0E0E0] bg-white"
       }`}
     >
-      <span aria-hidden="true" className={`${bar} h-3 w-[55%]`} />
-      <span aria-hidden="true" className={`${bar} h-7 w-[45%]`} />
-      <WaitingCaption dark={dark} />
+      <span className={`${bar} h-3 w-[40%]`} />
+      <span className={`${bar} h-7 w-[55%]`} />
+      <span className={`${bar} h-3 w-full`} />
+      <span className={`${bar} h-3 w-[80%]`} />
+      <span className={`${bar} min-h-3 w-full flex-1`} />
     </div>
   );
 }

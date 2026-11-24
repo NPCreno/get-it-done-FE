@@ -34,7 +34,7 @@ export function formatElapsed(ms: number): string {
 }
 
 /**
- * True when a load failure should show "Waiting for the server" instead of `LoadError`: the
+ * True when a load failure should show the waiting skeleton instead of `LoadError`: the
  * failure is `network`/`timeout` AND either the server is waking (not given up), or this is the
  * refetch right after a wake (so cards don't flash red while the banner shows "awake").
  */

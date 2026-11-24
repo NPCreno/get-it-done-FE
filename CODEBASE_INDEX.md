@@ -49,7 +49,7 @@ One line per significant source file. Paths are relative to the repo root.
 - `queries.ts` — `useProfile`, `useProjects`, `useProject`, `useUpcomingTasks`, `useProjectTasks`, `useDashboardSummary`, `useCompletionTrend`, `useTaskDistribution`, `useCalendarHeatmap`, `useStreak`, `useSessionUserId`, `useTaskWindow`
 - `mutations.ts` — task, subtask, project and profile mutations; optimistic `setTaskStatusOptions` / `setSubTaskStatusOptions`
 - `loadState.ts` — `loadStateOf()` (loading / error / empty / ready); `emptiness.ts` — per-resource empty rules; `keys.ts` also has `resourceOf()` (log labels)
-- `../../app/components/LoadError.tsx` — the shared retryable error block and `useRecoveryFocus`; shows "Waiting for the server" instead while the BE wakes (UX-03)
+- `../../app/components/LoadError.tsx` — the shared retryable error block and `useRecoveryFocus`; shows a text-free skeleton instead while the BE wakes (UX-03)
 - `wake.ts` — UX-03 `refetchErroredQueries(client)` (active queries in error only) and `connectServerWake(client)`; tested in `__tests__/wake.test.ts`
 - `invalidation.ts` — event to prefixes matrix and the burst gate; `optimistic.ts` — pure status patches; `unwrap.ts` — `ApiError`, `must`, `unwrap`, `settled`, `isCancellation`
 - `__tests__/` — window, key/request, cancellation, cache behavior, optimistic and status mutation tests
