@@ -46,7 +46,7 @@ export default function DemoLayout({ children }: { children: ReactNode }) {
           Reset demo
         </button>
       </div>
-      <main className="flex-1 bg-background-light p-4 md:p-6">{children}</main>
+      <main className="relative flex-1 bg-background-light p-4 md:p-6">{children}</main>
     </div>
   );
 }

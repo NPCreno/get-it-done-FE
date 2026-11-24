@@ -20,6 +20,15 @@ const config: Config = {
 			'wake-rock': 'wakeRock 3s ease-in-out infinite',
 			'wake-sweep': 'wakeSweep 1.6s cubic-bezier(.4,0,.2,1) infinite',
 			'wake-pop': 'wakePop .2s cubic-bezier(.2,.8,.2,1)',
+			// UX-04 full-page loader (canvas page "Full-page loader")
+			'loader-in': 'loaderIn 200ms cubic-bezier(.2,.8,.2,1) 150ms both',
+			'loader-fade-in': 'loaderFadeIn 200ms linear 150ms both',
+			'loader-arc': 'loaderArc 1.6s cubic-bezier(.65,0,.35,1) infinite',
+			'loader-breathe': 'loaderBreathe 2s ease-in-out infinite',
+			'loader-out': 'loaderOut 180ms ease-in both',
+			'loader-fade-out': 'loaderFadeOut 120ms linear both',
+			'page-in': 'pageIn 240ms cubic-bezier(.2,.8,.2,1) 80ms both',
+			'page-fade-in': 'loaderFadeIn 160ms linear both',
 		  },
 		  keyframes: {
 			fillText: {
@@ -48,6 +57,35 @@ const config: Config = {
 			wakePop: {
 			  '0%': { transform: 'scale(.6)' },
 			  '100%': { transform: 'scale(1)' },
+			},
+			// UX-04 full-page loader
+			loaderIn: {
+			  '0%': { opacity: '0', transform: 'scale(.96)' },
+			  '100%': { opacity: '1', transform: 'scale(1)' },
+			},
+			loaderFadeIn: {
+			  '0%': { opacity: '0' },
+			  '100%': { opacity: '1' },
+			},
+			loaderArc: {
+			  '0%': { transform: 'rotate(-90deg)' },
+			  '100%': { transform: 'rotate(270deg)' },
+			},
+			loaderBreathe: {
+			  '0%, 100%': { opacity: '1' },
+			  '50%': { opacity: '.55' },
+			},
+			loaderOut: {
+			  '0%': { opacity: '1', transform: 'translateY(0)' },
+			  '100%': { opacity: '0', transform: 'translateY(-4px)' },
+			},
+			loaderFadeOut: {
+			  '0%': { opacity: '1' },
+			  '100%': { opacity: '0' },
+			},
+			pageIn: {
+			  '0%': { opacity: '0', transform: 'translateY(8px)' },
+			  '100%': { opacity: '1', transform: 'translateY(0)' },
 			},
 		  },
   		colors: {

@@ -8,15 +8,17 @@ import MainLayout from "@/app/components/MainLayout";
 import ToggleSwitch from "@/app/components/toggleSwitch";
 import { updateUserSchema } from "@/app/schemas/updateUserSchema";
 import { useFormik, FormikErrors } from "formik";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Toast } from "@/app/components/toast";
 import ConfirmationModal from "@/app/components/modals/confirmation";
 import LoadingPage from "@/app/components/loader";
+import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
 import InputBox from "@/app/components/inputBox";
 import { useFormState } from "@/app/context/FormProvider";
 import ApiTokensSection from "@/app/components/apiTokens/ApiTokensSection";
 import ToastHost from "@/app/components/ToastHost";
 import { useToastController } from "@/hooks/useToastController";
+import { useFirstLoad, usePageIn, usePresence } from "@/hooks/usePresence";
 interface profileSettingsFormValues {
   fullname: string;
   username: string;
@@ -40,9 +42,11 @@ export default function ProfileSettingsPage() {
   });
   const [isExitingToast, setIsExitingToast] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
-  const [showLoader, setShowLoader] = useState(true);
-  const isFirstLoad = useRef(true);
+  // UX-04: MainLayout owns the user fetch; this page waits only for the context user, on its
+  // first load. The loader plays its exit while the page rises in.
+  const firstLoad = useFirstLoad(!userData);
+  const loader = usePresence(firstLoad);
+  const pageIn = usePageIn(loader.leaving);
   const {
     validateForm,
     setFieldValue,
@@ -70,12 +74,6 @@ export default function ProfileSettingsPage() {
       handleSubmitForm(values);
     },
   });
-
-  useEffect(() => {
-    if (!pageLoading) {
-      setTimeout(() => setShowLoader(false), 500); // Match transition duration
-    }
-  }, [pageLoading]);
 
   const handleSubmitForm = async (values: profileSettingsFormValues) => {
     const validationErrors: FormikErrors<typeof values> = await validateForm();
@@ -165,14 +163,6 @@ export default function ProfileSettingsPage() {
     window.location.href = '/';
   };
 
-  // MainLayout owns the user fetch; this page only reads the context.
-  useEffect(() => {
-    if (userData && isFirstLoad.current) {
-      setPageLoading(false);
-      isFirstLoad.current = false;
-    }
-  }, [userData]);
-
   return (
     <MainLayout>
       <ToastHost controller={tokensToast} />
@@ -187,16 +177,10 @@ export default function ProfileSettingsPage() {
       )}
       <div className="main flex justify-center w-full">
         {/* Main Page */}
-        <div className="inside max-w-[1440px] w-full mx-auto gap-5 flex flex-col">
-          {showLoader && (
-            <div
-              className={`transition-opacity duration-500 ${
-                !pageLoading ? "opacity-0 pointer-events-none" : "opacity-100"
-              }`}
-            >
-              <LoadingPage />
-            </div>
-          )}
+        <div
+          className={`inside max-w-[1440px] w-full mx-auto gap-5 flex flex-col ${pageIn.active ? PAGE_IN_CLASS : ""}`}
+          onAnimationEnd={pageIn.onAnimationEnd}
+        >
           <div className="flex justify-between">
             {/* Left header */}
             <div className="flex flex-col">
@@ -520,6 +504,9 @@ export default function ProfileSettingsPage() {
           <ApiTokensSection toast={tokensToast} />
         </div>
       </div>
+
+      {/* After the page, outside its root (see DashboardView). */}
+      {loader.mounted && <LoadingPage dark={userData?.theme === "dark"} leaving={loader.leaving} />}
 
       {isLogoutModalOpen && (
        <ConfirmationModal

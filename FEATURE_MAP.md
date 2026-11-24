@@ -12,6 +12,9 @@ Request chains per feature. Backend paths are shown without the `/api` prefix, b
 - All data calls go through `apiClient` (`src/lib/apiClient.ts`): envelope unwrapped, `status !== 'success'` becomes `kind:'api'`.
 - Route protection: `middleware.ts` (public-route allowlist, everything else needs a valid token).
 
+## Full-page loader (UX-04)
+- Dashboard (and `/demo`), projects, profile and notifications: `useFirstLoad(loading)` → `usePresence(firstLoad)` (`src/hooks/usePresence.ts`, pure cores in `presence.ts`) → `<LoadingPage dark leaving />` (`components/loader.tsx`, classes in `loaderClasses.ts`), an overlay over `MainLayout`'s scroll box (or the demo's `<main>`), so the sidebar stays put. It fades in after 150 ms, the arc turns every 1.6 s, and on data it fades and lifts while the view root rises in (`usePageIn`). Cached navigations show the page at once. Reduced motion: full ring, breathing tile, opacity only. `ServerWakeBanner` (`z-10`) shows above it. Notifications shows `variant="inline"` for a later loading state.
+
 ## Server cold start (UX-03)
 - Render's free BE sleeps after ~15 idle minutes. `apiClient` (backend calls only) and `refreshSession` report to `src/lib/serverWake.ts`; while waking it pings BE `GET /` and `MainLayout` shows `ServerWakeBanner`. On the first 2xx, `query/wake.ts` refetches active queries in error and the banner turns green, then folds away. `LoadError` shows a skeleton (no text) for `network`/`timeout` failures meanwhile; after 3 minutes the banner offers Try again and cards show the usual error.
 - Login and signup: `auth/WakeHint.tsx` after 5 s pending; BFF routes wait 55 s (`BACKEND_COLD_START_MS`, `maxDuration = 60`); `/`, `/login` and `/signup` call `serverWake.warmUp()` (one `GET /` per tab per 10 min). Not in `/demo`.

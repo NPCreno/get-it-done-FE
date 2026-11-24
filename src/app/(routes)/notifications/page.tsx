@@ -5,9 +5,11 @@ import NotificationCard from "@/app/components/notificationCard";
 import ConfirmationModal from "@/app/components/modals/confirmation";
 import LoadError, { useRecoveryFocus } from "@/app/components/LoadError";
 import LoadingPage from "@/app/components/loader";
+import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
 import ToastHost from "@/app/components/ToastHost";
 import { useFormState } from "@/app/context/FormProvider";
 import { useToastController } from "@/hooks/useToastController";
+import { useFirstLoad, usePageIn, usePresence } from "@/hooks/usePresence";
 import {
   useClearNotifications,
   useMarkAllNotificationsRead,
@@ -41,6 +43,12 @@ export default function NotificationsPage() {
     (d) => d.length === 0
   );
   const regionRef = useRecoveryFocus<HTMLDivElement>(state.status);
+  // UX-04: the first load is the full-page overlay, so the header never shows half-ready. A later
+  // "loading" (a refetch of an errored query with no data, TanStack v5) is the inline loader.
+  const firstLoad = useFirstLoad(state.status === "loading");
+  const loader = usePresence(firstLoad);
+  const pageIn = usePageIn(loader.leaving);
+  const dark = userData?.theme === "dark";
   const now = Date.now();
 
   const report = (r: Awaited<ReturnType<typeof settled>>) => {
@@ -56,7 +64,10 @@ export default function NotificationsPage() {
   return (
     <MainLayout>
       <div className="main flex justify-center w-full flex-col overflow-y-auto">
-        <div className="inside max-w-[1440px] w-full mx-auto gap-5 flex flex-col ">
+        <div
+          className={`inside max-w-[1440px] w-full mx-auto gap-5 flex flex-col ${pageIn.active ? PAGE_IN_CLASS : ""}`}
+          onAnimationEnd={pageIn.onAnimationEnd}
+        >
           <div className="flex justify-between">
             <div className="flex flex-col">
               <div className="flex items-center gap-3">
@@ -99,7 +110,7 @@ export default function NotificationsPage() {
           </div>
 
           <div ref={regionRef} tabIndex={-1} className="outline-none">
-            {state.status === "loading" && <LoadingPage />}
+            {state.status === "loading" && !firstLoad && <LoadingPage variant="inline" dark={dark} />}
 
             {state.status === "error" && (
               <LoadError
@@ -165,6 +176,9 @@ export default function NotificationsPage() {
           </div>
         </div>
       </div>
+
+      {/* After the page, outside its root (see DashboardView). */}
+      {loader.mounted && <LoadingPage dark={dark} leaving={loader.leaving} />}
 
       {confirmClear && (
         <ConfirmationModal
