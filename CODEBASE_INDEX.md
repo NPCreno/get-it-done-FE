@@ -47,7 +47,8 @@ One line per significant source file. Paths are relative to the repo root.
 - `client.ts` — `createQueryClient()` defaults, `clearQueryCache()` (called on logout/expiry); `../../app/providers/QueryProvider.tsx` mounts it
 - `keys.ts` — `qk` key factories; `specs.ts` — key + request built from the same params; `window.ts` — 5-minute task window
 - `queries.ts` — `useProfile`, `useProjects`, `useProject`, `useUpcomingTasks`, `useProjectTasks`, `useDashboardSummary`, `useCompletionTrend`, `useTaskDistribution`, `useCalendarHeatmap`, `useStreak`, `useSessionUserId`, `useTaskWindow`
-- `mutations.ts` — task, subtask, project and profile mutations; optimistic `setTaskStatusOptions` / `setSubTaskStatusOptions`
+- `mutations.ts` — task, subtask, project and profile mutations; optimistic `setTaskStatusOptions` / `setSubTaskStatusOptions`; `useSetPomodoroStyle` (FEAT-10)
+- `pomodoroStyle.ts` — FEAT-10 `setPomodoroStyleOptions` (optimistic, one scope) and the pure `createStyleSaveTracker` (compare-and-swap rollback); tests in `__tests__/pomodoro-style.test.ts`
 - `loadState.ts` — `loadStateOf()` (loading / error / empty / ready); `emptiness.ts` — per-resource empty rules; `keys.ts` also has `resourceOf()` (log labels)
 - `../../app/components/LoadError.tsx` — the shared retryable error block and `useRecoveryFocus`; shows a text-free skeleton instead while the BE wakes (UX-03)
 - `wake.ts` — UX-03 `refetchErroredQueries(client)` (active queries in error only) and `connectServerWake(client)`; tested in `__tests__/wake.test.ts`
@@ -71,7 +72,7 @@ Modals (`modals/`)
 - `taskModal.tsx` — create and edit tasks and subtasks
 - `projectModal.tsx` — create and edit projects
 - `viewProject.tsx` — project detail view
-- `pomodoro.tsx` — pomodoro timer modal
+- `pomodoro.tsx` — the Pomodoro dialog (default export `PomodoroModal`): picks `DialTimer` / `TicketTimer` / `HorizonTimer` by `pomodoroStyleOf(userData)` and shows the switch-type confirm (FEAT-10)
 - `confirmation.tsx` — confirmation dialog
 
 Layout and navigation
@@ -103,7 +104,8 @@ Inputs and small UI
 - `toast.tsx` — feedback
 - `loader.tsx` — `LoadingPage` (UX-04): the logo tile with a turning arc and the wordmark, an overlay for a first load (`variant="page"`) or the tile alone (`variant="inline"`); `loaderClasses.ts` — its class strings and `PAGE_IN_CLASS` (tested in `__tests__/loader.test.ts` with the Tailwind motion tokens)
 - `ToastHost.tsx` — renders a page's toast from its controller
-- `PomodoroButton.tsx` — opens the pomodoro modal
+- `PomodoroButton.tsx` — opens the Pomodoro dialog; shows the style's mini (`pomodoro/PomodoroMini`), play/pause and reset beside it
+- `src/app/components/pomodoro/` (FEAT-10) — `usePomodoroController.ts` (all timer behaviour), `DialTimer.tsx`, `TicketTimer.tsx`, `HorizonTimer.tsx` (the three faces), `ModeRadios.tsx` (native radio group for the timer type), `PomodoroMini.tsx` (the button's mini), `PomodoroStylePicker.tsx` (Profile → Appearance), `geometry.ts` (dial wedge and ticks), `faceCopy.ts` (lines, fractions, next hint, captions), `faceClasses.ts` (colour roles); tests in `__tests__/faces.test.ts`
 - `ChartDataTable.tsx` — screen-reader-only table (caption, columns, rows) that accompanies each chart
 - `chartRows.ts` — pure row builders (`trendRows`, `distributionRows`, `heatmapRows`) with vitest cases in `components/__tests__/chartRows.test.ts`
 
@@ -121,7 +123,8 @@ shadcn (`shadcn/`)
 - `src/app/components/projects/` — the projects page body (ARCH-01 PR D): `ProjectsView.tsx` (no props; toast, task editor, project editor, loader, selected project, the view-project flow with `ProjectChatActions`), `ProjectGrid.tsx` (header, cards with unread badges, empty state, `LoadError`), `ProjectEditorDialog.tsx` (renders the unchanged `ProjectModal`), `useProjectEditor.ts` (own Formik form for the project fields, `open(projectId?)`/`close`/`submit`/`remove`, one prefill per editing session), `projectPrefill.ts` (pure `shouldPrefill`, `projectFormValuesOf`), tests in `__tests__/`
 - `src/hooks/presence.ts` (pure `createPresence`, `nextFirstLoad`, `nextPageIn`), `usePresence.ts` (`usePresence`, `useFirstLoad`, `usePageIn`) — the full-page loader's show/hide (UX-04); tests in `src/hooks/__tests__/presence.test.ts`
 - `src/hooks/toastController.ts` (framework-independent, owns timers), `useToastController.ts` (one per page, disposed on unmount) — toast state; tests in `src/hooks/__tests__/`
-- `src/lib/timerService.ts` — pomodoro timer state, persisted in `localStorage` key `pomodoroTimerState`
+- `src/lib/timerService.ts` — pomodoro timer state, persisted in `localStorage` key `pomodoroTimerState`; `completedFocusRounds` (0–4, FEAT-10; tests in `__tests__/timerRounds.test.ts`)
+- `src/lib/pomodoroStyle.ts` — `pomodoroStyleOf(user)` (dial by default), style names and hints, the picker status copy (FEAT-10)
 - `src/lib/timerPhase.ts` — `timerPhase()` (`idle | running | paused`) and `timerCopy()`: every Pomodoro label comes from the phase
 - `src/lib/utils.ts` — shadcn class-name helper
 - `src/lib/focusFallback.ts` — `focusFallback(ref)`: after a delete removes the focused opener, moves focus to a page heading

@@ -1,4 +1,4 @@
-import { MutationObserver } from "@tanstack/react-query";
+import { MutationObserver, QueryObserver } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/app/api/userRequests", () => ({ updateUser: vi.fn() }));
@@ -111,6 +111,22 @@ describe("useSetPomodoroStyle cache logic", () => {
     mockUpdate().mockResolvedValueOnce(okResult({}) as never).mockResolvedValueOnce(failResult() as never);
     await Promise.all([pick("ticket", "dial"), pick("horizon", "ticket")]);
     expect(shown()).toBe("ticket");
+  });
+
+  it("settles with the save, without waiting for the profile refetch", async () => {
+    const { qc, pick } = setup("dial");
+    const refetch = deferred<UserRecord>();
+    const observer = new QueryObserver(qc, { queryKey: qk.profile(U), queryFn: () => refetch.promise, staleTime: Infinity });
+    const unsubscribe = observer.subscribe(() => undefined);
+    mockUpdate().mockResolvedValueOnce(failResult("network") as never);
+    let settled = false;
+    void pick("ticket", "dial").then(() => (settled = true));
+    await flush();
+    await flush();
+    expect(settled).toBe(true);
+    expect(qc.isFetching({ queryKey: qk.profile(U) })).toBe(1);
+    refetch.resolve({ user_id: U, pomodoroStyle: "dial" } as unknown as UserRecord);
+    unsubscribe();
   });
 
   it("invalidates the profile key only", () => {

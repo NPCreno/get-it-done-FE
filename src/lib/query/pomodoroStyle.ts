@@ -101,7 +101,9 @@ export function setPomodoroStyleOptions(
     },
     onSettled: () => {
       deps.tracker.settle();
-      return gatedInvalidate(qc, POMODORO_STYLE_KEY, invalidationsFor("pomodoro-style", userId));
+      // Not returned: the status line reports the save itself, without waiting for the profile
+      // refetch (which, after a failure, may be waiting on the same unreachable server).
+      void gatedInvalidate(qc, POMODORO_STYLE_KEY, invalidationsFor("pomodoro-style", userId));
     },
   };
 }
