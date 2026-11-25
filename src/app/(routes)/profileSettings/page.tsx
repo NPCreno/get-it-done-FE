@@ -16,6 +16,7 @@ import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
 import InputBox from "@/app/components/inputBox";
 import { useFormState } from "@/app/context/FormProvider";
 import ApiTokensSection from "@/app/components/apiTokens/ApiTokensSection";
+import PomodoroStylePicker from "@/app/components/pomodoro/PomodoroStylePicker";
 import ToastHost from "@/app/components/ToastHost";
 import { useToastController } from "@/hooks/useToastController";
 import { useFirstLoad, usePageIn, usePresence } from "@/hooks/usePresence";
@@ -409,7 +410,7 @@ export default function ProfileSettingsPage() {
                     Customize how Task Tracker looks
                   </p>
                 </div>
-                <div className="flex flex-row justify-between">
+                <div className={`flex flex-row justify-between pb-4 border-b ${userData?.theme === "dark" ? "border-gray-800" : "border-[#E0E0E0]"}`}>
                   <div className="flex flex-row gap-5">
                     <svg
                       width="24"
@@ -443,6 +444,8 @@ export default function ProfileSettingsPage() {
                     theme={userData?.theme}
                   />
                 </div>
+                {/* FEAT-10: saves on change, apart from this form (never dirties it, never waits for Save). */}
+                <PomodoroStylePicker dark={userData?.theme === "dark"} />
               </div>
 
               <button

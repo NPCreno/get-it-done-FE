@@ -18,6 +18,8 @@ export const WEEKDAYS = [
   "Sunday",
 ] as const;
 export const THEMES = ["light", "dark"] as const;
+/** FEAT-10: the Pomodoro timer styles. A user without one (null) sees the dial. */
+export const POMODORO_STYLES = ["dial", "ticket", "horizon"] as const;
 export const BOOLEAN_STRINGS = ["true", "false"] as const;
 // FEAT-09: `assignment` ("<user> assigned you <task>"). A type the FE does not list is dropped from the
 // bell, never fatal (see NotificationsPageSchema).
@@ -30,6 +32,7 @@ export type NewTaskStatus = (typeof NEW_TASK_STATUSES)[number];
 export type RepeatEvery = (typeof REPEAT_EVERY)[number];
 export type Weekday = (typeof WEEKDAYS)[number];
 export type Theme = (typeof THEMES)[number];
+export type PomodoroStyle = (typeof POMODORO_STYLES)[number];
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export type NotificationActionType = (typeof NOTIFICATION_ACTION_TYPES)[number];
 export type BooleanString = (typeof BOOLEAN_STRINGS)[number];

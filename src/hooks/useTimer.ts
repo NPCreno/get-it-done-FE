@@ -6,7 +6,8 @@ export const useTimer = (initialTimerType: TimerType = 'pomodoro') => {
   const [timerState, setTimerState] = useState<TimerState>(() => ({
     timeLeft: TimerConfig[initialTimerType],
     isRunning: false,
-    currentTimer: initialTimerType
+    currentTimer: initialTimerType,
+    completedFocusRounds: 0
   }));
   
   const isMountedRef = useRef(true);
@@ -75,6 +76,7 @@ export const useTimer = (initialTimerType: TimerType = 'pomodoro') => {
     timeLeft: timerState.timeLeft,
     isActive: timerState.isRunning,
     currentTimer: timerState.currentTimer,
+    completedFocusRounds: timerState.completedFocusRounds,
     isAtDefaultTime: timerState.timeLeft === TimerConfig[timerState.currentTimer],
     toggle,
     start,
@@ -85,6 +87,7 @@ export const useTimer = (initialTimerType: TimerType = 'pomodoro') => {
     timerState.timeLeft, 
     timerState.isRunning, 
     timerState.currentTimer, 
+    timerState.completedFocusRounds,
     toggle, 
     start, 
     pause, 
