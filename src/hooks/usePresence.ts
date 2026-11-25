@@ -8,7 +8,7 @@ import type { PageInPhase, Presence, PresenceState } from "./presence";
  * `{ mounted, leaving }` for an element that animates out: when `show` turns false it stays
  * mounted and `leaving` for `exitMs`, then unmounts. Showing it again cancels the exit.
  */
-export function usePresence(show: boolean, exitMs = 200): PresenceState {
+export function usePresence(show: boolean, exitMs = 100): PresenceState {
   const ref = useRef<Presence | null>(null);
   if (ref.current === null) ref.current = createPresence({ show, exitMs });
   const presence = ref.current;

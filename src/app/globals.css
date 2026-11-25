@@ -99,27 +99,27 @@
 }
 
 .fade-in {
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .fade-in-delay-0 {
-  animation: fadeIn 0.4s ease-out 0s both;
+  animation: fadeIn 0.2s ease-out 0s both;
 }
 
 .fade-in-delay-1 {
-  animation: fadeIn 0.4s ease-out 0.2s both;
+  animation: fadeIn 0.2s ease-out 0.1s both;
 }
 
 .fade-in-delay-2 {
-  animation: fadeIn 0.5s ease-out 0.4s both;
+  animation: fadeIn 0.25s ease-out 0.2s both;
 }
 
 .fade-in-delay-3 {
-  animation: fadeIn 0.6s ease-out 0.5s both;
+  animation: fadeIn 0.3s ease-out 0.25s both;
 }
 
 .fade-in-delay-4 {
-  animation: fadeIn 0.7s ease-out 0.6s both;
+  animation: fadeIn 0.35s ease-out 0.3s both;
 }
 @keyframes fadeInLeft {
   from {
@@ -133,24 +133,24 @@
 }
 
 .fade-in-left {
-  animation: fadeInLeft 0.5s ease-out both;
+  animation: fadeInLeft 0.25s ease-out both;
 }
 
 /* Delayed animations for each card */
 .fade-in-left-delay-1 {
-  animation-delay: 0.1s;
+  animation-delay: 0.05s;
 }
 
 .fade-in-left-delay-2 {
-  animation-delay: 0.3s;
+  animation-delay: 0.15s;
 }
 
 .fade-in-left-delay-3 {
-  animation-delay: 0.4s;
+  animation-delay: 0.2s;
 }
 
 .fade-in-left-delay-4 {
-  animation-delay: 0.5s;
+  animation-delay: 0.25s;
 }
 
 
@@ -219,7 +219,7 @@
 }
 
 .modal-popup {
-  animation: fadePop 0.15s ease-out;
+  animation: fadePop 0.075s ease-out;
 }
 
 

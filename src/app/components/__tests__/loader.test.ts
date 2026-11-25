@@ -125,16 +125,16 @@ describe("Tailwind config (UX-04 §2)", () => {
     expect(ext.keyframes.pageIn).toEqual({ "0%": { opacity: "0", transform: "translateY(8px)" }, "100%": { opacity: "1", transform: "translateY(0)" } });
   });
 
-  it("has the 8 animations with the exact timings", () => {
+  it("has the 8 animations with the exact timings (UX-05: halved, 150 ms show delay kept)", () => {
     expect(ext.animation).toMatchObject({
-      "loader-in": "loaderIn 200ms cubic-bezier(.2,.8,.2,1) 150ms both",
-      "loader-fade-in": "loaderFadeIn 200ms linear 150ms both",
+      "loader-in": "loaderIn 100ms cubic-bezier(.2,.8,.2,1) 150ms both",
+      "loader-fade-in": "loaderFadeIn 100ms linear 150ms both",
       "loader-arc": "loaderArc 1.6s cubic-bezier(.65,0,.35,1) infinite",
       "loader-breathe": "loaderBreathe 2s ease-in-out infinite",
-      "loader-out": "loaderOut 180ms ease-in both",
-      "loader-fade-out": "loaderFadeOut 120ms linear both",
-      "page-in": "pageIn 240ms cubic-bezier(.2,.8,.2,1) 80ms both",
-      "page-fade-in": "loaderFadeIn 160ms linear both",
+      "loader-out": "loaderOut 90ms ease-in both",
+      "loader-fade-out": "loaderFadeOut 60ms linear both",
+      "page-in": "pageIn 120ms cubic-bezier(.2,.8,.2,1) 40ms both",
+      "page-fade-in": "loaderFadeIn 80ms linear both",
     });
   });
 });

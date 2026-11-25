@@ -86,7 +86,7 @@ export default function MobileSidebar() {
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-150 ${
           isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={handleBackdropClick}
@@ -106,7 +106,7 @@ export default function MobileSidebar() {
           screen readers and Tab never find a hidden dialog. */}
       <div
         id="mobile-navigation"
-        className={`mobile-sidebar fixed inset-y-0 left-0 w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`mobile-sidebar fixed inset-y-0 left-0 w-64 bg-white z-50 transform transition-transform duration-150 ease-in-out ${
           isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         role="dialog"
