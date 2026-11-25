@@ -15,6 +15,27 @@ export interface TimerState {
   timeLeft: number;
   isRunning: boolean;
   currentTimer: TimerType;
+  /** FEAT-10: focus rounds finished in this cycle (0–4); the Ticket's pips. Client only. */
+  completedFocusRounds: number;
+}
+
+/** The Ticket shows four pips: a cycle is four focus rounds, then a long break. */
+export const FOCUS_ROUNDS_PER_CYCLE = 4;
+
+/** A stored count, or 0 for a state saved before the field existed (or a broken value). */
+export function storedRounds(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 0;
+  return Math.min(FOCUS_ROUNDS_PER_CYCLE, Math.max(0, Math.floor(value)));
+}
+
+/**
+ * The count after a round of `type` reached 0: a focus round adds one (at most four), a long break
+ * starts a new cycle, a short break changes nothing.
+ */
+export function roundsAfterFinish(type: TimerType, rounds: number): number {
+  if (type === 'pomodoro') return Math.min(FOCUS_ROUNDS_PER_CYCLE, rounds + 1);
+  if (type === 'longBreak') return 0;
+  return rounds;
 }
 
 type Subscriber = (state: TimerState) => void;
@@ -27,6 +48,7 @@ export class TimerService {
   private isRunning: boolean = false;
   private currentTimeLeft: number = TimerConfig.pomodoro;
   private currentTimerType: TimerType = 'pomodoro';
+  private completedFocusRounds: number = 0;
   private audio: HTMLAudioElement | null = null;
   private beforeUnloadHandler: (() => void) | null = null;
 
@@ -101,6 +123,7 @@ export class TimerService {
         isRunning: this.isRunning,
         currentTimerType: this.currentTimerType,
         currentTimeLeft: this.currentTimeLeft,
+        completedFocusRounds: this.completedFocusRounds,
         savedAt: Date.now()
       };
       localStorage.setItem('pomodoroTimerState', JSON.stringify(state));
@@ -194,7 +217,8 @@ export class TimerService {
     return {
       timeLeft: this.currentTimeLeft,
       isRunning: this.isRunning,
-      currentTimer: this.currentTimerType
+      currentTimer: this.currentTimerType,
+      completedFocusRounds: this.completedFocusRounds
     };
   }
 
@@ -206,6 +230,8 @@ export class TimerService {
     
     if (timeLeft <= 0) {
       this.currentTimeLeft = 0;
+      // FEAT-10: counted here, where the alarm plays; pause() below saves it.
+      this.completedFocusRounds = roundsAfterFinish(this.currentTimerType, this.completedFocusRounds);
       this.pause();
       // Play alarm when timer ends
       this.playSound('/soundfx/alarm.mp3');
@@ -239,6 +265,9 @@ export class TimerService {
         return;
       }
 
+      // FEAT-10: kept from here on; only the staleness rule above (and a broken state) clears it.
+      this.completedFocusRounds = storedRounds(state.completedFocusRounds);
+
       const timePassed = Math.floor((Date.now() - state.savedAt) / 1000);
       
       if (state.isRunning && state.endTime) {
@@ -247,7 +276,8 @@ export class TimerService {
           this.endTime = Date.now() + (this.currentTimeLeft * 1000);
           this.start(state.currentTimerType, this.currentTimeLeft);
         } else {
-          this.resetToDefault();
+          // Finished while the app was closed: the alarm never played, so the round is not counted.
+          this.resetToDefault(this.completedFocusRounds);
         }
       } else {
         this.currentTimeLeft = Math.max(0, state.currentTimeLeft - timePassed);
@@ -261,7 +291,8 @@ export class TimerService {
     }
   }
 
-  private resetToDefault(): void {
+  private resetToDefault(completedFocusRounds = 0): void {
+    this.completedFocusRounds = completedFocusRounds;
     this.currentTimeLeft = TimerConfig.pomodoro;
     this.currentTimerType = 'pomodoro';
     this.isRunning = false;

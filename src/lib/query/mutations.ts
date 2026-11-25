@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { MutationKey, QueryClient, UseMutationOptions } from "@tanstack/react-query";
 import {
@@ -35,6 +36,10 @@ import {
   type TaskLike,
 } from "./optimistic";
 import { useSessionUserId } from "./queries";
+import { createStyleSaveTracker, setPomodoroStyleOptions } from "./pomodoroStyle";
+import { useFormState } from "@/app/context/FormProvider";
+import type { PomodoroStyle } from "@/app/contracts/enums";
+import { pomodoroStyleOf, SAVED_STATUS_MS, type PickerStatus } from "@/lib/pomodoroStyle";
 import { must, type ApiError } from "./unwrap";
 
 export const TASK_DATA_KEY = ["taskData"] as const;
@@ -284,4 +289,56 @@ export function useUpdateProfile() {
       updateUser(v.userId, v.body)
     )
   );
+}
+
+/**
+ * FEAT-10 Profile → Appearance timer style. `pick` shows the style at once (the context user and
+ * the profile cache), then saves it on its own; the Profile form never sends it. `status` follows
+ * the latest pick only: "Saving…", "Saved…" (cleared after 3 s) or the rollback message.
+ */
+export function useSetPomodoroStyle() {
+  const { qc, userId } = useCtx();
+  const { userData, setUserData } = useFormState();
+  const current = pomodoroStyleOf(userData);
+  const [tracker] = useState(createStyleSaveTracker);
+  const [status, setStatus] = useState<PickerStatus>({ kind: "idle" });
+  const latest = useRef(0);
+
+  const mutation = useMutation(
+    setPomodoroStyleOptions(qc, userId, {
+      tracker,
+      show: (style) => setUserData((prev) => (prev ? { ...prev, pomodoroStyle: style } : prev)),
+    })
+  );
+  const { mutate } = mutation;
+
+  const pick = useCallback(
+    (style: PomodoroStyle) => {
+      if (!userId || style === current) return;
+      const seq = ++latest.current;
+      setStatus({ kind: "saving" });
+      mutate(
+        { style, previous: current },
+        {
+          // Observer callbacks: TanStack calls them for the latest mutate() only, and `seq`
+          // guards against a late one all the same.
+          onSuccess: () => {
+            if (seq === latest.current) setStatus({ kind: "saved", style });
+          },
+          onError: () => {
+            if (seq === latest.current) setStatus({ kind: "failed", restored: tracker.shown() });
+          },
+        }
+      );
+    },
+    [userId, current, mutate, tracker]
+  );
+
+  useEffect(() => {
+    if (status.kind !== "saved") return;
+    const t = setTimeout(() => setStatus({ kind: "idle" }), SAVED_STATUS_MS);
+    return () => clearTimeout(t);
+  }, [status]);
+
+  return { style: current, pick, status };
 }
