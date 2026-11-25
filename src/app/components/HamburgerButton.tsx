@@ -20,17 +20,17 @@ export default function HamburgerButton() {
     >
       <div className="w-6 flex flex-col items-end justify-center space-y-1.5">
         <span
-          className={`h-0.5 bg-current transition-all duration-300 ease-out ${
+          className={`h-0.5 bg-current transition-all duration-150 ease-out ${
             isMobileSidebarOpen ? "w-6 transform rotate-45 translate-y-2" : "w-6"
           }`}
         />
         <span
-          className={`h-0.5 bg-current transition-all duration-300 ease-out ${
+          className={`h-0.5 bg-current transition-all duration-150 ease-out ${
             isMobileSidebarOpen ? "opacity-0" : "w-5"
           }`}
         />
         <span
-          className={`h-0.5 bg-current transition-all duration-300 ease-out ${
+          className={`h-0.5 bg-current transition-all duration-150 ease-out ${
             isMobileSidebarOpen
               ? "w-6 transform -rotate-45 -translate-y-2"
               : "w-4"

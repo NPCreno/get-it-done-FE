@@ -27,12 +27,12 @@ export interface LoaderClasses {
   word: string | null;
 }
 
-/** Enter: 150 ms delay (built into the animation), then 200 ms. Opacity only with reduced motion. */
+/** Enter: 150 ms delay (built into the animation, keeps fast loads from flashing), then 100 ms (UX-05). Opacity only with reduced motion. */
 export const LOADER_ENTER = "motion-safe:animate-loader-in motion-reduce:animate-loader-fade-in";
-/** Exit: fades and lifts 4 px in 180 ms, or fades in 120 ms with reduced motion. */
+/** Exit: fades and lifts 4 px in 90 ms, or fades in 60 ms with reduced motion (UX-05). */
 export const LOADER_LEAVE =
   "motion-safe:animate-loader-out motion-reduce:animate-loader-fade-out pointer-events-none";
-/** The view root while the loader leaves: rises 8 px in 240 ms after 80 ms, or fades in 160 ms. */
+/** The view root while the loader leaves: rises 8 px in 120 ms after 40 ms, or fades in 80 ms (UX-05). */
 export const PAGE_IN_CLASS = "motion-safe:animate-page-in motion-reduce:animate-page-fade-in";
 
 export function loaderClasses({ dark = false, leaving = false, variant = "page" }: LoaderClassOptions = {}): LoaderClasses {

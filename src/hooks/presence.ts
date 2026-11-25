@@ -29,7 +29,7 @@ const GONE: PresenceState = { mounted: false, leaving: false };
  */
 export function createPresence({
   show = false,
-  exitMs = 200,
+  exitMs = 100,
   setTimeout: setTimer = (cb, ms) => setTimeout(cb, ms),
   clearTimeout: clearTimer = (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
 }: PresenceOptions = {}) {
@@ -100,5 +100,5 @@ export function nextPageIn(phase: PageInPhase, loaderLeaving: boolean): PageInPh
   return phase === "idle" && loaderLeaving ? "running" : phase;
 }
 
-/** Fallback end of the page-in animation (240 ms + 80 ms delay), for a tab that never fires animationend. */
-export const PAGE_IN_MAX_MS = 400;
+/** Fallback end of the page-in animation (120 ms + 40 ms delay, UX-05), for a tab that never fires animationend. */
+export const PAGE_IN_MAX_MS = 200;

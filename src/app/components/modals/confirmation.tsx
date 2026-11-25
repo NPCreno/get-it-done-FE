@@ -48,7 +48,7 @@ export default function ConfirmationModal({
     <Dialog open onOpenChange={(open) => { if (!open) handleClose(); }}>
       <DialogContent
         container={fullScreen ? container : undefined}
-        overlayClassName={`${fullScreen ? 'absolute inset-0 z-20' : 'fixed inset-0 bg-black bg-opacity-40 z-[100]'} flex justify-center items-center transition-opacity duration-200 ${
+        overlayClassName={`${fullScreen ? 'absolute inset-0 z-20' : 'fixed inset-0 bg-black bg-opacity-40 z-[100]'} flex justify-center items-center transition-opacity duration-100 ${
           isClosing ? 'opacity-0' : 'opacity-100'}`}
         overlayProps={{ onClick: stop }}
         // A backdrop press did not close this modal before; keep that.
@@ -58,7 +58,7 @@ export default function ConfirmationModal({
           initialFocusRef.current?.focus();
         }}
         className={`${userData?.theme === 'dark' ? 'bg-foreground-dark border border-gray-800' : 'bg-white'} ${
-          fullScreen ? 'w-full h-full' : 'w-auto h-auto rounded-[10px] shadow-2xl transform transition-all duration-200'
+          fullScreen ? 'w-full h-full' : 'w-auto h-auto rounded-[10px] shadow-2xl transform transition-all duration-100'
         } p-5 flex flex-col gap-5 justify-center ${
           isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
         }`}

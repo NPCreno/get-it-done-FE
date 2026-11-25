@@ -21,7 +21,7 @@ export default function Sidebar() {
       <div
         id={DESKTOP_SIDEBAR_ID}
         className={`flex flex-col h-full py-5 px-[10px] rounded-[10px] items-start overflow-hidden border
-        transition-[width] duration-300 ease-out ${motion}
+        transition-[width] duration-150 ease-out ${motion}
         ${userData?.theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"} 
         ${userData?.theme === "dark" ? "text-white" : "text-black"}
         ${userData?.theme === "dark" ? "border-gray-800" : ""}`
@@ -108,7 +108,7 @@ export default function Sidebar() {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`ml-2 flex-shrink-0 transition-transform duration-300 ${motion} ${isSidebarExpanded ? "rotate-180" : ""}`}
+            className={`ml-2 flex-shrink-0 transition-transform duration-150 ${motion} ${isSidebarExpanded ? "rotate-180" : ""}`}
           >
             <path d="M6 17l5-5-5-5M13 17l5-5-5-5" />
           </svg>

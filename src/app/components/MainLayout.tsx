@@ -85,7 +85,7 @@ export default function MainLayout({
           moves once, together with the panel (UX-02). */}
       <div 
         className={`hidden md:block flex-shrink-0 p-5 h-screen ${
-          sidebarAnimated ? "transition-[width] duration-300 ease-out motion-reduce:transition-none" : ""
+          sidebarAnimated ? "transition-[width] duration-150 ease-out motion-reduce:transition-none" : ""
         }`}
         style={{ width: `${sidebarWrapperWidth(isSidebarExpanded)}px` }}
       >
@@ -99,7 +99,7 @@ export default function MainLayout({
       {/* Click-away convenience for the mobile menu; keyboard users close it with Esc or its close button. */}
       <div 
         role="presentation"
-        className="flex-1 transition-all duration-300 h-screen overflow-auto"
+        className="flex-1 transition-all duration-150 h-screen overflow-auto"
         onClick={handleMainContentClick}
       >
         {/* Hamburger Button - Only visible on mobile */}

@@ -84,7 +84,7 @@ Layout and navigation
 - `DashboardSearch.tsx` — expandable search box with its own state, so typing does not re-render the dashboard page (it filters nothing yet)
 
 Dashboard and data display
-- `statsCard.tsx` — summary stat card
+- `statsCard.tsx` — summary stat card; its framer timings come from `statsCardMotion.ts` (UX-05, pure, tested in `__tests__/ux05.test.ts` with the `globals.css` entrance timings)
 - `chartCard.tsx` — chart container
 - `MonthlyHeatmap.tsx` — calendar heatmap
 - `streakCounter.tsx` — streak display

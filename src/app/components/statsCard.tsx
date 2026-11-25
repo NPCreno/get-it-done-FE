@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { statCardTransition, STAT_VALUE_TRANSITION } from "./statsCardMotion";
 
 interface StatsCardProps {
   icon: string;
@@ -63,7 +64,7 @@ export default function StatsCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: parseFloat(delay.split('-').pop() || '0') * 0.1 }}
+      transition={statCardTransition(delay)}
       className={`lg:p-5 p-1 flex flex-row items-center gap-6 rounded-xl w-full h-full transition-all duration-300 
       hover:shadow-lg group ${getGradientClass()} ${className}`}
     >
@@ -92,7 +93,7 @@ export default function StatsCard({
           className={`sm:text-2xl text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} font-lato mt-1`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={STAT_VALUE_TRANSITION}
         >
           {content}
         </motion.p>

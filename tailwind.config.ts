@@ -21,14 +21,14 @@ const config: Config = {
 			'wake-sweep': 'wakeSweep 1.6s cubic-bezier(.4,0,.2,1) infinite',
 			'wake-pop': 'wakePop .2s cubic-bezier(.2,.8,.2,1)',
 			// UX-04 full-page loader (canvas page "Full-page loader")
-			'loader-in': 'loaderIn 200ms cubic-bezier(.2,.8,.2,1) 150ms both',
-			'loader-fade-in': 'loaderFadeIn 200ms linear 150ms both',
+			'loader-in': 'loaderIn 100ms cubic-bezier(.2,.8,.2,1) 150ms both',
+			'loader-fade-in': 'loaderFadeIn 100ms linear 150ms both',
 			'loader-arc': 'loaderArc 1.6s cubic-bezier(.65,0,.35,1) infinite',
 			'loader-breathe': 'loaderBreathe 2s ease-in-out infinite',
-			'loader-out': 'loaderOut 180ms ease-in both',
-			'loader-fade-out': 'loaderFadeOut 120ms linear both',
-			'page-in': 'pageIn 240ms cubic-bezier(.2,.8,.2,1) 80ms both',
-			'page-fade-in': 'loaderFadeIn 160ms linear both',
+			'loader-out': 'loaderOut 90ms ease-in both',
+			'loader-fade-out': 'loaderFadeOut 60ms linear both',
+			'page-in': 'pageIn 120ms cubic-bezier(.2,.8,.2,1) 40ms both',
+			'page-fade-in': 'loaderFadeIn 80ms linear both',
 		  },
 		  keyframes: {
 			fillText: {
