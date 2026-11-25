@@ -33,6 +33,7 @@ import {
   BOOLEAN_STRINGS,
   NEW_TASK_STATUSES,
   NOTIFICATION_TYPES,
+  POMODORO_STYLES,
   REPEAT_EVERY,
   TASK_PRIORITIES,
   TASK_STATUSES,
@@ -48,6 +49,7 @@ describe("FE literals match the vendored BE contract (src/app/contracts/api-cont
     expect([...REPEAT_EVERY]).toEqual(contract.repeatEvery);
     expect([...WEEKDAYS]).toEqual(contract.weekdays);
     expect([...THEMES]).toEqual(contract.themes);
+    expect([...POMODORO_STYLES]).toEqual(contract.pomodoroStyles);
     expect([...BOOLEAN_STRINGS]).toEqual(contract.booleanStrings);
     expect([...NOTIFICATION_TYPES]).toEqual(contract.notificationTypes);
   });
