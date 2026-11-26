@@ -10,7 +10,7 @@ interface ProjectGridProps {
   projectData: IProject[];
   onRetry: () => void;
   retrying: boolean;
-  theme?: string;
+  dark?: boolean;
   /** Where focus goes if a delete removes the button that opened the dialog. */
   headingRef: RefObject<HTMLHeadingElement | null>;
   onNewProject: () => void;
@@ -26,7 +26,7 @@ export default function ProjectGrid({
   projectData,
   onRetry,
   retrying,
-  theme,
+  dark,
   headingRef,
   onNewProject,
   onOpenProject,
@@ -45,7 +45,7 @@ export default function ProjectGrid({
               <div className="w-1 h-8 bg-primary-default rounded-full"></div>
               <div>
                 <h1 ref={headingRef} tabIndex={-1} className={`outline-none text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
-                      theme === "dark" 
+                      dark 
                         ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
                         : "bg-gradient-to-r from-gray-800 to-gray-600"
                 }`}>
@@ -99,7 +99,7 @@ export default function ProjectGrid({
                 failure={projectsState.refreshFailure}
                 onRetry={onRetry}
                 retrying={retrying}
-                theme={theme}
+                dark={dark}
                 variant="compact"
               />
             </div>
@@ -112,7 +112,7 @@ export default function ProjectGrid({
                   failure={projectsState.failure}
                   onRetry={onRetry}
                   retrying={retrying}
-                  theme={theme}
+                  dark={dark}
                 />
               </div>
             ) : projectData.length > 0 ? (
@@ -151,7 +151,7 @@ export default function ProjectGrid({
         <>
           <div className="w-full h-full flex items-center justify-center py-16 px-4">
             <div className={`flex flex-col gap-6 items-center max-w-md justify-center text-center p-8 ${
-              theme === "dark" 
+              dark 
                 ? "bg-foreground-dark border border-gray-800" 
                 : "bg-white border border-gray-100"
             } rounded-2xl shadow-sm transform transition-all hover:shadow-md`}>
@@ -164,14 +164,14 @@ export default function ProjectGrid({
               <div className="space-y-2">
                 {/* Same ref as the "Projects" heading: only one of the two is mounted, and deleting the last project swaps them. */}
                 <h1 ref={headingRef} tabIndex={-1} className={`outline-none font-lato text-2xl md:text-3xl font-bold fade-in-delay-1 bg-gradient-to-r ${
-                  theme === 'dark' 
+                  dark 
                     ? 'from-amber-400 to-yellow-500' 
                     : 'from-primary-default to-yellow-400'
                 } bg-clip-text text-transparent`}>
                   No Projects Yet ✨
                 </h1>
                 <p className={`font-lato fade-in-delay-2 max-w-md leading-relaxed ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-600"
+                  dark ? "text-gray-300" : "text-gray-600"
                 }`}>
                   Start organizing your work by creating your first project.
                   <br />
@@ -182,7 +182,7 @@ export default function ProjectGrid({
                 className={`px-6 py-3 w-full flex flex-row gap-2 items-center justify-center text-white font-lato rounded-xl 
                   hover:shadow-lg transition-all duration-300 fade-in-delay-3 transform hover:-translate-y-0.5
                   ${
-                    theme === 'dark'
+                    dark
                       ? 'bg-gradient-to-r from-amber-600 to-yellow-500 hover:shadow-amber-500/20'
                       : 'bg-gradient-to-r from-primary-default to-yellow-400 hover:shadow-primary-default/20'
                   }`}

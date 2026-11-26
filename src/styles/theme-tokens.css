@@ -1,0 +1,165 @@
+/*
+ * RD-1 theme tokens (plan 51b §1). 3 themes × 2 modes, on <html data-theme data-mode>.
+ * Values: canvas "Themes · motivation · CMS homepage", board 20 (ThemeKit). Where board 20 has
+ * no value (--hi, --on-hi, --on-ok, --bar-now, --scrim, --ls-head, --big) the values are board
+ * 19's (ThemeMoments), which uses the same palette. Field notes' --on-hi is board 19's #14201A,
+ * not --on-acc: white on its marigold --hi fails contrast.
+ * Every pair is checked by src/styles/__tests__/themeContrast.test.ts.
+ * Fonts come from next/font (src/app/fonts.ts), as --font-* variables on <html>.
+ * Variables only: no per-theme rules here. A scope can be re-themed by putting data-theme and
+ * data-mode on any element (the Appearance card's previews do).
+ */
+
+/* ---------------------------------------------------------------- type and shape */
+
+[data-theme="classic"] {
+  --f-head: var(--font-lato), Lato, system-ui, sans-serif;
+  --w-head: 900;
+  --f-body: var(--font-lato), Lato, system-ui, sans-serif;
+  --ls-head: -0.01em;
+  --big: 1;
+  --r-card: 10px;
+  --r-ctl: 6px;
+}
+
+[data-theme="calm"] {
+  --f-head: var(--font-poppins), Poppins, system-ui, sans-serif;
+  --w-head: 600;
+  --f-body: var(--font-lato), Lato, system-ui, sans-serif;
+  --ls-head: -0.02em;
+  --big: 1;
+  --r-card: 14px;
+  --r-ctl: 10px;
+}
+
+[data-theme="field"] {
+  --f-head: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
+  --w-head: 400;
+  --f-body: var(--font-manrope), Manrope, system-ui, sans-serif;
+  --ls-head: -0.01em;
+  --big: 1.35;
+  --r-card: 24px;
+  --r-ctl: 999px;
+}
+
+/* ---------------------------------------------------------------- colours */
+
+[data-theme="classic"][data-mode="light"] {
+  --page: #EEEEEE;
+  --card: #FFFFFF;
+  --line: #E0E0E0;
+  --strong: #8A847A;
+  --txt: #333333;
+  --txt2: #676767;
+  --acc: #FEAD03;
+  --acc-t: #7F5601;
+  --acc-sub: #FEEAC0;
+  --on-acc: #333333;
+  --ok: #2B8A46;
+  --on-ok: #FFFFFF;
+  --hi: #FEAD03;
+  --on-hi: #333333;
+  --focus: #19768D;
+  --bar-now: #FEAD03;
+  --scrim: #6B6B6B;
+}
+
+[data-theme="classic"][data-mode="dark"] {
+  --page: #0D0E12;
+  --card: #111317;
+  --line: #1F2937;
+  --strong: #4B5563;
+  --txt: #FFFFFF;
+  --txt2: #9CA3AF;
+  --acc: #FEAD03;
+  --acc-t: #FEAD03;
+  --acc-sub: #3F2B01;
+  --on-acc: #333333;
+  --ok: #53D86A;
+  --on-ok: #111317;
+  --hi: #FEAD03;
+  --on-hi: #333333;
+  --focus: #59B6CD;
+  --bar-now: #FEAD03;
+  --scrim: #050608;
+}
+
+[data-theme="calm"][data-mode="light"] {
+  --page: #F8F7F4;
+  --card: #FFFFFF;
+  --line: #E3E0D9;
+  --strong: #8A847A;
+  --txt: #1C1A17;
+  --txt2: #5C574F;
+  --acc: #FEAD03;
+  --acc-t: #8A5600;
+  --acc-sub: #FFF3D1;
+  --on-acc: #1C1A17;
+  --ok: #2B8A46;
+  --on-ok: #FFFFFF;
+  --hi: #FEAD03;
+  --on-hi: #1C1A17;
+  --focus: #19768D;
+  --bar-now: #2B8A46;
+  --scrim: #6E6A62;
+}
+
+[data-theme="calm"][data-mode="dark"] {
+  --page: #141311;
+  --card: #1E1C19;
+  --line: #34312C;
+  --strong: #6E695F;
+  --txt: #F3F1EC;
+  --txt2: #ADA79B;
+  --acc: #FEAD03;
+  --acc-t: #FEAD03;
+  --acc-sub: #3A2E10;
+  --on-acc: #1C1A17;
+  --ok: #53D86A;
+  --on-ok: #141311;
+  --hi: #FEAD03;
+  --on-hi: #1C1A17;
+  --focus: #7DD3E8;
+  --bar-now: #53D86A;
+  --scrim: #050505;
+}
+
+[data-theme="field"][data-mode="light"] {
+  --page: #F3F6F1;
+  --card: #FFFFFF;
+  --line: #D5DED3;
+  --strong: #7C8A80;
+  --txt: #14201A;
+  --txt2: #4F5E55;
+  --acc: #1F5C46;
+  --acc-t: #1F5C46;
+  --acc-sub: #DDEEE4;
+  --on-acc: #FFFFFF;
+  --ok: #1F5C46;
+  --on-ok: #FFFFFF;
+  --hi: #F2B84B;
+  --on-hi: #14201A;
+  --focus: #1F5C46;
+  --bar-now: #1F5C46;
+  --scrim: #56645B;
+}
+
+[data-theme="field"][data-mode="dark"] {
+  --page: #0F1512;
+  --card: #18211C;
+  --line: #2A372F;
+  --strong: #6A7A70;
+  --txt: #EEF3EE;
+  --txt2: #A3B2A8;
+  --acc: #7FD1A8;
+  --acc-t: #7FD1A8;
+  --acc-sub: #1D3A2D;
+  --on-acc: #0F1512;
+  --ok: #7FD1A8;
+  --on-ok: #0F1512;
+  --hi: #F2B84B;
+  --on-hi: #14201A;
+  --focus: #7FD1A8;
+  --bar-now: #7FD1A8;
+  --scrim: #040705;
+}

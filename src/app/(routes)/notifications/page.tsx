@@ -7,7 +7,7 @@ import LoadError, { useRecoveryFocus } from "@/app/components/LoadError";
 import LoadingPage from "@/app/components/loader";
 import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
 import ToastHost from "@/app/components/ToastHost";
-import { useFormState } from "@/app/context/FormProvider";
+import { useAppearance } from "@/hooks/useAppearance";
 import { useToastController } from "@/hooks/useToastController";
 import { useFirstLoad, usePageIn, usePresence } from "@/hooks/usePresence";
 import {
@@ -23,7 +23,6 @@ import { formatRelativeTime } from "@/lib/relativeTime";
 import type { Notification } from "@/app/contracts/responses";
 
 export default function NotificationsPage() {
-  const { userData } = useFormState();
   const toast = useToastController();
   const query = useNotifications();
   const markRead = useMarkNotificationRead();
@@ -48,7 +47,7 @@ export default function NotificationsPage() {
   const firstLoad = useFirstLoad(state.status === "loading");
   const loader = usePresence(firstLoad);
   const pageIn = usePageIn(loader.leaving);
-  const dark = userData?.theme === "dark";
+  const { isDark: dark } = useAppearance();
   const now = Date.now();
 
   const report = (r: Awaited<ReturnType<typeof settled>>) => {
@@ -74,7 +73,7 @@ export default function NotificationsPage() {
                 <div className="w-1 h-8 bg-primary-default rounded-full"></div>
                 <div>
                   <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
-                        userData?.theme === "dark"
+                        dark
                           ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300"
                           : "bg-gradient-to-r from-gray-800 to-gray-600"
                   }`}>
@@ -118,7 +117,7 @@ export default function NotificationsPage() {
                 failure={state.failure}
                 onRetry={() => void query.refetch()}
                 retrying={query.isFetching}
-                theme={userData?.theme}
+                dark={dark}
               />
             )}
 
@@ -131,7 +130,7 @@ export default function NotificationsPage() {
                     failure={state.refreshFailure}
                     onRetry={() => void query.refetch()}
                     retrying={query.isFetching}
-                    theme={userData?.theme}
+                    dark={dark}
                   />
                 )}
                 <div className="flex flex-col gap-[10px] overflow-y-auto fade-in-delay-1 max-h-[calc(100vh-130px)] pr-2 hide-scrollbar">

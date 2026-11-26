@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useFormState } from "@/app/context/FormProvider";
 import ToastHost from "@/app/components/ToastHost";
 import LoadingPage from "@/app/components/loader";
 import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
@@ -22,6 +21,7 @@ import ProjectEditorDialog from "./ProjectEditorDialog";
 import ProjectGrid from "./ProjectGrid";
 import { useProjectEditor } from "./useProjectEditor";
 import { sharedAsProject } from "./sharedProject";
+import { useAppearance } from "@/hooks/useAppearance";
 
 const NO_PROJECTS: IProject[] = [];
 const NO_TASKS: ITask[] = [];
@@ -31,7 +31,7 @@ const NO_TASKS: ITask[] = [];
  * wraps it in `MainLayout`.
  */
 export default function ProjectsView() {
-  const { userData } = useFormState();
+  const { isDark } = useAppearance();
   // One toast controller for the page: the host and every handler below share it.
   const toast = useToastController();
   // The one task editor; it owns the task form and is the only writer of selectedTaskData.
@@ -84,7 +84,7 @@ export default function ProjectsView() {
           projectData={projectData}
           onRetry={() => void projectsQuery.refetch()}
           retrying={projectsQuery.isFetching}
-          theme={userData?.theme}
+          dark={isDark}
           headingRef={headingRef}
           onNewProject={() => projectEditor.open()}
           onOpenProject={(project) => {
@@ -115,7 +115,7 @@ export default function ProjectsView() {
       </div>
 
       {/* After the page, outside its root (see DashboardView). */}
-      {loader.mounted && <LoadingPage dark={userData?.theme === "dark"} leaving={loader.leaving} />}
+      {loader.mounted && <LoadingPage dark={isDark} leaving={loader.leaving} />}
 
       <ProjectEditorDialog editor={projectEditor} />
 

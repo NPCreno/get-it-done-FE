@@ -66,5 +66,11 @@ No global store. Component state, `FormProvider` context for form handling, and 
 - `src/app/demo/runtime.ts` is the only transport owner: an in-memory fake backend (`fake/`) serving the 15 dashboard routes, plus a private `QueryClient` that is never passed to `registerQueryClient`. Unknown routes answer 501 and never reach the network. `stop()` is cancelQueries → retire the store → clear the client → release the transport last.
 - Middleware: `openRoutes` (`src/lib/openRoutes.ts`, `/demo` and `/demo/*`) is matched before any auth logic: no token check, no cookie change, no redirect, even for signed-in users. It is separate from `publicRoutes`, which redirect signed-in users to the dashboard. `/demo` has no page until DEMO-01b.
 
+## Appearance: theme and mode (RD-1)
+- Two account choices: the theme family (`users.appTheme`: Classic, Calm, Field notes) and the mode (`users.theme`: light, dark, system). `src/lib/appearance.ts` resolves them (pure); `useAppearance()` is the only reader in components.
+- Theme tokens are CSS variables in `src/styles/theme-tokens.css`, keyed on `<html data-theme data-mode>`; Tailwind's `th-*` colours read them. Classic is the only enabled theme until roadmap Phase 3.
+- No flash: `AppearanceSync` writes a non-secret `gid_appearance=<theme>.<mode>` cookie; the root layout reads it with `cookies()` and renders the `<html>` attributes on the server, and a tiny inline script resolves System from `prefers-color-scheme` before first paint. Reading the cookie makes every page dynamic. Logout clears the cookie.
+- Fonts are self-hosted through `next/font` (`src/app/fonts.ts`).
+
 ## Deployment
 Vercel builds with the pinned pnpm version from `package.json`. `JWT_SECRET` must be set for Preview and Production, or the middleware refuses to start. The Dockerfile builds the same app on Node 22 for local or container use.

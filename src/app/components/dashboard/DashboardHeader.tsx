@@ -3,11 +3,11 @@ import DashboardSearch from "@/app/components/DashboardSearch";
 import PomodoroButton from "@/app/components/PomodoroButton";
 
 interface DashboardHeaderProps {
-  theme?: string;
+  dark?: boolean;
   onPomodoroOpenChange: (open: boolean) => void;
 }
 
-export default function DashboardHeader({ theme, onPomodoroOpenChange }: DashboardHeaderProps) {
+export default function DashboardHeader({ dark, onPomodoroOpenChange }: DashboardHeaderProps) {
   return (
     <div className="relative flex flex-col md:flex-row justify-between gap-4 mb-2">
       {/* Left header */}
@@ -16,7 +16,7 @@ export default function DashboardHeader({ theme, onPomodoroOpenChange }: Dashboa
           <div className="w-1 h-8 bg-gradient-to-b from-primary-default to-primary-200 rounded-full transform transition-transform duration-300 group-hover:scale-y-110"></div>
           <div className="space-y-0.5">
             <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
-              theme === "dark"
+              dark
                 ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300"
                 : "bg-gradient-to-r from-gray-800 to-gray-600"
             }`}>
@@ -32,7 +32,7 @@ export default function DashboardHeader({ theme, onPomodoroOpenChange }: Dashboa
       </div>
       {/* Right header */}
       <div className="flex flex-col lg:flex-row gap-[10px] md:items-end items-start">
-        <DashboardSearch theme={theme} />
+        <DashboardSearch dark={dark} />
 
         <PomodoroButton onOpenChange={onPomodoroOpenChange} />
       </div>

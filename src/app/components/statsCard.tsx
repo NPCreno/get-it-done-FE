@@ -8,7 +8,7 @@ interface StatsCardProps {
   content: string;
   delay: string;
   className?: string;
-  theme?: string;
+  dark?: boolean;
 }
 
 export default function StatsCard({
@@ -17,7 +17,7 @@ export default function StatsCard({
   content,
   delay,
   className = '',
-  theme = 'light' 
+  dark = false 
 }: StatsCardProps) {
   // Determine icon color based on header
   const getIconColor = () => {
@@ -35,7 +35,7 @@ export default function StatsCard({
 
   // Get gradient class based on header and theme
   const getGradientClass = () => {
-    if (theme === 'dark') {
+    if (dark) {
       switch (header.toLowerCase()) {
         case 'to do':
           return 'from-amber-900/30 to-amber-800/20 hover:from-amber-900/40 hover:to-amber-800/30';
@@ -69,7 +69,7 @@ export default function StatsCard({
       hover:shadow-lg group ${getGradientClass()} ${className}`}
     >
       <div className={`relative sm:p-3 rounded-xl shadow-sm group-hover:shadow-md transition-all duration-300 ${getIconColor()}
-      ${theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'}`}>
+      ${dark ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'}`}>
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
@@ -86,11 +86,11 @@ export default function StatsCard({
       </div>
       
       <div className="flex-1">
-        <span className={`sm:text-sm text-[8px] font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-500'} font-lato tracking-wide`}>
+        <span className={`sm:text-sm text-[8px] font-medium ${dark ? 'text-white' : 'text-gray-500'} font-lato tracking-wide`}>
           {header.toUpperCase()}
         </span>
         <motion.p 
-          className={`sm:text-2xl text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} font-lato mt-1`}
+          className={`sm:text-2xl text-lg font-bold ${dark ? 'text-white' : 'text-gray-800'} font-lato mt-1`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={STAT_VALUE_TRANSITION}

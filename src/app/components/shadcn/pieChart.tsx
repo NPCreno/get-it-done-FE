@@ -77,7 +77,7 @@ interface ChartPieInteractiveProps {
   noData?: boolean;
   /** Replaces the chart and the no-data block (loading skeleton or error). The header and month select stay. */
   statusSlot?: React.ReactNode;
-  theme?: string;
+  dark?: boolean;
 }
 
 const getMonthsUntilCurrent = () => {
@@ -114,7 +114,7 @@ export function ChartPieInteractive({
   months = defaultMonths,
   noData,
   statusSlot,
-  theme = "light",
+  dark = false,
 }: ChartPieInteractiveProps) {
   const id = "pie-interactive";
   const { selectedMonth: contextMonth, setSelectedMonth } = useFormState();
@@ -136,16 +136,16 @@ export function ChartPieInteractive({
   };
 
   return (
-    <Card data-chart={id} className={`flex flex-col h-full min-h-[280px] ${theme === "dark" ? "bg-foreground-dark border-gray-800 border" : "bg-foreground-light"}`}>
+    <Card data-chart={id} className={`flex flex-col h-full min-h-[280px] ${dark ? "bg-foreground-dark border-gray-800 border" : "bg-foreground-light"}`}>
       <ChartStyle id={id} config={chartConfig} />
       <CardHeader className="flex-row items-start space-y-0 p-4 pb-2">
         <div className="grid gap-0.5">
-          <CardTitle className={`${theme === "dark" ? "text-white" : "text-gray-800"}`}>{title}</CardTitle>
+          <CardTitle className={`${dark ? "text-white" : "text-gray-800"}`}>{title}</CardTitle>
           {description && <CardDescription>{description}</CardDescription>}
         </div>
         <Select value={selectedMonth} onValueChange={handleMonthChange}>
           <SelectTrigger
-            className={`ml-auto h-7 w-[130px] rounded-lg pl-2.5 ${theme === "dark" ? "text-white border-gray-800 border" : "text-black"}`}
+            className={`ml-auto h-7 w-[130px] rounded-lg pl-2.5 ${dark ? "text-white border-gray-800 border" : "text-black"}`}
             aria-label="Select month"
           >
             <SelectValue placeholder="Select month" />
@@ -173,7 +173,7 @@ export function ChartPieInteractive({
       </CardHeader>
       {statusSlot && <div className="px-4 pb-4 flex-1 flex items-center">{statusSlot}</div>}
       {!statusSlot && noData && (
-        <div className={`w-full h-full flex flex-col items-center justify-center p-4 text-center ${theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"}`}>
+        <div className={`w-full h-full flex flex-col items-center justify-center p-4 text-center ${dark ? "bg-foreground-dark" : "bg-foreground-light"}`}>
           <Database className="h-16 w-16 text-gray-400 mb-2" />
           <p className="text-gray-500 text-sm">No data available</p>
         </div>

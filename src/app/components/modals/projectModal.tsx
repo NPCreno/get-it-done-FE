@@ -1,7 +1,7 @@
 import React from 'react';
 import InputBox from '../inputBox';
-import { useFormState } from '@/app/context/FormProvider';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/app/components/shadcn/dialog';
+import { useAppearance } from "@/hooks/useAppearance";
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -43,7 +43,7 @@ export default function ProjectModal({
   submitForm,
   isEdit,
 }: ProjectModalProps) {
-  const { userData } = useFormState();
+  const { isDark } = useAppearance();
   
   if (!isOpen) return null;
   const dropdownOptions = [
@@ -62,9 +62,9 @@ export default function ProjectModal({
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent
-        overlayClassName={`fixed inset-0 bg-black ${userData?.theme === 'dark' ? 'bg-opacity-60' : 'bg-opacity-40'} flex justify-center items-center z-50`}
+        overlayClassName={`fixed inset-0 bg-black ${isDark ? 'bg-opacity-60' : 'bg-opacity-40'} flex justify-center items-center z-50`}
         className={`modal-popup w-[500px] h-auto rounded-[10px] p-5 shadow-lg flex flex-col gap-5 ${
-          userData?.theme === 'dark' 
+          isDark 
             ? 'bg-foreground-dark border border-gray-700' 
             : 'bg-white border border-gray-100'
         }`}
@@ -72,20 +72,20 @@ export default function ProjectModal({
         <div className="flex flex-col">
             <div className="flex flex-row justify-between items-center">
                 <DialogTitle className={`text-[20px] font-bold font-lato ${
-                  userData?.theme === 'dark' ? 'text-white' : 'text-text'
+                  isDark ? 'text-white' : 'text-text'
                 }`}>{isEdit ? "Edit Project" : "Create New Project"}</DialogTitle>
                 <DialogClose asChild>
                 <button type="button" className="cursor-pointer" aria-label="Close">
                   <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M11.5 4.50098L4.5 11.501M11.5 11.501L4.5 4.50098L11.5 11.501Z" className={`${
-                    userData?.theme === 'dark' ? 'stroke-gray-400' : 'stroke-[#666666]'
+                    isDark ? 'stroke-gray-400' : 'stroke-[#666666]'
                   }`} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
                 </DialogClose>
             </div>
             <DialogDescription className={`text-sm font-lato ${
-              userData?.theme === 'dark' ? 'text-gray-300' : 'text-[#676767]'
+              isDark ? 'text-gray-300' : 'text-[#676767]'
             }`}>{isEdit ? "Edit your project" : "Add a new project to organize your tasks."}</DialogDescription>
         </div>
 
@@ -142,7 +142,7 @@ export default function ProjectModal({
             <div className="w-full"></div>
             <div className="flex flex-row gap-[10px]">
                 <button className={`border rounded-[5px] flex justify-center items-center font-lato text-xs p-[10px] ${
-                  userData?.theme === 'dark'
+                  isDark
                     ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
                     : 'border-primary-200 text-primary-default hover:bg-gray-50'
                 }`} 
@@ -151,7 +151,7 @@ export default function ProjectModal({
                 </button>
                 
                 <button className={`rounded-[5px] flex justify-center items-center font-lato text-xs p-[10px] ${
-                  userData?.theme === 'dark'
+                  isDark
                     ? 'bg-gradient-to-r from-amber-600 to-yellow-500 hover:shadow-amber-500/20 text-white'
                     : 'bg-gradient-to-r from-primary-default to-yellow-400 hover:shadow-primary-default/20 text-white'
                 }`} 

@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { useFormState } from "@/app/context/FormProvider";
+import { useAppearance } from "@/hooks/useAppearance";
 import ToastHost from "@/app/components/ToastHost";
 import LoadingPage from "@/app/components/loader";
 import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
@@ -24,8 +24,7 @@ import { useDashboardData } from "./useDashboardData";
  * reads): the lint override in `.eslintrc.json` enforces that for this folder.
  */
 export default function DashboardView() {
-  const { userData } = useFormState();
-  const theme = userData?.theme;
+  const { isDark } = useAppearance();
 
   // One toast controller for the page: the host and every handler below share it.
   const toast = useToastController();
@@ -74,12 +73,12 @@ export default function DashboardView() {
               show their own loading state instead of the whole page going blank. */}
           {!firstLoad && (
             <>
-              <DashboardHeader theme={theme} onPomodoroOpenChange={setIsPomodoroModalOpen} />
-              <StatsRow data={data} theme={theme} />
+              <DashboardHeader dark={isDark} onPomodoroOpenChange={setIsPomodoroModalOpen} />
+              <StatsRow data={data} dark={isDark} />
               <div className="w-full h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5 items-center justify-center text-center">
                 <TaskBoard
                   data={data}
-                  theme={theme}
+                  dark={isDark}
                   headingRef={headingRef}
                   onNewTask={() => editor.open({ mode: "create" })}
                   onEditTask={(task) => editor.open({ mode: "update", task })}
@@ -96,7 +95,7 @@ export default function DashboardView() {
 
       {/* After the page in the DOM, so it paints over it; outside the root, whose page-in transform
           would otherwise become the overlay's containing block. */}
-      {loader.mounted && <LoadingPage dark={theme === "dark"} leaving={loader.leaving} />}
+      {loader.mounted && <LoadingPage dark={isDark} leaving={loader.leaving} />}
 
       <TaskEditorDialog editor={editor} projects={data.projectOptions} />
 

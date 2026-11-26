@@ -37,6 +37,8 @@ import {
 } from "./optimistic";
 import { useSessionUserId } from "./queries";
 import { createStyleSaveTracker, setPomodoroStyleOptions } from "./pomodoroStyle";
+import { createAppearanceSaveTracker, setAppearanceOptions } from "./appearance";
+import { appearanceOf, cookieValue, type Appearance, type AppearanceStatus } from "@/lib/appearance";
 import { useFormState } from "@/app/context/FormProvider";
 import type { PomodoroStyle } from "@/app/contracts/enums";
 import { pomodoroStyleOf, SAVED_STATUS_MS, type PickerStatus } from "@/lib/pomodoroStyle";
@@ -341,4 +343,57 @@ export function useSetPomodoroStyle() {
   }, [status]);
 
   return { style: current, pick, status };
+}
+
+/**
+ * RD-1 Profile → Appearance (theme and mode). `pick` shows the choice at once across the whole
+ * app (the context user and the profile cache), then saves it on its own; the Profile form never
+ * sends it. `status` follows the latest pick only: "Saving…", "Saved…" (cleared after 3 s) or the
+ * rollback message. `current` is the account's choice (a disabled theme included), not what shows.
+ */
+export function useSetAppearance() {
+  const { qc, userId } = useCtx();
+  const { userData, setUserData } = useFormState();
+  const current = appearanceOf(userData);
+  const [tracker] = useState(() => createAppearanceSaveTracker(current));
+  const [status, setStatus] = useState<AppearanceStatus>({ kind: "idle" });
+  const latest = useRef(0);
+
+  const mutation = useMutation(
+    setAppearanceOptions(qc, userId, {
+      tracker,
+      show: (a) => setUserData((prev) => (prev ? { ...prev, theme: a.mode, appTheme: a.theme } : prev)),
+    })
+  );
+  const { mutate } = mutation;
+
+  const pick = useCallback(
+    (next: Appearance) => {
+      if (!userId || cookieValue(next) === cookieValue(current)) return;
+      const changed = next.theme !== current.theme ? "theme" : "mode";
+      const seq = ++latest.current;
+      setStatus({ kind: "saving" });
+      mutate(
+        { next, previous: current },
+        {
+          // Observer callbacks run for the latest mutate() only; `seq` guards all the same.
+          onSuccess: () => {
+            if (seq === latest.current) setStatus({ kind: "saved", changed, appearance: next });
+          },
+          onError: () => {
+            if (seq === latest.current) setStatus({ kind: "failed", changed, restored: tracker.shown() });
+          },
+        }
+      );
+    },
+    [userId, current, mutate, tracker]
+  );
+
+  useEffect(() => {
+    if (status.kind !== "saved") return;
+    const t = setTimeout(() => setStatus({ kind: "idle" }), SAVED_STATUS_MS);
+    return () => clearTimeout(t);
+  }, [status]);
+
+  return { appearance: current, pick, status };
 }

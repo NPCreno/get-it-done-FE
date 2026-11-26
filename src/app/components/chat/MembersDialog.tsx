@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/app/components/shadcn/dialog";
 import InputBox from "@/app/components/inputBox";
 import LoadError from "@/app/components/LoadError";
-import { useFormState } from "@/app/context/FormProvider";
+import { useAppearance } from "@/hooks/useAppearance";
 import { LIMITS } from "@/app/contracts/common";
 import { AddChatMemberRequestSchema } from "@/app/contracts/requests";
 import type { ChatMember } from "@/app/contracts/responses";
@@ -31,8 +31,7 @@ function addErrorCopy(f: ApiFailure): string | null {
 
 /** Owner only: list the members, add one by exact username, remove one. */
 export default function MembersDialog({ projectId, projectTitle, onClose, toast }: MembersDialogProps) {
-  const { userData } = useFormState();
-  const dark = userData?.theme === "dark";
+  const { isDark: dark } = useAppearance();
   const query = useChatMembers(projectId);
   // Never "empty": the owner is always listed.
   const state = loadStateOf(query, never);
@@ -146,7 +145,7 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
               failure={state.failure}
               onRetry={() => void query.refetch()}
               retrying={query.isFetching}
-              theme={userData?.theme}
+              dark={dark}
             />
           ) : (
             <ul className="flex flex-col gap-2" aria-label={`${members.length} of ${LIMITS.chatMembersMax} members`}>
@@ -181,7 +180,7 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
             failure={state.refreshFailure}
             onRetry={() => void query.refetch()}
             retrying={query.isFetching}
-            theme={userData?.theme}
+            dark={dark}
             variant="compact"
           />
         )}

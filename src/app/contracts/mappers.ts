@@ -12,7 +12,6 @@ import {
   REPEAT_EVERY,
   TASK_PRIORITIES,
   TASK_STATUSES,
-  THEMES,
   WEEKDAYS,
   narrow,
 } from "./enums";
@@ -139,7 +138,6 @@ export function toProfileUpdateRequest(
   if (v.fullname && v.fullname !== original.fullname) out.fullname = v.fullname;
   if (v.username && v.username !== original.username) out.username = v.username;
   if (v.password) out.password = v.password;
-  const theme = narrow(THEMES, v.theme);
-  if (theme) out.theme = theme;
+  // RD-1: no theme here. Appearance saves on its own (useSetAppearance), never with the form.
   return out;
 }

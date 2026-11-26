@@ -5,10 +5,10 @@ import type { DashboardData } from "./useDashboardData";
 
 interface StatsRowProps {
   data: Pick<DashboardData, "summary" | "summaryState" | "dashboardData">;
-  theme?: string;
+  dark?: boolean;
 }
 
-export default function StatsRow({ data, theme }: StatsRowProps) {
+export default function StatsRow({ data, dark }: StatsRowProps) {
   const { summary, summaryState, dashboardData } = data;
   const failed = summaryState.status === "error";
   return (
@@ -19,7 +19,7 @@ export default function StatsRow({ data, theme }: StatsRowProps) {
           failure={summaryState.failure}
           onRetry={() => void summary.refetch()}
           retrying={summary.isFetching}
-          theme={theme}
+          dark={dark}
         />
       )}
       {summaryState.status === "ready" && summaryState.refreshFailure && (
@@ -28,7 +28,7 @@ export default function StatsRow({ data, theme }: StatsRowProps) {
           failure={summaryState.refreshFailure}
           onRetry={() => void summary.refetch()}
           retrying={summary.isFetching}
-          theme={theme}
+          dark={dark}
           variant="compact"
         />
       )}
@@ -42,7 +42,7 @@ export default function StatsRow({ data, theme }: StatsRowProps) {
             content={failed ? "—" : String(dashboardData.all_tasks)}
             delay="fade-in-left-delay-1"
             className="h-full hover:bg-gradient-to-br from-white to-gray-50 transition-all duration-300"
-            theme={theme}
+            dark={dark}
           />
         </div>
         <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-100/30">
@@ -52,7 +52,7 @@ export default function StatsRow({ data, theme }: StatsRowProps) {
             content={failed ? "—" : String(dashboardData.pending_tasks)}
             delay="fade-in-left-delay-2"
             className="h-full hover:bg-gradient-to-br from-white to-amber-50/30 transition-all duration-300"
-            theme={theme}
+            dark={dark}
           />
         </div>
         <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-100/30">
@@ -62,7 +62,7 @@ export default function StatsRow({ data, theme }: StatsRowProps) {
             content={failed ? "—" : String(dashboardData.all_projects)}
             delay="fade-in-left-delay-3"
             className="h-full hover:bg-gradient-to-br from-white to-blue-50/30 transition-all duration-300"
-            theme={theme}
+            dark={dark}
           />
         </div>
         <div className="transform transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-green-100/30">
@@ -72,7 +72,7 @@ export default function StatsRow({ data, theme }: StatsRowProps) {
             content={failed ? "—" : String(dashboardData.complete_tasks)}
             delay="fade-in-left-delay-4"
             className="h-full hover:bg-gradient-to-br from-white to-green-50/30 transition-all duration-300"
-            theme={theme}
+            dark={dark}
           />
         </div>
       </div>

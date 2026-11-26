@@ -1,10 +1,10 @@
 import { IProject } from "../interface/IProject";
 import { useRef, useState } from "react";
-import { useFormState } from "@/app/context/FormProvider";
 import ConfirmationModal from "./modals/confirmation";
 import { Pencil2Icon } from "@radix-ui/react-icons"
 import { useChatUnread } from "@/lib/query/chat";
 import UnreadBadge from "./chat/UnreadBadge";
+import { useAppearance } from "@/hooks/useAppearance";
 
 
 export default function ProjectCard({
@@ -20,7 +20,7 @@ export default function ProjectCard({
   onEditClick?: (e: React.MouseEvent) => void;
   onDeleteClick?: (project: IProject) => void;
 }) {
-  const { userData } = useFormState();
+  const { isDark } = useAppearance();
   const chatUnread = useChatUnread().countFor(project.project_id);
   const projectColor = project.colorLabel?.toLowerCase() || 'gray';
 
@@ -31,7 +31,6 @@ export default function ProjectCard({
   // Helper functions for colors and gradients
 const getGradientClass = (color: string = 'gray') => {
   
-  const isDarkMode = userData?.theme === 'dark';
 
   const lightGradients: Record<string, string> = {
     'lavender': 'from-violet-50 to-violet-100',
@@ -59,8 +58,8 @@ const getGradientClass = (color: string = 'gray') => {
     'seafoam': 'from-teal-900/30 to-teal-800/30',
   };
 
-  const gradientMap = isDarkMode ? darkGradients : lightGradients;
-  return gradientMap[color.toLowerCase()] || (isDarkMode ? 'from-gray-800/30 to-gray-700/30' : 'from-gray-50 to-gray-100');
+  const gradientMap = isDark ? darkGradients : lightGradients;
+  return gradientMap[color.toLowerCase()] || (isDark ? 'from-gray-800/30 to-gray-700/30' : 'from-gray-50 to-gray-100');
   };
 
   const gradientClass = getGradientClass(projectColor);
@@ -134,7 +133,7 @@ const getGradientClass = (color: string = 'gray') => {
       <div className="flex justify-between items-start gap-3 mb-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h2 className={`text-lg font-semibold ${userData?.theme === 'dark' ? 'text-white' : 'text-gray-900'} truncate`}>
+            <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
               <button type="button" className="max-w-full truncate text-left" onClick={(e) => {
                 e.stopPropagation();
                 onClick();
@@ -146,10 +145,10 @@ const getGradientClass = (color: string = 'gray') => {
               <span 
                 className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                   priority === 'high' 
-                    ? userData?.theme === 'dark' ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-800' 
+                    ? isDark ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-800' 
                     : priority === 'medium' 
-                      ? userData?.theme === 'dark' ? 'bg-yellow-900/30 text-yellow-300' : 'bg-yellow-100 text-yellow-800'
-                      : userData?.theme === 'dark' ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
+                      ? isDark ? 'bg-yellow-900/30 text-yellow-300' : 'bg-yellow-100 text-yellow-800'
+                      : isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
                 }`}
               >
                 {priority.charAt(0).toUpperCase() + priority.slice(1)}
@@ -157,7 +156,7 @@ const getGradientClass = (color: string = 'gray') => {
             )}
             <UnreadBadge count={chatUnread} className="flex-shrink-0" />
           </div>
-          <p className={`text-sm ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} truncate`}>
+          <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} truncate`}>
             {project.description || 'No description'}
           </p>
         </div>
@@ -169,7 +168,7 @@ const getGradientClass = (color: string = 'gray') => {
               e.stopPropagation();
               onEditClick?.(e);
             }}
-            className={`text-xs font-medium ${userData?.theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors duration-200 text-blue-400 hover:text-blue-300 z-10`}
+            className={`text-xs font-medium ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors duration-200 text-blue-400 hover:text-blue-300 z-10`}
             aria-label="Edit project"
           >
             <Pencil2Icon width="18" height="18" aria-hidden="true"/>
@@ -190,11 +189,11 @@ const getGradientClass = (color: string = 'gray') => {
       {/* Completion Status */}
       <div className="mb-4">
         <div className="flex justify-between items-center">
-          <span className={`text-sm font-medium ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+          <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
             {project.task_completed ?? 0} of {project.task_count || 0} tasks completed
             {progress >= 100 && (
               <span className={`ml-2 px-2 py-0.5 text-xs font-semibold ${
-                userData?.theme === 'dark' 
+                isDark 
                   ? 'text-green-300 bg-green-900/30' 
                   : 'text-green-800 bg-green-100'
               } rounded-full`}>
@@ -202,7 +201,7 @@ const getGradientClass = (color: string = 'gray') => {
               </span>
             )}
           </span>
-          <span className={`text-xs ${userData?.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+          <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             {project.due_date ? new Date(project.due_date).toLocaleDateString() : ''}
           </span>
         </div>

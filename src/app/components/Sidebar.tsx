@@ -5,26 +5,28 @@ import SidebarLink from "./sidebarLink";
 import { useUnreadCount } from "@/lib/query/notifications";
 import { useChatUnread } from "@/lib/query/chat";
 import { sidebarPanelWidth } from "./sidebarWidths";
+import { useAppearance } from "@/hooks/useAppearance";
 
 export const DESKTOP_SIDEBAR_ID = "desktop-sidebar";
 
 export default function Sidebar() {
   const unreadCount = useUnreadCount();
   const chatUnread = useChatUnread().total;
-  const { isSidebarExpanded, toggleSidebar, sidebarAnimated, userData } = useFormState();
+  const { isSidebarExpanded, toggleSidebar, sidebarAnimated } = useFormState();
+  const { isDark } = useAppearance();
   const motion = sidebarAnimated ? "motion-reduce:transition-none" : "!transition-none";
 
   return (
     <>
       {/* Sidebar for large screens: plain navigation, never a dialog (BUG-04). Only the panel's
-          width animates; its contents are always rendered and the widening edge uncovers them (UX-02). */}
+          width animates; its contents are always rendered and the widening edge uncovers them (UX-02).
+          RD-1 tokens. In light the border keeps today's default colour (#E5E5E5, not --line #E0E0E0)
+          so Classic looks the same; Phase 2 moves it to border-th-line. */}
       <div
         id={DESKTOP_SIDEBAR_ID}
         className={`flex flex-col h-full py-5 px-[10px] rounded-[10px] items-start overflow-hidden border
         transition-[width] duration-150 ease-out ${motion}
-        ${userData?.theme === "dark" ? "bg-foreground-dark" : "bg-foreground-light"} 
-        ${userData?.theme === "dark" ? "text-white" : "text-black"}
-        ${userData?.theme === "dark" ? "border-gray-800" : ""}`
+        bg-th-card text-th-ink ${isDark ? "border-th-line" : ""}`
       }
         style={{ width: `${sidebarPanelWidth(isSidebarExpanded)}px` }}
       >

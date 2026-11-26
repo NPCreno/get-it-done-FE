@@ -2,7 +2,7 @@ import type { TimerType } from "@/lib/timerService";
 
 /**
  * FEAT-10 colour roles for the three faces and minis (boards 17A–C), as literal Tailwind classes so
- * the content scan sees them. Light and dark come from `userData?.theme`, like the rest of the app.
+ * the content scan sees them. Light and dark come from `useAppearance().isDark`, like the rest of the app.
  * Contrast (plan 47b §1a): a primary action is `text-text` on amber (6.73:1), never white on amber;
  * a break action is white on secondary-500 (5.23:1), or foreground-dark on secondary-300 in dark.
  */
