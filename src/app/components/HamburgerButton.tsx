@@ -11,7 +11,7 @@ export default function HamburgerButton() {
   return (
     <button
       id="menu-button"
-      className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md text-primary-default focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2"
+      className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md text-th-acc focus:outline-none focus:ring-2 focus:ring-primary-default focus:ring-offset-2"
       onClick={toggleMobileSidebar}
       aria-label="Open menu"
       aria-expanded={isMobileSidebarOpen}

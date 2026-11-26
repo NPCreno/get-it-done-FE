@@ -1,7 +1,7 @@
 "use client";
 import { useId, useRef, useState } from "react";
 import LoadError from "@/app/components/LoadError";
-import { useFormState } from "@/app/context/FormProvider";
+import { useAppearance } from "@/hooks/useAppearance";
 import { API_TOKEN_RULES } from "@/app/contracts/common";
 import type { ApiToken } from "@/app/contracts/responses";
 import type { ToastController } from "@/hooks/toastController";
@@ -32,8 +32,7 @@ const STATUS_CLASS: Record<ApiToken["status"], string> = {
  * (FEAT-07d), then the token list, create and revoke.
  */
 export default function ApiTokensSection({ toast }: { toast: ToastController }) {
-  const { userData } = useFormState();
-  const dark = userData?.theme === "dark";
+  const { isDark: dark } = useAppearance();
   const query = useApiTokens();
   const state = loadStateOf(query, isEmptyList);
   const revoke = useRevokeApiToken();
@@ -109,7 +108,7 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
         </div>
       )}
 
-      <ConnectedAppsList toast={toast} dark={dark} theme={userData?.theme} />
+      <ConnectedAppsList toast={toast} dark={dark} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col">
@@ -138,7 +137,7 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
           failure={state.failure}
           onRetry={() => void query.refetch()}
           retrying={query.isFetching}
-          theme={userData?.theme}
+          dark={dark}
         />
       ) : state.status === "empty" ? (
         <p className={`font-lato text-sm ${muted}`}>No tokens yet.</p>
@@ -150,7 +149,7 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
               failure={state.refreshFailure}
               onRetry={() => void query.refetch()}
               retrying={query.isFetching}
-              theme={userData?.theme}
+              dark={dark}
               variant="compact"
             />
           )}

@@ -9,6 +9,7 @@ import { pomodoroStyleOf } from '@/lib/pomodoroStyle';
 import { useFormState } from '@/app/context/FormProvider';
 import PomodoroMini from './pomodoro/PomodoroMini';
 import { surface } from './pomodoro/faceClasses';
+import { useAppearance } from "@/hooks/useAppearance";
 
 interface PomodoroButtonProps {
   onOpenChange: (open: boolean) => void;
@@ -22,7 +23,7 @@ interface PomodoroButtonProps {
  */
 export default function PomodoroButton({ onOpenChange }: PomodoroButtonProps) {
   const { userData } = useFormState();
-  const dark = userData?.theme === 'dark';
+  const { isDark: dark } = useAppearance();
   const style = pomodoroStyleOf(userData);
   const { timeLeft, isActive, currentTimer, completedFocusRounds, pause, start, reset, isAtDefaultTime } = useTimer();
 

@@ -89,6 +89,28 @@ const config: Config = {
 			},
 		  },
   		colors: {
+  			/*
+  			 * RD-1 theme tokens (src/styles/theme-tokens.css), set by <html data-theme data-mode>.
+  			 * Additive: the palettes below stay until Phase 2 moves every screen to these.
+  			 * Plain var() values, so opacity modifiers (`bg-th-card/50`) do NOT work on them.
+  			 */
+  			th: {
+  				page: 'var(--page)',
+  				card: 'var(--card)',
+  				line: 'var(--line)',
+  				strong: 'var(--strong)',
+  				ink: 'var(--txt)',
+  				ink2: 'var(--txt2)',
+  				acc: 'var(--acc)',
+  				'acc-t': 'var(--acc-t)',
+  				'acc-sub': 'var(--acc-sub)',
+  				'on-acc': 'var(--on-acc)',
+  				ok: 'var(--ok)',
+  				'on-ok': 'var(--on-ok)',
+  				hi: 'var(--hi)',
+  				'on-hi': 'var(--on-hi)',
+  				focus: 'var(--focus)'
+  			},
   			primary: {
   				'100': '#FEEAC0',
   				'200': '#FED580',
@@ -196,24 +218,22 @@ const config: Config = {
   				'5': 'hsl(var(--chart-5))'
   			}
   		},
+  		// RD-1: self-hosted by next/font (src/app/fonts.ts), as CSS variables on <html>.
   		fontFamily: {
-  			lato: [
-  				'Lato',
-  				'sans-serif'
-  			],
-  			rancho: [
-  				'Rancho',
-  				'cursive'
-  			],
-  			poppins: [
-  				'Poppins',
-  				'sans-serif'
-  			]
+  			lato: ['var(--font-lato)', 'Lato', 'sans-serif'],
+  			rancho: ['var(--font-rancho)', 'Rancho', 'cursive'],
+  			poppins: ['var(--font-poppins)', 'Poppins', 'sans-serif'],
+  			// RD-1 theme tokens (src/styles/theme-tokens.css)
+  			head: 'var(--f-head)',
+  			body: 'var(--f-body)',
   		},
   		boxShadow: {
   			'primary-default': '0px 0px 10px rgba(254, 173, 3, 0.5)'
   		},
   		borderRadius: {
+  			// RD-1 theme tokens
+  			card: 'var(--r-card)',
+  			ctl: 'var(--r-ctl)',
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'

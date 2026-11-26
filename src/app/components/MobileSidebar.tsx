@@ -3,11 +3,13 @@ import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
 import { useUnreadCount } from "@/lib/query/notifications";
 import { useChatUnread } from "@/lib/query/chat";
+import { useAppearance } from "@/hooks/useAppearance";
 
 export default function MobileSidebar() {
   const unreadCount = useUnreadCount();
   const chatUnread = useChatUnread().total;
   const { isMobileSidebarOpen, closeMobileSidebar } = useFormState();
+  const { theme } = useAppearance();
 
   // Close on escape key
   useEffect(() => {
@@ -104,9 +106,13 @@ export default function MobileSidebar() {
       
       {/* Mobile Sidebar: a modal drawer (focus trap, Esc, backdrop). Closed, it is inert, so
           screen readers and Tab never find a hidden dialog. */}
+      {/* RD-1 tokens. The drawer has always been white, also in dark mode; it stays light (its own
+          data-mode scope) so Classic looks the same until Phase 2 decides. */}
       <div
         id="mobile-navigation"
-        className={`mobile-sidebar fixed inset-y-0 left-0 w-64 bg-white z-50 transform transition-transform duration-150 ease-in-out ${
+        data-theme={theme}
+        data-mode="light"
+        className={`mobile-sidebar fixed inset-y-0 left-0 w-64 bg-th-card z-50 transform transition-transform duration-150 ease-in-out ${
           isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         role="dialog"

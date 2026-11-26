@@ -10,7 +10,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/app/components/shadcn/dropdown-menu"
-import { useFormState } from "../context/FormProvider"
+import { useAppearance } from "@/hooks/useAppearance";
 
 interface CustomDropdownMenuProps {
   options: {
@@ -46,7 +46,7 @@ export function CustomDropdownMenu({
   errorId,
   invalid,
 }: CustomDropdownMenuProps) {
-  const { userData } = useFormState();
+  const { isDark } = useAppearance();
   const currentSelectedColor = options.find(option => option.name === selectedOption.name)?.color;
 
   return (
@@ -59,20 +59,20 @@ export function CustomDropdownMenu({
           aria-describedby={errorId}
           aria-invalid={invalid || undefined}
           variant="outline"
-          className={userData?.theme === 'dark' ? 'w-full h-[40px] rounded-[10px] justify-between text-white border border-gray-800' : 'w-full h-[40px] rounded-[10px] justify-between text-text border border-gray-800'}
+          className={isDark ? 'w-full h-[40px] rounded-[10px] justify-between text-white border border-gray-800' : 'w-full h-[40px] rounded-[10px] justify-between text-text border border-gray-800'}
           disabled={disabled}
         >
-          <div className={`flex flex-row items-center justify-between w-full ${userData?.theme === 'dark' ? 'bg-foreground-dark' : 'bg-white'}`}>
+          <div className={`flex flex-row items-center justify-between w-full ${isDark ? 'bg-foreground-dark' : 'bg-white'}`}>
             {selectedOption.name != "" ? (
               <div className="flex flex-row items-center">
                 {currentSelectedColor && 
                 <div className={`w-[10px] h-[10px] rounded-full mr-4`} 
                 style={{backgroundColor: currentSelectedColor}}
                 ></div>} 
-                <span className={`text-sm font-normal font-lato ${userData?.theme === 'dark' ? 'text-white' : 'text-text'}`}>{selectedOption.name}</span>
+                <span className={`text-sm font-normal font-lato ${isDark ? 'text-white' : 'text-text'}`}>{selectedOption.name}</span>
               </div>
             ) : (
-              <span className={`text-sm font-normal font-lato ${userData?.theme === 'dark' ? 'text-white' : 'text-text'}`}>{placeholder}</span>
+              <span className={`text-sm font-normal font-lato ${isDark ? 'text-white' : 'text-text'}`}>{placeholder}</span>
             )}
             <svg width="20" height="10" viewBox="0 0 22 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M1 0.5L10.2683 10.5L21 0.5" stroke="#333333"/>
@@ -81,7 +81,7 @@ export function CustomDropdownMenu({
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className={`min-w-[244px] max-h-[286px] overflow-y-auto absolute ${userData?.theme === 'dark' ? 'bg-foreground-dark border border-gray-800' : 'bg-white'}`} side="bottom" align="start" sideOffset={4}>
+      <DropdownMenuContent className={`min-w-[244px] max-h-[286px] overflow-y-auto absolute ${isDark ? 'bg-foreground-dark border border-gray-800' : 'bg-white'}`} side="bottom" align="start" sideOffset={4}>
         <DropdownMenuRadioGroup
           value={selectedOption.name}
           onValueChange={(value) => {
@@ -98,14 +98,14 @@ export function CustomDropdownMenu({
           {options.map((option, i) => (
             <React.Fragment key={option.name}>
               {option.group && option.group !== options[i - 1]?.group && (
-                <DropdownMenuLabel className={`px-2 pt-2 font-lato text-xs font-bold ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-[#676767]'}`}>
+                <DropdownMenuLabel className={`px-2 pt-2 font-lato text-xs font-bold ${isDark ? 'text-gray-300' : 'text-[#676767]'}`}>
                   {option.group}
                 </DropdownMenuLabel>
               )}
               <DropdownMenuRadioItem 
                 value={option.name} 
-                className={`${userData?.theme === 'dark' ? 'bg-foreground-dark hover:bg-gray-800' : 'bg-white hover:bg-gray-100'}`} 
-                theme={userData?.theme === 'dark' ? 'dark' : 'light'}
+                className={`${isDark ? 'bg-foreground-dark hover:bg-gray-800' : 'bg-white hover:bg-gray-100'}`} 
+                dark={isDark}
               >
                 {option.name != "" ? (
                   <>
@@ -113,7 +113,7 @@ export function CustomDropdownMenu({
                     <div className={`w-[10px] h-[10px] rounded-full mr-4`} 
                     style={{backgroundColor: option.color}}
                     ></div>} 
-                    <span className={`text-sm font-normal font-lato ${userData?.theme === 'dark' ? 'text-white hover:text-white' : 'text-text hover:text-text'}`}>{option.name}</span>
+                    <span className={`text-sm font-normal font-lato ${isDark ? 'text-white hover:text-white' : 'text-text hover:text-text'}`}>{option.name}</span>
                   </>
                 ) : (
                   <>

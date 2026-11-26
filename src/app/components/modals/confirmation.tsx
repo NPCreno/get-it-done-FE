@@ -1,6 +1,6 @@
-import { useFormState } from '@/app/context/FormProvider';
 import React, { useCallback, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/app/components/shadcn/dialog';
+import { useAppearance } from "@/hooks/useAppearance";
 
 interface ConfirmationModalProps {
   onClose: () => void;
@@ -28,7 +28,7 @@ export default function ConfirmationModal({
   container,
 }: ConfirmationModalProps) {
   const [isClosing, setIsClosing] = useState(false);
-  const { userData } = useFormState();
+  const { isDark } = useAppearance();
   const initialFocusRef = useRef<HTMLButtonElement>(null);
 
   // Focus the first non-destructive action so Enter cannot confirm by accident.
@@ -57,7 +57,7 @@ export default function ConfirmationModal({
           e.preventDefault();
           initialFocusRef.current?.focus();
         }}
-        className={`${userData?.theme === 'dark' ? 'bg-foreground-dark border border-gray-800' : 'bg-white'} ${
+        className={`${isDark ? 'bg-foreground-dark border border-gray-800' : 'bg-white'} ${
           fullScreen ? 'w-full h-full' : 'w-auto h-auto rounded-[10px] shadow-2xl transform transition-all duration-100'
         } p-5 flex flex-col gap-5 justify-center ${
           isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
@@ -68,7 +68,7 @@ export default function ConfirmationModal({
         }}
       >
         <div className="flex flex-col gap-[10px]">
-            <DialogTitle className={`flex flex-row justify-center items-center ${userData?.theme === 'dark' ? 'text-white' : 'text-text'} text-3xl font-bold font-lato`}>
+            <DialogTitle className={`flex flex-row justify-center items-center ${isDark ? 'text-white' : 'text-text'} text-3xl font-bold font-lato`}>
               {title}
             </DialogTitle>
             <DialogDescription className="text-[#676767] text-sm font-lato text-center">{description}</DialogDescription>

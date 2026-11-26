@@ -160,13 +160,12 @@ describe("toProfileUpdateRequest", () => {
     password: "",
     enableNotifications: true,
     soundFx: false,
-    theme: "dark",
     ...over,
   });
 
   it("sends names only when they changed; an empty password is not sent", () => {
     const u = toProfileUpdateRequest(values(), original);
-    expect(u).toEqual({ enableNotifications: "true", soundFx: "false", theme: "dark" });
+    expect(u).toEqual({ enableNotifications: "true", soundFx: "false" });
     expect(UpdateUserRequestSchema.safeParse(u).success).toBe(true);
   });
 
@@ -176,8 +175,12 @@ describe("toProfileUpdateRequest", () => {
     expect(UpdateUserRequestSchema.safeParse(u).success).toBe(true);
   });
 
-  it("drops an unknown theme", () => {
-    expect(toProfileUpdateRequest(values({ theme: "neon" }), original).theme).toBeUndefined();
+  it("never sends theme or appTheme: appearance saves on its own (RD-1)", () => {
+    // A stale form value (e.g. from an old object spread) must not reach the request either.
+    const stale = { ...values(), theme: "dark", appTheme: "calm" } as ProfileFormValues;
+    const u = toProfileUpdateRequest(stale, original);
+    expect(u).not.toHaveProperty("theme");
+    expect(u).not.toHaveProperty("appTheme");
   });
 });
 

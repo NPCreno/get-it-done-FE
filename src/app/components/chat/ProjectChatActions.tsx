@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useFormState } from "@/app/context/FormProvider";
+import { useAppearance } from "@/hooks/useAppearance";
 import type { ToastController } from "@/hooks/toastController";
 import { useChatUnread } from "@/lib/query/chat";
 import ChatPanel from "./ChatPanel";
@@ -14,8 +14,7 @@ interface ProjectChatActionsProps {
 
 /** "Members" and "Chat" for the owner's project view. Each opens its own dialog on top. */
 export default function ProjectChatActions({ project, toast }: ProjectChatActionsProps) {
-  const { userData } = useFormState();
-  const dark = userData?.theme === "dark";
+  const { isDark: dark } = useAppearance();
   const [open, setOpen] = useState<"members" | "chat" | null>(null);
   const unread = useChatUnread().countFor(project.project_id);
   if (!project.project_id) return null;

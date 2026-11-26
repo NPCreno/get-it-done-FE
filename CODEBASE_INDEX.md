@@ -3,7 +3,8 @@
 One line per significant source file. Paths are relative to the repo root.
 
 ## Pages (`src/app/`)
-- `src/app/layout.tsx` — root layout, wraps children in `FormProvider`
+- `src/app/layout.tsx` — root layout (async server component): reads the `gid_appearance` cookie and renders `<html data-theme data-mode data-pref>` plus the `next/font` variables and the inline no-flash script; wraps children in `FormProvider` → `AppearanceSync` → `QueryProvider` (RD-1)
+- `src/app/fonts.ts` — `next/font/google`: Lato (300–900) and Rancho preloaded; Poppins, Instrument Serif and Manrope as variables, not preloaded (RD-1)
 - `src/app/page.tsx` — landing page
 - `src/app/(auth)/login/page.tsx` — login page, hosts `LoginForm`
 - `src/app/(auth)/signup/page.tsx` — signup page, hosts `SignupForm`
@@ -47,7 +48,8 @@ One line per significant source file. Paths are relative to the repo root.
 - `client.ts` — `createQueryClient()` defaults, `clearQueryCache()` (called on logout/expiry); `../../app/providers/QueryProvider.tsx` mounts it
 - `keys.ts` — `qk` key factories; `specs.ts` — key + request built from the same params; `window.ts` — 5-minute task window
 - `queries.ts` — `useProfile`, `useProjects`, `useProject`, `useUpcomingTasks`, `useProjectTasks`, `useDashboardSummary`, `useCompletionTrend`, `useTaskDistribution`, `useCalendarHeatmap`, `useStreak`, `useSessionUserId`, `useTaskWindow`
-- `mutations.ts` — task, subtask, project and profile mutations; optimistic `setTaskStatusOptions` / `setSubTaskStatusOptions`; `useSetPomodoroStyle` (FEAT-10)
+- `mutations.ts` — task, subtask, project and profile mutations; optimistic `setTaskStatusOptions` / `setSubTaskStatusOptions`; `useSetPomodoroStyle` (FEAT-10); `useSetAppearance` (RD-1)
+- `appearance.ts` — RD-1 `setAppearanceOptions` (optimistic, one scope, sends only what changed: `theme` = mode, `appTheme` = theme), `createAppearanceSaveTracker` (compare-and-swap rollback), `appearanceUpdateBody`; tests in `__tests__/appearance.test.ts`
 - `pomodoroStyle.ts` — FEAT-10 `setPomodoroStyleOptions` (optimistic, one scope) and the pure `createStyleSaveTracker` (compare-and-swap rollback); tests in `__tests__/pomodoro-style.test.ts`
 - `loadState.ts` — `loadStateOf()` (loading / error / empty / ready); `emptiness.ts` — per-resource empty rules; `keys.ts` also has `resourceOf()` (log labels)
 - `../../app/components/LoadError.tsx` — the shared retryable error block and `useRecoveryFocus`; shows a text-free skeleton instead while the BE wakes (UX-03)
@@ -105,6 +107,7 @@ Inputs and small UI
 - `loader.tsx` — `LoadingPage` (UX-04): the logo tile with a turning arc and the wordmark, an overlay for a first load (`variant="page"`) or the tile alone (`variant="inline"`); `loaderClasses.ts` — its class strings and `PAGE_IN_CLASS` (tested in `__tests__/loader.test.ts` with the Tailwind motion tokens)
 - `ToastHost.tsx` — renders a page's toast from its controller
 - `PomodoroButton.tsx` — opens the Pomodoro dialog; shows the style's mini (`pomodoro/PomodoroMini`), play/pause and reset beside it
+- `src/app/components/appearance/AppearanceCard.tsx` — RD-1 Profile → Appearance (board 20): Theme radio cards with live previews in each theme's own tokens (Calm and Field notes "Coming soon"), the Mode radio group (Light, Dark, System), the status line, and the Pomodoro picker
 - `src/app/components/pomodoro/` (FEAT-10) — `usePomodoroController.ts` (all timer behaviour), `DialTimer.tsx`, `TicketTimer.tsx`, `HorizonTimer.tsx` (the three faces), `ModeRadios.tsx` (native radio group for the timer type), `PomodoroMini.tsx` (the button's mini), `PomodoroStylePicker.tsx` (Profile → Appearance), `geometry.ts` (dial wedge and ticks), `faceCopy.ts` (lines, fractions, next hint, captions), `faceClasses.ts` (colour roles); tests in `__tests__/faces.test.ts`
 - `ChartDataTable.tsx` — screen-reader-only table (caption, columns, rows) that accompanies each chart
 - `chartRows.ts` — pure row builders (`trendRows`, `distributionRows`, `heatmapRows`) with vitest cases in `components/__tests__/chartRows.test.ts`
@@ -125,6 +128,10 @@ shadcn (`shadcn/`)
 - `src/hooks/toastController.ts` (framework-independent, owns timers), `useToastController.ts` (one per page, disposed on unmount) — toast state; tests in `src/hooks/__tests__/`
 - `src/lib/timerService.ts` — pomodoro timer state, persisted in `localStorage` key `pomodoroTimerState`; `completedFocusRounds` (0–4, FEAT-10; tests in `__tests__/timerRounds.test.ts`)
 - `src/lib/pomodoroStyle.ts` — `pomodoroStyleOf(user)` (dial by default), style names and hints, the picker status copy (FEAT-10)
+- `src/lib/appearance.ts` — RD-1, pure: `AppTheme`/`Mode`, `appearanceOf(user)`, `resolveMode`, `ENABLED_THEMES` (`classic` only until Phase 3), `currentAppearance` (the one resolution rule: /demo, user, cookie, defaults), the `gid_appearance` cookie (`cookieValue`, `parseCookie`), `htmlAttributes`, the inline `noFlash` script (`NO_FLASH_SCRIPT`), the Appearance card's status copy; tests in `__tests__/appearance.test.ts` and `__tests__/noThemeChecks.test.ts` (no hand-written dark checks outside it)
+- `src/hooks/useAppearance.ts` — `useAppearance()` → `{ theme, mode, resolvedMode, isDark }`, the only source of theme and mode for components; `AppearanceContext` (cookie + device setting)
+- `src/app/components/AppearanceSync.tsx` — RD-1 provider in the root layout: the device setting (`useSyncExternalStore` on `prefers-color-scheme`), keeps `<html>` attributes and the cookie in step
+- `src/styles/theme-tokens.css` — RD-1 theme tokens, 3 themes × light/dark (canvas boards 19–20), imported by `globals.css`; Tailwind `th-*` colours, `font-head`/`font-body`, `rounded-card`/`rounded-ctl` read them; contrast test in `src/styles/__tests__/themeContrast.test.ts`
 - `src/lib/timerPhase.ts` — `timerPhase()` (`idle | running | paused`) and `timerCopy()`: every Pomodoro label comes from the phase
 - `src/lib/utils.ts` — shadcn class-name helper
 - `src/lib/focusFallback.ts` — `focusFallback(ref)`: after a delete removes the focused opener, moves focus to a page heading

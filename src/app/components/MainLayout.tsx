@@ -11,6 +11,8 @@ import { useNotificationStream } from "@/lib/useNotificationStream";
 import { sidebarWrapperWidth } from "./sidebarWidths";
 import { MAIN_LAYOUT_ROOT_CLASS, MAIN_LAYOUT_SCROLL_CLASS } from "./mainLayoutClasses";
 import ServerWakeBanner from "./ServerWakeBanner";
+import { useAppearance, useAppearanceCookie } from "@/hooks/useAppearance";
+import { withCookieAppearance } from "@/lib/appearance";
 
 export default function MainLayout({
   children,
@@ -23,8 +25,9 @@ export default function MainLayout({
     isMobileSidebarOpen, 
     closeMobileSidebar, 
     setUserData, 
-    userData
   } = useFormState();
+  const { isDark } = useAppearance();
+  const appearanceCookie = useAppearanceCookie();
   const [isMobile, setIsMobile] = useState(false);
 
   // Check if the screen is mobile size on mount and on resize with debounce
@@ -70,7 +73,10 @@ export default function MainLayout({
   useEffect(() => {
     const token = getAccessToken();
     const jwtUser = token ? parseJwt(token)?.user : null;
-    if (jwtUser && jwtUser.user_id) setUserData((prev) => prev ?? jwtUser);
+    // RD-1: the token's copy of the user can predate the last appearance change; the cookie is current.
+    if (jwtUser && jwtUser.user_id) setUserData((prev) => prev ?? withCookieAppearance(jwtUser, appearanceCookie));
+    // Seeds once per mount: a later cookie change comes with the fresh profile anyway.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setUserData]);
   useEffect(() => {
     if (profile.data) {
@@ -80,7 +86,8 @@ export default function MainLayout({
   }, [profile.data, setUserData]);
 
   return (
-    <div className={`${MAIN_LAYOUT_ROOT_CLASS} ${userData?.theme === "dark" ? "bg-background-dark" : "bg-background-light"}`}>
+    // RD-1 shell on tokens: the background comes from <html data-mode>, so it is right on the first frame.
+    <div className={`${MAIN_LAYOUT_ROOT_CLASS} bg-th-page`}>
       {/* Desktop Sidebar - Hidden on mobile. Its toggle (not hover) sets the width; the content
           moves once, together with the panel (UX-02). */}
       <div 
@@ -111,7 +118,7 @@ export default function MainLayout({
         <div className={MAIN_LAYOUT_SCROLL_CLASS}>
           <div className="p-4 md:p-6 flex-1">
             {/* UX-03: in the flow above the page, inside the scroll box, so the sidebar never moves. */}
-            <ServerWakeBanner dark={userData?.theme === "dark"} />
+            <ServerWakeBanner dark={isDark} />
             {children}
           </div>
         </div>

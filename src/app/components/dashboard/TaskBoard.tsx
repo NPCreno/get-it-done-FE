@@ -7,7 +7,7 @@ import type { DashboardData } from "./useDashboardData";
 
 interface TaskBoardProps {
   data: Pick<DashboardData, "tasks" | "upcoming" | "upcomingState">;
-  theme?: string;
+  dark?: boolean;
   /** Where focus goes when a delete removes the button that opened its dialog. */
   headingRef: RefObject<HTMLHeadingElement | null>;
   onNewTask: () => void;
@@ -20,7 +20,7 @@ interface TaskBoardProps {
 
 export default function TaskBoard({
   data,
-  theme,
+  dark,
   headingRef,
   onNewTask,
   onEditTask,
@@ -46,21 +46,21 @@ export default function TaskBoard({
 
   return (
     <div className={`w-full h-full p-6 flex flex-col rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 fade-in-delay-2 flex-grow border
-      ${theme === "dark" ? "bg-foreground-dark" : "bg-white"}
-      ${theme === "dark" ? "border-gray-800" : ""}
+      ${dark ? "bg-foreground-dark" : "bg-white"}
+      ${dark ? "border-gray-800" : ""}
        `}>
       {/* Header - Fixed */}
       <div className={`flex flex-col sm:flex-row justify-between gap-4
-      ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}
+      ${dark ? 'border-gray-800' : 'border-gray-100'}
       `}>
         <div>
           <h1 ref={headingRef} tabIndex={-1} className={`outline-none text-xl font-lato font-bold text-start ${
-            theme === 'dark' ? 'text-white' : 'text-gray-800'
+            dark ? 'text-white' : 'text-gray-800'
           }`}>
             Recent Tasks
           </h1>
           <p className={`text-sm mt-1 text-start ${
-            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+            dark ? 'text-gray-400' : 'text-gray-500'
           }`}>
             Your most recent activities and tasks
           </p>
@@ -69,10 +69,10 @@ export default function TaskBoard({
           className={`relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white
           shadow-md hover:shadow-lg transform transition-all duration-300 hover:translate-y-[-1px]
           active:translate-y-0 active:scale-95 overflow-hidden group
-          ${theme === 'dark' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:shadow-amber-500/20' : 'bg-gradient-to-r from-primary-default to-primary-200 hover:shadow-primary-default/20'}
+          ${dark ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:shadow-amber-500/20' : 'bg-gradient-to-r from-primary-default to-primary-200 hover:shadow-primary-default/20'}
           before:absolute before:inset-0
           ${
-            theme === 'dark'
+            dark
               ? 'before:bg-gradient-to-r before:from-amber-600 before:to-yellow-400'
               : 'before:bg-gradient-to-r before:from-primary-200 before:to-primary-default'
           }
@@ -112,7 +112,7 @@ export default function TaskBoard({
 
           {/* Subtle shine effect on hover */}
           <span className={`absolute inset-0 ${
-            theme === 'dark' ? 'bg-amber-400/5' : 'bg-white/5'
+            dark ? 'bg-amber-400/5' : 'bg-white/5'
           } opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></span>
         </button>
       </div>
@@ -128,7 +128,7 @@ export default function TaskBoard({
                 failure={upcomingState.refreshFailure}
                 onRetry={() => void upcoming.refetch()}
                 retrying={upcoming.isFetching}
-                theme={theme}
+                dark={dark}
                 variant="compact"
               />
             </div>
@@ -139,11 +139,11 @@ export default function TaskBoard({
               failure={upcomingState.failure}
               onRetry={() => void upcoming.refetch()}
               retrying={upcoming.isFetching}
-              theme={theme}
+              dark={dark}
             />
           ) : upcomingState.status === "empty" ? (
             <div className="flex flex-col items-center justify-center text-center gap-3">
-              <h3 className={`text-xl font-semibold mb-1 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>Nothing due right now</h3>
+              <h3 className={`text-xl font-semibold mb-1 ${dark ? "text-white" : "text-gray-800"}`}>Nothing due right now</h3>
               <p className="text-gray-500 max-w-md">No tasks are overdue or due in the next 24 hours.</p>
               <button
                 type="button"
@@ -179,7 +179,7 @@ export default function TaskBoard({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className={`text-xl font-semibold text-gray-800 mb-2 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>All caught up!</h3>
+              <h3 className={`text-xl font-semibold text-gray-800 mb-2 ${dark ? "text-white" : "text-gray-800"}`}>All caught up!</h3>
               <p className="text-gray-500 mb-6 max-w-md">You&apos;ve completed all your tasks. Time to celebrate or add a new challenge!</p>
             </div>
           )}

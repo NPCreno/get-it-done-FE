@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 
 interface DashboardSearchProps {
-  theme?: string;
+  dark?: boolean;
 }
 
 /**
  * Expandable task search box. It owns its own state so typing re-renders only this
  * component, not the whole dashboard page. (The box does not filter anything yet.)
  */
-export default function DashboardSearch({ theme }: DashboardSearchProps) {
+export default function DashboardSearch({ dark }: DashboardSearchProps) {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   // Focus the search box when the user expands it (instead of autoFocus).
@@ -23,15 +23,15 @@ export default function DashboardSearch({ theme }: DashboardSearchProps) {
     <div className="relative flex justify-end">
       <div
         className={`relative flex items-center ${
-          theme === 'dark' 
+          dark 
             ? 'bg-foreground-dark border border-gray-800' 
             : 'bg-white'
         } rounded-xl overflow-hidden h-[44px] transition-all duration-300 ease-out ${
           isSearchExpanded
-            ? theme === 'dark'
+            ? dark
               ? "shadow-lg ring-1 ring-gray-800"
               : "shadow-md ring-1 ring-gray-200"
-            : theme === 'dark'
+            : dark
               ? "w-[44px] hover:bg-gray-900/80"
               : "w-[44px] hover:bg-gray-50"
         }`}
@@ -47,7 +47,7 @@ export default function DashboardSearch({ theme }: DashboardSearchProps) {
           type="text"
           placeholder={isSearchExpanded ? "Search tasks..." : ""}
           className={`bg-transparent border-0 focus:ring-0 focus:outline-none h-full pl-4 pr-10 ${
-            theme === 'dark' 
+            dark 
               ? 'text-white placeholder-gray-500' 
               : 'text-gray-700 placeholder-gray-400'
           } transition-all duration-200 ${
@@ -79,10 +79,10 @@ export default function DashboardSearch({ theme }: DashboardSearchProps) {
         <button
           className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all duration-200 ${
             isSearchExpanded && searchQuery
-              ? theme === 'dark'
+              ? dark
                 ? "text-gray-400 hover:bg-gray-800"
                 : "text-gray-500 hover:bg-gray-100"
-              : theme === 'dark'
+              : dark
                 ? "text-gray-500 hover:text-gray-300 right-[4px]"
                 : "text-gray-400 hover:text-gray-600 right-[4px]"
           }`}

@@ -115,6 +115,8 @@ export const UserSchema = z.object({
   soundFx: OptionalText,
   // FEAT-10: optional too, so a user row from before 47a (no such key) still parses.
   pomodoroStyle: OptionalText.optional(),
+  // RD-1: the theme family (null = classic). Optional too, for a row from before 51a.
+  appTheme: OptionalText.optional(),
   role: z.string().nullable(),
   status: z.string().nullable(),
   createdAt: ApiDate,

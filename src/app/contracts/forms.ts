@@ -47,5 +47,4 @@ export interface ProfileFormValues {
   password: string;
   enableNotifications: boolean;
   soundFx: boolean;
-  theme?: string;
 }

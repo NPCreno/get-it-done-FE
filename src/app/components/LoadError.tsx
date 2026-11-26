@@ -11,7 +11,7 @@ interface LoadErrorProps {
   failure: ApiFailure;
   onRetry: () => void;
   retrying: boolean;
-  theme?: string | null;
+  dark?: boolean;
   variant?: "full" | "compact";
 }
 
@@ -20,10 +20,9 @@ interface LoadErrorProps {
  * sibling, so it is not re-announced. aria-disabled (not disabled) keeps the
  * button focusable while retrying so focus is not lost to <body>.
  */
-export default function LoadError({ widget, failure, onRetry, retrying, theme, variant = "full" }: LoadErrorProps) {
+export default function LoadError({ widget, failure, onRetry, retrying, dark = false, variant = "full" }: LoadErrorProps) {
   const msgId = useId();
   const wake = useServerWake();
-  const dark = theme === "dark";
   const compact = variant === "compact";
 
   // UX-03: while the server wakes (or refetches right after it woke), a network/timeout failure

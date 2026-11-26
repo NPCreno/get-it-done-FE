@@ -10,6 +10,7 @@ export type DataEvent =
   | "project-deleted"
   | "profile"
   | "pomodoro-style" // FEAT-10: the Profile picker's own save
+  | "appearance" // RD-1: the Appearance card's own save (theme and mode)
   | "notifications" // read state changed, or cleared
   | "api-tokens" // created or revoked (FEAT-07)
   | "oauth-grants"; // an app connected (consent allowed) or disconnected (FEAT-07d)
@@ -27,6 +28,7 @@ export function invalidationsFor(event: DataEvent, userId: string): QueryKey[] {
       return [qk.projects(userId), qk.tasks(userId), qk.analytics(userId)];
     case "profile":
     case "pomodoro-style":
+    case "appearance":
       return [qk.profile(userId)];
     case "notifications":
       return [qk.notifications(userId)];

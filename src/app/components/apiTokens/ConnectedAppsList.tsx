@@ -14,14 +14,13 @@ import { NO_CONNECTED_APPS_COPY, tokenDate } from "./tokenCopy";
 interface ConnectedAppsListProps {
   toast: ToastController;
   dark: boolean;
-  theme?: string;
 }
 
 /**
  * FEAT-07d "Connected apps": apps the user approved on the consent page (claude.ai and other MCP
  * clients). Disconnect revokes the grant and every token issued under it.
  */
-export default function ConnectedAppsList({ toast, dark, theme }: ConnectedAppsListProps) {
+export default function ConnectedAppsList({ toast, dark }: ConnectedAppsListProps) {
   const query = useOAuthGrants();
   const state = loadStateOf(query, isEmptyList);
   const revoke = useRevokeOAuthGrant();
@@ -57,7 +56,7 @@ export default function ConnectedAppsList({ toast, dark, theme }: ConnectedAppsL
           failure={state.failure}
           onRetry={() => void query.refetch()}
           retrying={query.isFetching}
-          theme={theme}
+          dark={dark}
         />
       ) : state.status === "empty" ? (
         <p className={`font-lato text-sm ${muted}`}>{NO_CONNECTED_APPS_COPY}</p>
@@ -69,7 +68,7 @@ export default function ConnectedAppsList({ toast, dark, theme }: ConnectedAppsL
               failure={state.refreshFailure}
               onRetry={() => void query.refetch()}
               retrying={query.isFetching}
-              theme={theme}
+              dark={dark}
               variant="compact"
             />
           )}

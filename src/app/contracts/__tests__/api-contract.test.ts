@@ -39,6 +39,7 @@ import {
   TASK_STATUSES,
   THEMES,
   WEEKDAYS,
+  APP_THEMES,
 } from "../enums";
 
 describe("FE literals match the vendored BE contract (src/app/contracts/api-contract.json)", () => {
@@ -49,6 +50,7 @@ describe("FE literals match the vendored BE contract (src/app/contracts/api-cont
     expect([...REPEAT_EVERY]).toEqual(contract.repeatEvery);
     expect([...WEEKDAYS]).toEqual(contract.weekdays);
     expect([...THEMES]).toEqual(contract.themes);
+    expect([...APP_THEMES]).toEqual(contract.appThemes);
     expect([...POMODORO_STYLES]).toEqual(contract.pomodoroStyles);
     expect([...BOOLEAN_STRINGS]).toEqual(contract.booleanStrings);
     expect([...NOTIFICATION_TYPES]).toEqual(contract.notificationTypes);

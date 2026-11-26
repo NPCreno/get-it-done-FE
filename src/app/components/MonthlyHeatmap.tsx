@@ -24,7 +24,7 @@ interface HeatmapValue {
 interface MonthlyHeatmapProps {
   values: HeatmapValue[];
   className?: string;
-  theme?: string;
+  dark?: boolean;
   /** Replaces the day grid (loading or error). The month navigation above it stays usable. */
   statusSlot?: React.ReactNode;
 }
@@ -32,7 +32,7 @@ interface MonthlyHeatmapProps {
 export default function MonthlyHeatmap({ 
   values = [], 
   className = '',
-  theme = "light",
+  dark = false,
   statusSlot,
 }: MonthlyHeatmapProps) {
   const { calendarMonthYear, setCalendarMonthYear } = useFormState();
@@ -94,7 +94,7 @@ export default function MonthlyHeatmap({
     let classes = 'w-6 h-6 rounded-sm flex items-center justify-center text-xs';
     
     if (!isSameMonth(day, monthStart)) {
-      return classes + ` ${theme === "dark" ? "bg-foreground-dark" : "bg-gray-50"} text-gray-600`;
+      return classes + ` ${dark ? "bg-foreground-dark" : "bg-gray-50"} text-gray-600`;
     }
     
     if (isToday(day)) {
@@ -102,13 +102,13 @@ export default function MonthlyHeatmap({
     }
     
     if (count > 0) {
-      if (count <= 1) classes += ` ${theme === "dark" ? "bg-success-dark-100 text-white" : "bg-success-100 text-black"}`;
-      else if (count <= 2) classes += ` ${theme === "dark" ? "bg-success-dark-200 text-white" : "bg-success-200 text-black"}`;
-      else if (count <= 4) classes += ` ${theme === "dark" ? "bg-success-dark-300 text-white" : "bg-success-300 text-black"}`;
-      else if (count <= 6) classes += ` ${theme === "dark" ? "bg-success-dark-600 text-white" : "bg-success-600 text-black"}`;
-      else classes += ` ${theme === "dark" ? "bg-success-dark-700 text-white" : "bg-success-700 text-black"}`;
+      if (count <= 1) classes += ` ${dark ? "bg-success-dark-100 text-white" : "bg-success-100 text-black"}`;
+      else if (count <= 2) classes += ` ${dark ? "bg-success-dark-200 text-white" : "bg-success-200 text-black"}`;
+      else if (count <= 4) classes += ` ${dark ? "bg-success-dark-300 text-white" : "bg-success-300 text-black"}`;
+      else if (count <= 6) classes += ` ${dark ? "bg-success-dark-600 text-white" : "bg-success-600 text-black"}`;
+      else classes += ` ${dark ? "bg-success-dark-700 text-white" : "bg-success-700 text-black"}`;
     } else {
-      classes += ` ${theme === "dark" ? "bg-gray-dark-50" : "bg-gray-50"} text-gray-200`;
+      classes += ` ${dark ? "bg-gray-dark-50" : "bg-gray-50"} text-gray-200`;
     }
     
     return classes;
@@ -161,17 +161,17 @@ export default function MonthlyHeatmap({
         <div className="flex w-full items-center justify-center">
           <button 
             onClick={handlePrevMonth}
-            className={`p-1 hover:bg-gray-100 rounded ${theme === "dark" ? "text-white hover:text-black" : "text-black hover:text-white"}`}
+            className={`p-1 hover:bg-gray-100 rounded ${dark ? "text-white hover:text-black" : "text-black hover:text-white"}`}
             aria-label="Previous month"
           >
             <ChevronLeft className={`w-4 h-4 `} />
           </button>
-          <span className={`text-sm mx-2 w-32 text-center ${theme === "dark" ? "text-white" : "text-black"}`}>
+          <span className={`text-sm mx-2 w-32 text-center ${dark ? "text-white" : "text-black"}`}>
             {format(currentMonth, 'MMM yyyy')}
           </span>
           <button 
             onClick={handleNextMonth}
-            className={`p-1 hover:bg-gray-100 rounded ${theme === "dark" ? "text-white hover:text-black" : "text-black hover:text-white"}`}
+            className={`p-1 hover:bg-gray-100 rounded ${dark ? "text-white hover:text-black" : "text-black hover:text-white"}`}
             aria-label="Next month"
           >
             <ChevronRight className="w-4 h-4" />
@@ -201,11 +201,11 @@ export default function MonthlyHeatmap({
         <div className="flex items-center">
           <span className="mr-2">Less</span>
           <div className="flex space-x-1">
-            <div className={`w-3 h-3 ${theme === "dark" ? "bg-success-dark-100" : "bg-success-100"} rounded-sm`}></div>
-            <div className={`w-3 h-3 ${theme === "dark" ? "bg-success-dark-200" : "bg-success-200"} rounded-sm`}></div>
-            <div className={`w-3 h-3 ${theme === "dark" ? "bg-success-dark-300" : "bg-success-300"} rounded-sm`}></div>
-            <div className={`w-3 h-3 ${theme === "dark" ? "bg-success-dark-600" : "bg-success-600"} rounded-sm`}></div>
-            <div className={`w-3 h-3 ${theme === "dark" ? "bg-success-dark-800" : "bg-success-800"} rounded-sm`}></div>
+            <div className={`w-3 h-3 ${dark ? "bg-success-dark-100" : "bg-success-100"} rounded-sm`}></div>
+            <div className={`w-3 h-3 ${dark ? "bg-success-dark-200" : "bg-success-200"} rounded-sm`}></div>
+            <div className={`w-3 h-3 ${dark ? "bg-success-dark-300" : "bg-success-300"} rounded-sm`}></div>
+            <div className={`w-3 h-3 ${dark ? "bg-success-dark-600" : "bg-success-600"} rounded-sm`}></div>
+            <div className={`w-3 h-3 ${dark ? "bg-success-dark-800" : "bg-success-800"} rounded-sm`}></div>
           </div>
           <span className="ml-2">More</span>
         </div>

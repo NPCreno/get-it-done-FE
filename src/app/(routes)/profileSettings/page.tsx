@@ -15,8 +15,9 @@ import LoadingPage from "@/app/components/loader";
 import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
 import InputBox from "@/app/components/inputBox";
 import { useFormState } from "@/app/context/FormProvider";
+import { useAppearance } from "@/hooks/useAppearance";
 import ApiTokensSection from "@/app/components/apiTokens/ApiTokensSection";
-import PomodoroStylePicker from "@/app/components/pomodoro/PomodoroStylePicker";
+import AppearanceCard from "@/app/components/appearance/AppearanceCard";
 import ToastHost from "@/app/components/ToastHost";
 import { useToastController } from "@/hooks/useToastController";
 import { useFirstLoad, usePageIn, usePresence } from "@/hooks/usePresence";
@@ -24,13 +25,13 @@ interface profileSettingsFormValues {
   fullname: string;
   username: string;
   password: string;
-  theme: string;
   enableNotifications: boolean;
   soundFx: boolean;
 }
 
 export default function ProfileSettingsPage() {
   const { userData } = useFormState();
+  const { isDark } = useAppearance();
   const updateProfile = useUpdateProfile();
   // FEAT-07: the tokens section reports through the shared controller; the form keeps its own toast for now.
   const tokensToast = useToastController();
@@ -62,7 +63,6 @@ export default function ProfileSettingsPage() {
       fullname: userData ? userData.fullname : "",
       username: userData ? userData.username : "",
       password: "",
-      theme: userData?.theme ?? "light",
       enableNotifications: userData ? userData.enableNotifications === "true" : false,
       soundFx: userData ? userData.soundFx === "true" : false,
     },
@@ -189,7 +189,7 @@ export default function ProfileSettingsPage() {
                 <div className="w-1 h-8 bg-primary-default rounded-full"></div>
                 <div>
                   <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
-                        userData?.theme === "dark" 
+                        isDark 
                           ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300" 
                           : "bg-gradient-to-r from-gray-800 to-gray-600"
                   }`}>
@@ -212,7 +212,7 @@ export default function ProfileSettingsPage() {
             {/* left side */}
             <div className="flex flex-col gap-5 w-full md:min-w-[400px] lg:min-w-[700px] h-full">
               {/* Profile Information */}
-              <div className={`flex flex-col rounded-[10px] ${userData?.theme === "dark" ? "bg-foreground-dark  border border-gray-800" : "bg-white"} p-5`}>
+              <div className={`flex flex-col rounded-[10px] ${isDark ? "bg-foreground-dark  border border-gray-800" : "bg-white"} p-5`}>
                 {/* profile information header */}
                 <div className="flex flex-row justify-between">
                   <div className="flex flex-col">
@@ -237,7 +237,7 @@ export default function ProfileSettingsPage() {
                         Profile Information
                       </p>
                     </div>
-                    <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
+                    <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${isDark ? "text-white" : "text-text"}`}>
                       Update your personal information
                     </p>
                   </div>
@@ -315,7 +315,7 @@ export default function ProfileSettingsPage() {
               </div>
 
               {/* General Settings*/}
-              <div className={`flex flex-col rounded-[10px] ${userData?.theme === "dark" ? "bg-foreground-dark  border border-gray-800" : "bg-white"} p-5 gap-[10px]`}>
+              <div className={`flex flex-col rounded-[10px] ${isDark ? "bg-foreground-dark  border border-gray-800" : "bg-white"} p-5 gap-[10px]`}>
                 {/* profile information header */}
                 <div className="flex flex-row justify-between">
                   <div className="flex flex-col">
@@ -340,7 +340,7 @@ export default function ProfileSettingsPage() {
                         Notifications
                       </p>
                     </div>
-                    <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
+                    <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${isDark ? "text-white" : "text-text"}`}>
                       Configure notification preferences
                     </p>
                   </div>
@@ -353,7 +353,7 @@ export default function ProfileSettingsPage() {
                       <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                         Enable notifications
                       </p>
-                      <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
+                      <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${isDark ? "text-white" : "text-text"}`}>
                         Recieve notifications for tasks and reminders
                       </p>
                     </div>
@@ -365,8 +365,8 @@ export default function ProfileSettingsPage() {
                         onChange={setFieldValue}
                         onLabel="Enabled"
                         offLabel="Disabled"
-                        className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
-                        theme={userData?.theme}
+                        className={`fade-in-delay-1 ${isDark ? "text-white" : "text-text"}`}
+                        dark={isDark}
                       />
                     </div>
                   </div>
@@ -377,7 +377,7 @@ export default function ProfileSettingsPage() {
                       <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
                         Sound Effects
                       </p>
-                      <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
+                      <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${isDark ? "text-white" : "text-text"}`}>
                         Play sound when completing tasks
                       </p>
                     </div>
@@ -389,8 +389,8 @@ export default function ProfileSettingsPage() {
                         onChange={setFieldValue}
                         onLabel="Enabled"
                         offLabel="Disabled"
-                        className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
-                        theme={userData?.theme}
+                        className={`fade-in-delay-1 ${isDark ? "text-white" : "text-text"}`}
+                        dark={isDark}
                       />
                     </div>
                   </div>
@@ -400,53 +400,8 @@ export default function ProfileSettingsPage() {
 
             {/* right side */}
             <div className="flex flex-col gap-5 w-full md:w-[350px] lg:w-[350px] fade-in-delay-1-2">
-              <div className={`flex flex-col gap-5 p-5 rounded-[10px] ${userData?.theme === "dark" ? "bg-foreground-dark border border-gray-800" : "bg-white"}`}>
-                {/* Appearance header */}
-                <div className="flex-flex-col">
-                  <p className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
-                    Appearance
-                  </p>
-                  <p className={`font-lato text-[13px] text-text fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
-                    Customize how Task Tracker looks
-                  </p>
-                </div>
-                <div className={`flex flex-row justify-between pb-4 border-b ${userData?.theme === "dark" ? "border-gray-800" : "border-[#E0E0E0]"}`}>
-                  <div className="flex flex-row gap-5">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M12 2V4M12 20V22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M2 12H4M20 12H22M6.34 17.66L4.93 19.07M19.07 4.93L17.66 6.34M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z"
-                        stroke={`${userData?.theme === "dark" ? "white" : "black"}`}
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-
-                    <p className={`font-lato text-base font-bold fade-in-delay-1 select-none ${userData?.theme === "dark" ? "text-white" : "text-text"}`}>
-                      Dark Mode
-                    </p>
-                  </div>
-                  <ToggleSwitch
-                    name="theme"
-                    value={values.theme === "dark"}
-                    onChange={(name, value) =>
-                      setFieldValue(name, value ? "dark" : "light")
-                    }
-                    onLabel="Dark"
-                    offLabel="Light"
-                    className={`fade-in-delay-1 ${userData?.theme === "dark" ? "text-white" : "text-text"}`}
-                    theme={userData?.theme}
-                  />
-                </div>
-                {/* FEAT-10: saves on change, apart from this form (never dirties it, never waits for Save). */}
-                <PomodoroStylePicker dark={userData?.theme === "dark"} />
-              </div>
+              {/* RD-1 Appearance (board 20): theme, mode and the Pomodoro timer. Saves on change, apart from this form. */}
+              <AppearanceCard />
 
               <button
                 type="submit"
@@ -509,7 +464,7 @@ export default function ProfileSettingsPage() {
       </div>
 
       {/* After the page, outside its root (see DashboardView). */}
-      {loader.mounted && <LoadingPage dark={userData?.theme === "dark"} leaving={loader.leaving} />}
+      {loader.mounted && <LoadingPage dark={isDark} leaving={loader.leaving} />}
 
       {isLogoutModalOpen && (
        <ConfirmationModal

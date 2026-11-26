@@ -4,7 +4,6 @@ import { isUserFacing } from "@/lib/apiClient";
 import { focusFallback } from "@/lib/focusFallback";
 import { useCreateSubTask, useDeleteSubTask, useSetSubTaskStatus, useSetTaskStatus } from "@/lib/query/mutations";
 import { failureOf } from "@/lib/query/unwrap";
-import { useFormState } from "../context/FormProvider";
 import { ITask } from "../interface/ITask";
 import { ISubTask } from '../interface/ISubTask';
 import { toCreateSubTaskRequest } from '../contracts/mappers';
@@ -14,6 +13,7 @@ import { ISubTaskFormValues } from '../interface/forms/ISubTaskFormValues';
 import InputBox from './inputBox';
 import AssigneeChip from './tasks/AssigneeChip';
 import { canDeleteTask } from './tasks/assignee';
+import { useAppearance } from "@/hooks/useAppearance";
 
 interface TaskItemProps {
   task: ITask;
@@ -38,7 +38,7 @@ export function TaskItem({
   showSubtasks = false,
   onToggleSubtasks
 }: TaskItemProps) {
-  const { userData } = useFormState();
+  const { isDark } = useAppearance();
   // Server data goes through mutations: optimistic status, per-parent serialization
   // (scope) and invalidation live in lib/query. This component keeps no request state.
   const setTaskStatus = useSetTaskStatus(task.task_id);
@@ -168,9 +168,9 @@ export function TaskItem({
 
   // Visible text next to the title so priority never depends on colour alone.
   const priorityChipColors: Record<string, string> = {
-    Low: userData?.theme === 'dark' ? 'text-blue-300 border-blue-400' : 'text-blue-700 border-blue-400',
-    Medium: userData?.theme === 'dark' ? 'text-orange-300 border-orange-400' : 'text-orange-700 border-orange-400',
-    High: userData?.theme === 'dark' ? 'text-red-300 border-red-400' : 'text-red-700 border-red-400',
+    Low: isDark ? 'text-blue-300 border-blue-400' : 'text-blue-700 border-blue-400',
+    Medium: isDark ? 'text-orange-300 border-orange-400' : 'text-orange-700 border-orange-400',
+    High: isDark ? 'text-red-300 border-red-400' : 'text-red-700 border-red-400',
   };
   const priorityChipColor = priorityChipColors[task.priority as string];
 
@@ -179,7 +179,7 @@ export function TaskItem({
       {/* The row is clickable for the mouse; the title button is the keyboard and screen-reader control. */}
       <div 
         role="presentation"
-        className={`flex flex-row w-full h-[46px] items-center rounded-[10px] ${userData?.theme === "dark" ? "hover:bg-gray-900" : "hover:bg-[#FAFAFA] "} 
+        className={`flex flex-row w-full h-[46px] items-center rounded-[10px] ${isDark ? "hover:bg-gray-900" : "hover:bg-[#FAFAFA] "} 
           cursor-pointer gap-3 pr-4 pl-3 mb-1 ${isComplete ? 'opacity-70' : ''} ${priorityColor}`}
         onClick={() => {
           handleUpdateTask();
@@ -228,7 +228,7 @@ export function TaskItem({
                 }}
                 className={`flex-1 font-lato text-4 ${task.status === 'Complete' 
                 ? 'line-through text-start text-gray-400' 
-                : `text-start ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}`}>
+                : `text-start ${isDark ? 'text-gray-300' : 'text-gray-700'}`}`}>
                 {task.title}
               </button>
               {priorityChipColor && (
@@ -242,7 +242,7 @@ export function TaskItem({
                   {task.description}
                 </p>
               )}
-              <AssigneeChip task={task} dark={userData?.theme === 'dark'} />
+              <AssigneeChip task={task} dark={isDark} />
             </div>
             <div className="flex flex-row gap-2">            
               {/* FEAT-09: the server decides who may delete (the owner, or the task's creator).
@@ -325,7 +325,7 @@ export function TaskItem({
               </div>
               <span className={`text-sm ml-2 flex-1 ${subtask.status === 'Complete' 
                 ? 'line-through text-start text-gray-400' 
-                : `text-start ${userData?.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}`}>
+                : `text-start ${isDark ? 'text-gray-300' : 'text-gray-700'}`}`}>
                 {subtask.title}
               </span>
               <button 

@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { getClientIp } from "@/app/utils/clientIp";
+import { APPEARANCE_COOKIE } from "@/lib/appearance";
 import {
   clearSessionCookies,
   isSameOrigin,
@@ -19,5 +20,7 @@ export async function POST(req: NextRequest) {
 
   const res = noStoreJson({ success: true }, 200);
   clearSessionCookies(res);
+  // RD-1: the next person on this browser starts from the default look, not this account's.
+  res.cookies.set(APPEARANCE_COOKIE, "", { path: "/", maxAge: 0, sameSite: "lax" });
   return res;
 }

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import InputBox from "../inputBox";
 import { IProject } from "@/app/interface/IProject";
-import { useFormState } from "@/app/context/FormProvider";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/app/components/shadcn/dialog";
 import { assigneeAfterProjectChange } from "@/app/components/tasks/assignee";
+import { useAppearance } from "@/hooks/useAppearance";
 
 /** FEAT-09: a project someone shared with me, listed under "Shared with me". */
 export interface SharedProjectOption {
@@ -91,7 +91,7 @@ export default function TaskModal({
   isUpdate,
   isLoading,
 }: taskModalProps) {
-  const { userData } = useFormState();
+  const { isDark } = useAppearance();
   const [height, setHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -169,13 +169,13 @@ export default function TaskModal({
     >
       <DialogContent
         overlayClassName="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
-        className={`modal-popup ${userData?.theme === 'dark' ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'} dark:bg-gray-900 w-[550px] rounded-[10px] p-5 shadow-lg overflow-hidden transition-all duration-200 ease-in-out`}
+        className={`modal-popup ${isDark ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'} dark:bg-gray-900 w-[550px] rounded-[10px] p-5 shadow-lg overflow-hidden transition-all duration-200 ease-in-out`}
         style={{ height }}
       >
         <div ref={ref} className="h-auto flex flex-col gap-5 ">
           <div className="flex flex-col">
             <div className="flex flex-row justify-between items-center">
-              <DialogTitle className={`${userData?.theme === 'dark' ? 'text-white' : 'text-text'} text-[20px] font-bold font-lato`}>
+              <DialogTitle className={`${isDark ? 'text-white' : 'text-text'} text-[20px] font-bold font-lato`}>
                 {isUpdate ? "Task" : "Add New Task"}
               </DialogTitle>
               <DialogClose asChild>

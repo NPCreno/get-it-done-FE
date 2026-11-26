@@ -3,7 +3,7 @@ import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "re
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/app/components/shadcn/dialog";
 import LoadError from "@/app/components/LoadError";
 import ConfirmationModal from "@/app/components/modals/confirmation";
-import { useFormState } from "@/app/context/FormProvider";
+import { useAppearance } from "@/hooks/useAppearance";
 import { LIMITS } from "@/app/contracts/common";
 import type { ChatMessage } from "@/app/contracts/responses";
 import type { ToastController } from "@/hooks/toastController";
@@ -29,8 +29,7 @@ const EDGE_PX = 48;
 
 /** A side panel with one project's chat: history, live updates and a composer. */
 export default function ChatPanel({ projectId, projectTitle, isOwner, onClose, toast }: ChatPanelProps) {
-  const { userData } = useFormState();
-  const dark = userData?.theme === "dark";
+  const { isDark: dark } = useAppearance();
   const me = useSessionUserId();
   const { removed } = useChatRoom(projectId);
 
@@ -87,7 +86,7 @@ export default function ChatPanel({ projectId, projectTitle, isOwner, onClose, t
                 failure={state.failure}
                 onRetry={() => void query.refetch()}
                 retrying={query.isFetching}
-                theme={userData?.theme}
+                dark={dark}
               />
             </div>
           ) : (
@@ -108,7 +107,7 @@ export default function ChatPanel({ projectId, projectTitle, isOwner, onClose, t
                     failure={state.refreshFailure}
                     onRetry={() => void (query.isFetchNextPageError ? query.fetchNextPage() : query.refetch())}
                     retrying={query.isFetching}
-                    theme={userData?.theme}
+                    dark={dark}
                     variant="compact"
                   />
                 ) : null

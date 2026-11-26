@@ -1,12 +1,12 @@
 "use client";
 import { useMemo } from "react";
 import TaskModal, { type SharedProjectOption } from "@/app/components/modals/taskModal";
-import { useFormState } from "@/app/context/FormProvider";
 import type { IProject } from "@/app/interface/IProject";
 import { useSharedProjects } from "@/lib/query/chat";
 import { useSharingEnabled } from "@/lib/sharing";
 import AssigneeSelect from "./AssigneeSelect";
 import type { TaskEditor } from "./useTaskEditor";
+import { useAppearance } from "@/hooks/useAppearance";
 
 /**
  * Renders the TaskModal with the editor's bindings. FEAT-09: the project picker also lists the
@@ -21,7 +21,7 @@ export default function TaskEditorDialog({
   projects: IProject[];
   preselectedProject?: IProject | null;
 }) {
-  const { userData } = useFormState();
+  const { isDark } = useAppearance();
   const sharingEnabled = useSharingEnabled();
   const shared = useSharedProjects({ enabled: sharingEnabled && editor.isOpen });
   const sharedProjects = useMemo<SharedProjectOption[]>(
@@ -52,7 +52,7 @@ export default function TaskEditorDialog({
           onChange={(id) => setFieldValue("assignee_id", id)}
           isRecurring={editor.mode === "create" && values.isRecurring === true}
           disabled={editor.isLoading}
-          dark={userData?.theme === "dark"}
+          dark={isDark}
         />
       }
       preselectedProject={preselectedProject}
