@@ -28,6 +28,11 @@
   --r-board: 12px;
   --f-card: var(--font-lato), Lato, sans-serif;
   --w-card: 700;
+  /* RD-2 (52-2): sub-heading weight; button and project-card radii (Classic = today's) */
+  --w-sub: 600;
+  --r-btn: 5px;
+  --r-btn-lg: 12px;
+  --r-pcard: 16px;
 }
 
 [data-theme="calm"] {
@@ -45,6 +50,11 @@
   --r-board: 14px;
   --f-card: var(--f-head);
   --w-card: 600;
+  /* RD-2 (52-2): sub-heading weight; button and project-card radii (Classic = today's) */
+  --w-sub: 600;
+  --r-btn: 10px;
+  --r-btn-lg: 10px;
+  --r-pcard: 14px;
 }
 
 [data-theme="field"] {
@@ -62,6 +72,11 @@
   --r-board: 24px;
   --f-card: var(--f-head);
   --w-card: 400;
+  /* RD-2 (52-2): sub-heading weight; button and project-card radii (Classic = today's) */
+  --w-sub: 400;
+  --r-btn: 999px;
+  --r-btn-lg: 999px;
+  --r-pcard: 24px;
 }
 
 /* ---------------------------------------------------------------- colours */
@@ -188,6 +203,48 @@
   --brk-sub: #C7E6EE;
   --on-brk: #FFFFFF;
   --brk-wedge: #219EBC;
+
+  /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
+  --txt-strong: #111827;
+  --txt-body: #4B5563;
+  --txt-done: #828282;
+  --sep: #F3F4F6;
+  --modal-edge: #F3F4F6;
+  --row-edge: #E0E0E0;
+  --row-bg: #FFFFFF;
+  --field-bg: #FFFFFF;
+  --ico-x: #666666;
+  --overlay: rgba(0, 0, 0, 0.4);
+  --line-acc: #FED580;
+  --btn2-t: #FEAD03;
+  --btn2-t-alt: #FEAD03;
+  --btn2-hover: #F9FAFB;
+  --ghost-b: #E5E7EB;
+  --ghost-t: #333333;
+  --acc-ink: #FEAD03;
+  --acc-soft: #FED580;
+  --acc-grad2-start: #FEAD03;
+  --acc-grad2-end: #FACC15;
+  --empty-title: linear-gradient(to right, #FEAD03, #FACC15);
+  --pend-dot: #FFC107;
+  --done-dot: #3EA24F;
+  --done-chip-bg: #DCFCE7;
+  --done-chip-t: #166534;
+  --date-chip-bg: rgba(255, 255, 255, 0.9);
+  --date-chip-t: #1F2937;
+  --date-chip-b: rgba(255, 255, 255, 0.3);
+  --vprio-low-bg: #8FCEDD;
+  --vprio-low-t: #19768D;
+  --vprio-med-bg: #FFBC91;
+  --vprio-med-t: #BF5B1C;
+  --vprio-high-bg: #FD9D9B;
+  --vprio-high-t: #BE2E2B;
+  --bubble-me: #FEAD03;
+  --bubble-me-ink: #333333;
+  --bubble-other: #F3F4F6;
+  --bubble-other-ink: #333333;
+  --ico-edit: #4B5563;
+  --ico-edit-h: #1F2937;
 }
 
 [data-theme="classic"][data-mode="dark"] {
@@ -312,6 +369,48 @@
   --brk-sub: #08272F;
   --on-brk: #111317;
   --brk-wedge: #219EBC;
+
+  /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
+  --txt-strong: #FFFFFF;
+  --txt-body: #D1D5DB;
+  --txt-done: #9CA3AF;
+  --sep: #1F2937;
+  --modal-edge: #374151;
+  --row-edge: #374151;
+  --row-bg: rgba(31, 41, 55, 0.5);
+  --field-bg: #1F2937;
+  --ico-x: #9CA3AF;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --line-acc: #4B5563;
+  --btn2-t: #E5E7EB;
+  --btn2-t-alt: #D1D5DB;
+  --btn2-hover: #374151;
+  --ghost-b: #4B5563;
+  --ghost-t: #E5E7EB;
+  --acc-ink: #FEAD03;
+  --acc-soft: #FED580;
+  --acc-grad2-start: #D97706;
+  --acc-grad2-end: #EAB308;
+  --empty-title: linear-gradient(to right, #FBBF24, #EAB308);
+  --pend-dot: rgba(234, 179, 8, 0.8);
+  --done-dot: #3EA24F;
+  --done-chip-bg: rgba(20, 83, 45, 0.3);
+  --done-chip-t: #86EFAC;
+  --date-chip-bg: rgba(255, 255, 255, 0.9);
+  --date-chip-t: #1F2937;
+  --date-chip-b: rgba(255, 255, 255, 0.3);
+  --vprio-low-bg: rgba(20, 83, 45, 0.3);
+  --vprio-low-t: #86EFAC;
+  --vprio-med-bg: rgba(113, 63, 18, 0.3);
+  --vprio-med-t: #FDE047;
+  --vprio-high-bg: rgba(127, 29, 29, 0.3);
+  --vprio-high-t: #FCA5A5;
+  --bubble-me: #FEAD03;
+  --bubble-me-ink: #333333;
+  --bubble-other: #1F2937;
+  --bubble-other-ink: #FFFFFF;
+  --ico-edit: #D1D5DB;
+  --ico-edit-h: #FFFFFF;
 }
 
 [data-theme="calm"][data-mode="light"] {
@@ -436,6 +535,48 @@
   --brk-sub: #C7E6EE;
   --on-brk: #FFFFFF;
   --brk-wedge: #19768D;
+
+  /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
+  --txt-strong: #1C1A17;
+  --txt-body: #5C574F;
+  --txt-done: #5C574F;
+  --sep: #E3E0D9;
+  --modal-edge: #E3E0D9;
+  --row-edge: #E3E0D9;
+  --row-bg: #FFFFFF;
+  --field-bg: #FFFFFF;
+  --ico-x: #5C574F;
+  --overlay: rgba(0, 0, 0, 0.4);
+  --line-acc: #8A847A;
+  --btn2-t: #1C1A17;
+  --btn2-t-alt: #1C1A17;
+  --btn2-hover: #F8F7F4;
+  --ghost-b: #8A847A;
+  --ghost-t: #1C1A17;
+  --acc-ink: #8A5600;
+  --acc-soft: #FEAD03;
+  --acc-grad2-start: #FEAD03;
+  --acc-grad2-end: #FEAD03;
+  --empty-title: linear-gradient(to right, #8A5600, #8A5600);
+  --pend-dot: #8A847A;
+  --done-dot: #2B8A46;
+  --done-chip-bg: #D9EEDD;
+  --done-chip-t: #1C1A17;
+  --date-chip-bg: #FFFFFF;
+  --date-chip-t: #5C574F;
+  --date-chip-b: #E3E0D9;
+  --vprio-low-bg: #F1EFEA;
+  --vprio-low-t: #5C574F;
+  --vprio-med-bg: #F1EFEA;
+  --vprio-med-t: #1C1A17;
+  --vprio-high-bg: #FFF3D1;
+  --vprio-high-t: #8A5600;
+  --bubble-me: #FEAD03;
+  --bubble-me-ink: #1C1A17;
+  --bubble-other: #F1EFEA;
+  --bubble-other-ink: #1C1A17;
+  --ico-edit: #5C574F;
+  --ico-edit-h: #1C1A17;
 }
 
 [data-theme="calm"][data-mode="dark"] {
@@ -560,6 +701,48 @@
   --brk-sub: #08272F;
   --on-brk: #141311;
   --brk-wedge: #7DD3E8;
+
+  /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
+  --txt-strong: #F3F1EC;
+  --txt-body: #ADA79B;
+  --txt-done: #ADA79B;
+  --sep: #34312C;
+  --modal-edge: #34312C;
+  --row-edge: #34312C;
+  --row-bg: #1E1C19;
+  --field-bg: #1E1C19;
+  --ico-x: #ADA79B;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --line-acc: #6E695F;
+  --btn2-t: #F3F1EC;
+  --btn2-t-alt: #F3F1EC;
+  --btn2-hover: #141311;
+  --ghost-b: #6E695F;
+  --ghost-t: #F3F1EC;
+  --acc-ink: #FEAD03;
+  --acc-soft: #FEAD03;
+  --acc-grad2-start: #FEAD03;
+  --acc-grad2-end: #FEAD03;
+  --empty-title: linear-gradient(to right, #FEAD03, #FEAD03);
+  --pend-dot: #6E695F;
+  --done-dot: #53D86A;
+  --done-chip-bg: #1F3326;
+  --done-chip-t: #53D86A;
+  --date-chip-bg: #1E1C19;
+  --date-chip-t: #ADA79B;
+  --date-chip-b: #34312C;
+  --vprio-low-bg: #26241F;
+  --vprio-low-t: #ADA79B;
+  --vprio-med-bg: #26241F;
+  --vprio-med-t: #F3F1EC;
+  --vprio-high-bg: #3A2E10;
+  --vprio-high-t: #FEAD03;
+  --bubble-me: #FEAD03;
+  --bubble-me-ink: #1C1A17;
+  --bubble-other: #26241F;
+  --bubble-other-ink: #F3F1EC;
+  --ico-edit: #ADA79B;
+  --ico-edit-h: #F3F1EC;
 }
 
 [data-theme="field"][data-mode="light"] {
@@ -684,6 +867,48 @@
   --brk-sub: #FCEFD2;
   --on-brk: #14201A;
   --brk-wedge: #F2B84B;
+
+  /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
+  --txt-strong: #14201A;
+  --txt-body: #4F5E55;
+  --txt-done: #4F5E55;
+  --sep: #D5DED3;
+  --modal-edge: #D5DED3;
+  --row-edge: #D5DED3;
+  --row-bg: #FFFFFF;
+  --field-bg: #FFFFFF;
+  --ico-x: #4F5E55;
+  --overlay: rgba(20, 32, 26, 0.45);
+  --line-acc: #7C8A80;
+  --btn2-t: #14201A;
+  --btn2-t-alt: #14201A;
+  --btn2-hover: #F3F6F1;
+  --ghost-b: #7C8A80;
+  --ghost-t: #14201A;
+  --acc-ink: #1F5C46;
+  --acc-soft: #1F5C46;
+  --acc-grad2-start: #1F5C46;
+  --acc-grad2-end: #1F5C46;
+  --empty-title: linear-gradient(to right, #1F5C46, #1F5C46);
+  --pend-dot: #7C8A80;
+  --done-dot: #1F5C46;
+  --done-chip-bg: #DDEEE4;
+  --done-chip-t: #1F5C46;
+  --date-chip-bg: #FFFFFF;
+  --date-chip-t: #4F5E55;
+  --date-chip-b: #D5DED3;
+  --vprio-low-bg: #E8EEE6;
+  --vprio-low-t: #4F5E55;
+  --vprio-med-bg: #E8EEE6;
+  --vprio-med-t: #14201A;
+  --vprio-high-bg: #F2B84B;
+  --vprio-high-t: #14201A;
+  --bubble-me: #1F5C46;
+  --bubble-me-ink: #FFFFFF;
+  --bubble-other: #E8EEE6;
+  --bubble-other-ink: #14201A;
+  --ico-edit: #4F5E55;
+  --ico-edit-h: #14201A;
 }
 
 [data-theme="field"][data-mode="dark"] {
@@ -808,4 +1033,101 @@
   --brk-sub: #3A2E10;
   --on-brk: #14201A;
   --brk-wedge: #F2B84B;
+
+  /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
+  --txt-strong: #EEF3EE;
+  --txt-body: #A3B2A8;
+  --txt-done: #A3B2A8;
+  --sep: #2A372F;
+  --modal-edge: #2A372F;
+  --row-edge: #2A372F;
+  --row-bg: #18211C;
+  --field-bg: #18211C;
+  --ico-x: #A3B2A8;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --line-acc: #6A7A70;
+  --btn2-t: #EEF3EE;
+  --btn2-t-alt: #EEF3EE;
+  --btn2-hover: #0F1512;
+  --ghost-b: #6A7A70;
+  --ghost-t: #EEF3EE;
+  --acc-ink: #7FD1A8;
+  --acc-soft: #7FD1A8;
+  --acc-grad2-start: #7FD1A8;
+  --acc-grad2-end: #7FD1A8;
+  --empty-title: linear-gradient(to right, #7FD1A8, #7FD1A8);
+  --pend-dot: #6A7A70;
+  --done-dot: #7FD1A8;
+  --done-chip-bg: #1D3A2D;
+  --done-chip-t: #7FD1A8;
+  --date-chip-bg: #18211C;
+  --date-chip-t: #A3B2A8;
+  --date-chip-b: #2A372F;
+  --vprio-low-bg: #1A241F;
+  --vprio-low-t: #A3B2A8;
+  --vprio-med-bg: #1A241F;
+  --vprio-med-t: #EEF3EE;
+  --vprio-high-bg: #F2B84B;
+  --vprio-high-t: #14201A;
+  --bubble-me: #7FD1A8;
+  --bubble-me-ink: #0F1512;
+  --bubble-other: #1A241F;
+  --bubble-other-ink: #EEF3EE;
+  --ico-edit: #A3B2A8;
+  --ico-edit-h: #EEF3EE;
+}
+
+/* ---------------------------------------------------------------- project colour tints (plan 52-2)
+ * A project card's tint is the PROJECT's colour (data, src/lib/projectColors.ts), not the theme's:
+ * every theme keeps it; only the mode changes it. Today's Tailwind 50→100 (light) and 900/30→800/30 (dark).
+ */
+
+[data-mode="light"] {
+  --pc-lavender-a: #F5F3FF;
+  --pc-lavender-b: #EDE9FE;
+  --pc-mint-a: #ECFDF5;
+  --pc-mint-b: #D1FAE5;
+  --pc-peach-a: #FFF7ED;
+  --pc-peach-b: #FFEDD5;
+  --pc-sky-a: #F0F9FF;
+  --pc-sky-b: #E0F2FE;
+  --pc-lemon-a: #FEFCE8;
+  --pc-lemon-b: #FEF9C3;
+  --pc-rose-a: #FDF2F8;
+  --pc-rose-b: #FCE7F3;
+  --pc-mauve-a: #FDF4FF;
+  --pc-mauve-b: #FAE8FF;
+  --pc-baby-blue-a: #EFF6FF;
+  --pc-baby-blue-b: #DBEAFE;
+  --pc-coral-a: #FFF1F2;
+  --pc-coral-b: #FFE4E6;
+  --pc-seafoam-a: #F0FDFA;
+  --pc-seafoam-b: #CCFBF1;
+  --pc-none-a: #F9FAFB;
+  --pc-none-b: #F3F4F6;
+}
+
+[data-mode="dark"] {
+  --pc-lavender-a: rgba(76, 29, 149, 0.3);
+  --pc-lavender-b: rgba(91, 33, 182, 0.3);
+  --pc-mint-a: rgba(6, 78, 59, 0.3);
+  --pc-mint-b: rgba(6, 95, 70, 0.3);
+  --pc-peach-a: rgba(124, 45, 18, 0.3);
+  --pc-peach-b: rgba(154, 52, 18, 0.3);
+  --pc-sky-a: rgba(12, 74, 110, 0.3);
+  --pc-sky-b: rgba(7, 89, 133, 0.3);
+  --pc-lemon-a: rgba(113, 63, 18, 0.3);
+  --pc-lemon-b: rgba(133, 77, 14, 0.3);
+  --pc-rose-a: rgba(131, 24, 67, 0.3);
+  --pc-rose-b: rgba(157, 23, 77, 0.3);
+  --pc-mauve-a: rgba(112, 26, 117, 0.3);
+  --pc-mauve-b: rgba(134, 25, 143, 0.3);
+  --pc-baby-blue-a: rgba(30, 58, 138, 0.3);
+  --pc-baby-blue-b: rgba(30, 64, 175, 0.3);
+  --pc-coral-a: rgba(136, 19, 55, 0.3);
+  --pc-coral-b: rgba(159, 18, 57, 0.3);
+  --pc-seafoam-a: rgba(19, 78, 74, 0.3);
+  --pc-seafoam-b: rgba(17, 94, 89, 0.3);
+  --pc-none-a: rgba(31, 41, 55, 0.3);
+  --pc-none-b: rgba(55, 65, 81, 0.3);
 }

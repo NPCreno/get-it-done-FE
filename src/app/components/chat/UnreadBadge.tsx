@@ -9,7 +9,7 @@ export default function UnreadBadge({ count, className = "" }: { count: number; 
   if (!text) return null;
   return (
     <span
-      className={`inline-flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-error-default px-1 font-lato text-[10px] font-bold leading-none text-white ${className}`}
+      className={`inline-flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-error-default px-1 font-ui text-[10px] font-bold leading-none text-white ${className}`}
     >
       <span aria-hidden="true">{text}</span>
       <span className="sr-only">{unreadLabel(count)}</span>

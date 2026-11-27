@@ -11,10 +11,9 @@ import { loadStateOf } from "@/lib/query/loadState";
 import { useSessionUserId } from "@/lib/query/queries";
 import { settled } from "@/lib/query/unwrap";
 import { focusFallback } from "@/lib/focusFallback";
+import { projectDotColor } from "@/lib/projectColors";
 import ChatPanel from "./ChatPanel";
 import UnreadBadge from "./UnreadBadge";
-
-const HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
 /**
  * Projects other people shared with me (FEAT-09): open the project to work on its tasks, chat with
@@ -34,16 +33,16 @@ export default function SharedProjectsSection({
   const headingId = useId();
   // Leaving removes the card that held focus; focus then goes to this heading.
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const muted = dark ? "text-gray-300" : "text-[#676767]";
+  const muted = "text-th-ink-note";
 
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-3">
-      <h2 ref={headingRef} tabIndex={-1} id={headingId} className={`outline-none font-lato text-xl font-bold ${dark ? "text-white" : "text-text"}`}>
+      <h2 ref={headingRef} tabIndex={-1} id={headingId} className="outline-none font-card text-xl [font-weight:var(--w-card)] text-th-ink">
         Shared with me
       </h2>
-      <p className={`-mt-2 font-lato text-sm ${muted}`}>Work on these projects&apos; tasks and chat with their members.</p>
+      <p className={`-mt-2 font-ui text-sm ${muted}`}>Work on these projects&apos; tasks and chat with their members.</p>
       {state.status === "loading" ? (
-        <p role="status" className={`font-lato text-sm ${muted}`}>
+        <p role="status" className={`font-ui text-sm ${muted}`}>
           Loading shared projects…
         </p>
       ) : state.status === "error" ? (
@@ -55,7 +54,7 @@ export default function SharedProjectsSection({
           dark={dark}
         />
       ) : state.status === "empty" ? (
-        <p className={`font-lato text-sm ${muted}`}>
+        <p className={`font-ui text-sm ${muted}`}>
           Nothing is shared with you yet. When someone adds you to a project, its tasks and chat show up here.
         </p>
       ) : (
@@ -75,7 +74,6 @@ export default function SharedProjectsSection({
               <SharedProjectCard
                 key={p.project_id}
                 project={p}
-                dark={dark}
                 toast={toast}
                 onViewProject={() => onViewProject(p)}
                 onOpenChat={() => setChat(p)}
@@ -94,14 +92,12 @@ export default function SharedProjectsSection({
 
 function SharedProjectCard({
   project,
-  dark,
   toast,
   onViewProject,
   onOpenChat,
   onLeft,
 }: {
   project: SharedProject;
-  dark: boolean;
   toast: ToastController;
   onViewProject: () => void;
   onOpenChat: () => void;
@@ -111,7 +107,7 @@ function SharedProjectCard({
   const leave = useRemoveChatMember(project.project_id);
   const unread = useChatUnread().countFor(project.project_id);
   const [confirming, setConfirming] = useState(false);
-  const color = HEX.test(project.color) ? project.color : "#9ca3af";
+  const color = projectDotColor(project.color);
 
   const confirmLeave = async () => {
     setConfirming(false);
@@ -125,22 +121,20 @@ function SharedProjectCard({
 
   return (
     <li
-      className={`flex flex-col gap-3 rounded-[10px] border p-4 shadow-sm ${
-        dark ? "border-gray-800 bg-foreground-dark text-white" : "border-gray-100 bg-white text-text"
-      }`}
+      className="flex flex-col gap-3 rounded-card border p-4 shadow-sm border-th-sep bg-th-card text-th-ink"
     >
       <div className="flex items-center gap-2">
         <span aria-hidden="true" className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: color }} />
-        <h3 className="truncate font-lato text-base font-bold">{project.title || "Untitled project"}</h3>
+        <h3 className="truncate font-card text-base [font-weight:var(--w-card)]">{project.title || "Untitled project"}</h3>
         <UnreadBadge count={unread} className="ml-auto flex-shrink-0" />
       </div>
-      <p className={`font-lato text-xs ${dark ? "text-gray-300" : "text-[#676767]"}`}>Shared by @{project.owner_username}</p>
+      <p className="font-ui text-xs text-th-ink-note">Shared by @{project.owner_username}</p>
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={onViewProject}
           aria-label={`View project ${project.title || "this project"}`}
-          className="rounded-[5px] bg-primary-default px-3 py-2 font-lato text-xs text-white transition-colors hover:bg-primary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2"
+          className="rounded-btn bg-th-acc px-3 py-2 font-ui text-xs text-th-on-acc transition-colors hover:bg-th-acc-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]"
         >
           View project
         </button>
@@ -148,7 +142,7 @@ function SharedProjectCard({
           type="button"
           onClick={onOpenChat}
           aria-label={`Open chat for ${project.title || "this project"}`}
-          className="rounded-[5px] bg-primary-default px-3 py-2 font-lato text-xs text-white transition-colors hover:bg-primary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2"
+          className="rounded-btn bg-th-acc px-3 py-2 font-ui text-xs text-th-on-acc transition-colors hover:bg-th-acc-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]"
         >
           Open chat
         </button>
@@ -157,9 +151,7 @@ function SharedProjectCard({
           onClick={() => setConfirming(true)}
           aria-disabled={leave.isPending}
           aria-label={`Leave ${project.title || "this project"}`}
-          className={`rounded-[5px] border px-3 py-2 font-lato text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default aria-disabled:opacity-60 ${
-            dark ? "border-gray-600 text-gray-200" : "border-gray-200 text-text"
-          }`}
+          className="rounded-btn border px-3 py-2 font-ui text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus aria-disabled:opacity-60 border-th-ghost-b text-th-ghost-t"
         >
           Leave
         </button>
