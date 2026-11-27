@@ -3,7 +3,6 @@ import { DatePicker } from "./datePicker";
 import { CustomDropdownMenu } from "./dropdown";
 import { DatePickerWithTime } from "./datePickerWithTime";
 import WeekdaySelector from "./weekdaySelector";
-import { useAppearance } from "@/hooks/useAppearance";
 export interface DropdownOption {
   name: string;
   color?: string;
@@ -63,14 +62,12 @@ export default function InputBox({
   autoFocus,
   ref
 }: InputBoxProps) {
-  const { isDark } = useAppearance();
   // Programmatic label and error wiring. Additive: value, handlers and ref are unchanged.
   const id = useId();
   const labelId = `${id}-label`;
   const errorId = `${id}-error`;
   const isNativeControl = type === "text" || type === "password" || type === "email" || type === "textarea";
-  const labelClass = `${isDark ? 'text-white' : 'text-text'} text-base font-normal font-lato 
-              ${error ? "text-error-default" : (isLanding ? "text-primary-default" : "text-text")}`;
+  const labelClass = `text-base font-normal font-lato ${error ? "text-error-default" : isLanding ? "text-th-acc-t" : "text-th-ink"}`;
   const describedBy = error ? errorId : undefined;
   return (
     <div className="w-full">
@@ -99,10 +96,9 @@ export default function InputBox({
           aria-describedby={describedBy}
           onBlur={onBlur}
           className={`rounded-md border w-full h-[40px] py-2 px-2
-            outline-none transition-all duration-200 ${isLanding ? "text-primary-default" : "text-text"}
-            ${error ? "focus:ring-error border-error" : "focus:ring-primary-default focus:ring-2 border-[#E0E0E0]"}
-            disabled:opacity-50 disabled:cursor-not-allowed ${customClass} 
-            ${isDark ? 'bg-foreground-dark text-white border-gray-800 border' : 'bg-white text-text'}`}
+            outline-none transition-all duration-200 bg-th-card border-th-line ${isLanding ? "text-th-acc-t" : "text-th-ink"}
+            ${error ? "focus:ring-error" : "focus:ring-th-focus focus:ring-2"}
+            disabled:opacity-50 disabled:cursor-not-allowed ${customClass}`}
           placeholder={placeholder}
           disabled={disabled}
           onKeyDown={onKeyDown}
@@ -119,10 +115,9 @@ export default function InputBox({
           aria-describedby={describedBy}
           onBlur={onBlur}
           className={`resize-y rounded-md border w-full min-h-[70px] max-h-[200px] py-2 px-2
-            outline-none transition-all duration-200 text-text
-            ${error ? "focus:ring-error border-error" : "focus:ring-text focus:ring-2 border-[#E0E0E0]"}
-            disabled:opacity-50 disabled:cursor-not-allowed ${customClass} 
-            ${isDark ? 'bg-foreground-dark text-white border-gray-800 border' : 'bg-white text-text'}`}
+            outline-none transition-all duration-200 bg-th-card text-th-ink border-th-line
+            ${error ? "focus:ring-error" : "focus:ring-th-focus focus:ring-2"}
+            disabled:opacity-50 disabled:cursor-not-allowed ${customClass}`}
           placeholder={placeholder}
           disabled={disabled}
         />

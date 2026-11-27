@@ -15,6 +15,7 @@ import {
   htmlAttributes,
   isDemoPath,
   noFlash,
+  htmlClassName,
   parseCookie,
   resolveMode,
   withCookieAppearance,
@@ -145,15 +146,17 @@ describe("the gid_appearance cookie", () => {
 /** A fake <html> and matchMedia for the inline script. */
 function fakeDocument(attrs: Record<string, string>) {
   const a = { ...attrs };
+  const classes = new Set<string>();
   const doc = {
     documentElement: {
+      classList: { toggle: (c: string, on: boolean) => (on ? classes.add(c) : classes.delete(c)) },
       getAttribute: (k: string) => a[k] ?? null,
       setAttribute: (k: string, v: string) => {
         a[k] = v;
       },
     },
   } as unknown as Document;
-  return { doc, attrs: a };
+  return { doc, attrs: a, classes };
 }
 const media = (dark: boolean) => (q: string) => ({ matches: q === "(prefers-color-scheme: dark)" && dark });
 
@@ -165,6 +168,17 @@ describe("the no-flash script", () => {
     const light = fakeDocument({ "data-mode": "light", "data-pref": "system" });
     noFlash(light.doc, "/dashboard", media(false));
     expect(light.attrs["data-mode"]).toBe("light");
+  });
+
+  it("keeps the `dark` class in step with data-mode (plan 52-3)", () => {
+    const sys = fakeDocument({ "data-mode": "light", "data-pref": "system" });
+    noFlash(sys.doc, "/dashboard", media(true));
+    expect(sys.classes.has("dark")).toBe(true);
+    const explicit = fakeDocument({ "data-mode": "light", "data-pref": "light" });
+    noFlash(explicit.doc, "/dashboard", media(true));
+    expect(explicit.classes.has("dark")).toBe(false);
+    expect(htmlClassName("f", { "data-theme": "classic", "data-mode": "dark", "data-pref": "dark" })).toBe("f dark");
+    expect(htmlClassName("f", { "data-theme": "classic", "data-mode": "light", "data-pref": "system" })).toBe("f");
   });
 
   it("an explicit mode is left as the server rendered it", () => {

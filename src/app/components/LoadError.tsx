@@ -11,7 +11,6 @@ interface LoadErrorProps {
   failure: ApiFailure;
   onRetry: () => void;
   retrying: boolean;
-  dark?: boolean;
   variant?: "full" | "compact";
 }
 
@@ -20,7 +19,7 @@ interface LoadErrorProps {
  * sibling, so it is not re-announced. aria-disabled (not disabled) keeps the
  * button focusable while retrying so focus is not lost to <body>.
  */
-export default function LoadError({ widget, failure, onRetry, retrying, dark = false, variant = "full" }: LoadErrorProps) {
+export default function LoadError({ widget, failure, onRetry, retrying, variant = "full" }: LoadErrorProps) {
   const msgId = useId();
   const wake = useServerWake();
   const compact = variant === "compact";
@@ -28,7 +27,7 @@ export default function LoadError({ widget, failure, onRetry, retrying, dark = f
   // UX-03: while the server wakes (or refetches right after it woke), a network/timeout failure
   // waits quietly instead of showing the error. No button and no live region: the banner speaks.
   if (showWaitingForServer(failure.kind, wake, retrying, Date.now())) {
-    return <WaitingForServer dark={dark} compact={compact} />;
+    return <WaitingForServer compact={compact} />;
   }
   const text = compact
     ? `Couldn't refresh ${widget}. ${describeLoadFailure(failure)}`
@@ -37,9 +36,7 @@ export default function LoadError({ widget, failure, onRetry, retrying, dark = f
   return (
     <div
       data-load-error
-      className={`flex ${compact ? "flex-row items-center gap-3 px-3 py-2 text-xs" : "flex-col items-center justify-center gap-3 p-6 text-sm text-center"} w-full rounded-[10px] border font-lato ${
-        dark ? "border-gray-700 bg-gray-800/50 text-white" : "border-[#E0E0E0] bg-white text-text"
-      }`}
+      className={`flex ${compact ? "flex-row items-center gap-3 px-3 py-2 text-xs" : "flex-col items-center justify-center gap-3 p-6 text-sm text-center"} w-full rounded-[10px] border font-lato border-th-row-edge bg-th-row-bg text-th-ink`}
     >
       <AlertTriangle aria-hidden="true" className={`${compact ? "h-4 w-4" : "h-6 w-6"} shrink-0 text-error-default`} />
       <p id={msgId} role="status" aria-live="polite" aria-atomic="true">
@@ -50,7 +47,7 @@ export default function LoadError({ widget, failure, onRetry, retrying, dark = f
         aria-describedby={msgId}
         aria-disabled={retrying}
         onClick={retrying ? undefined : onRetry}
-        className="rounded-[5px] border border-primary-200 px-3 py-1 font-bold text-primary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2 aria-disabled:opacity-60"
+        className="rounded-[5px] border border-th-acc-soft px-3 py-1 font-bold text-th-acc-t focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)] aria-disabled:opacity-60"
       >
         {retrying ? "Retrying…" : "Try again"}
       </button>
@@ -63,8 +60,8 @@ export default function LoadError({ widget, failure, onRetry, retrying, dark = f
  * No text: the wake banner above already says the app is waiting for the server (user's call,
  * 2026-11-25, replacing the canvas's "Waiting for the server" caption).
  */
-function WaitingForServer({ dark, compact }: { dark: boolean; compact: boolean }) {
-  const bar = `block rounded-md motion-safe:animate-pulse ${dark ? "bg-[#242730]" : "bg-[#E4E4E4]"}`;
+function WaitingForServer({ compact }: { compact: boolean }) {
+  const bar = "block rounded-md motion-safe:animate-pulse bg-th-wait-bar";
   if (compact) {
     return (
       <div data-load-waiting aria-hidden="true" className="flex w-full items-center px-3 py-2">
@@ -76,9 +73,7 @@ function WaitingForServer({ dark, compact }: { dark: boolean; compact: boolean }
     <div
       data-load-waiting
       aria-hidden="true"
-      className={`flex h-full min-h-[120px] w-full flex-col gap-3 rounded-[10px] border p-4 ${
-        dark ? "border-gray-700 bg-gray-800/50" : "border-[#E0E0E0] bg-white"
-      }`}
+      className={`flex h-full min-h-[120px] w-full flex-col gap-3 rounded-[10px] border p-4 border-th-row-edge bg-th-row-bg`}
     >
       <span className={`${bar} h-3 w-[40%]`} />
       <span className={`${bar} h-7 w-[55%]`} />

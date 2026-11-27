@@ -12,11 +12,10 @@ interface TokenCreatedDialogProps {
   onClose: () => void;
   /** Where focus goes after closing (the opener, the create dialog, is gone by then). */
   returnFocus: RefObject<HTMLElement | null>;
-  dark: boolean;
 }
 
 /** Shown once, right after a create. The token is in React state only, until this closes. */
-export default function TokenCreatedDialog({ created, serverUrl, onClose, returnFocus, dark }: TokenCreatedDialogProps) {
+export default function TokenCreatedDialog({ created, serverUrl, onClose, returnFocus }: TokenCreatedDialogProps) {
   const tokenRef = useRef<HTMLInputElement>(null);
   const claudeRef = useRef<HTMLPreElement>(null);
   const cursorRef = useRef<HTMLPreElement>(null);
@@ -24,15 +23,14 @@ export default function TokenCreatedDialog({ created, serverUrl, onClose, return
   const warningId = useId();
   const claude = serverUrl ? claudeCodeCommand(serverUrl, created.token) : "";
   const cursor = serverUrl ? cursorConfig(serverUrl, created.token) : "";
-  const muted = dark ? "text-gray-300" : "text-[#676767]";
-  const field = `w-full rounded-md border px-2 py-2 font-mono text-xs ${dark ? "border-gray-800 bg-black/30 text-white" : "border-[#E0E0E0] bg-[#F7F7F7] text-text"}`;
+  const muted = "text-th-ink-note";
+  const field = `w-full rounded-md border px-2 py-2 font-mono text-xs border-th-line bg-th-code-bg text-th-ink`;
 
   return (
     <TokenDialogShell
       title={`Token "${created.name}" created`}
       description="Put it in your AI assistant's settings, or run one of the commands below."
       onClose={onClose}
-      dark={dark}
       width="w-[640px]"
       // A stray click outside must not throw the token away; Close and Esc still close.
       onPointerDownOutside={(e) => e.preventDefault()}
@@ -50,7 +48,7 @@ export default function TokenCreatedDialog({ created, serverUrl, onClose, return
           <label id={tokenLabelId} htmlFor={`${tokenLabelId}-input`} className="font-lato text-base">
             Your token
           </label>
-          <CopyButton text={created.token} what="the token" target={tokenRef} dark={dark} />
+          <CopyButton text={created.token} what="the token" target={tokenRef} />
         </div>
         <input
           ref={tokenRef}
@@ -75,7 +73,6 @@ export default function TokenCreatedDialog({ created, serverUrl, onClose, return
             preRef={claudeRef}
             className={field}
             muted={muted}
-            dark={dark}
           />
           <Snippet
             title="Cursor"
@@ -85,7 +82,6 @@ export default function TokenCreatedDialog({ created, serverUrl, onClose, return
             preRef={cursorRef}
             className={field}
             muted={muted}
-            dark={dark}
           />
         </>
       )}
@@ -98,7 +94,7 @@ export default function TokenCreatedDialog({ created, serverUrl, onClose, return
         <button
           type="button"
           onClick={onClose}
-          className="rounded-[5px] bg-primary-default px-4 py-2 font-lato text-sm font-bold text-white transition-colors hover:bg-primary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2"
+          className="rounded-[5px] bg-th-acc px-4 py-2 font-lato text-sm font-bold text-th-on-acc transition-colors hover:bg-th-acc-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2"
         >
           Done
         </button>
@@ -115,7 +111,6 @@ function Snippet({
   preRef,
   className,
   muted,
-  dark,
 }: {
   title: string;
   hint: string;
@@ -124,7 +119,6 @@ function Snippet({
   preRef: RefObject<HTMLPreElement | null>;
   className: string;
   muted: string;
-  dark: boolean;
 }) {
   const headingId = useId();
   return (
@@ -136,7 +130,7 @@ function Snippet({
           </h3>
           <p className={`font-lato text-xs ${muted}`}>{hint}</p>
         </div>
-        <CopyButton text={text} what={what} target={preRef} dark={dark} />
+        <CopyButton text={text} what={what} target={preRef} />
       </div>
       {/* Focusable so keyboard users can scroll a long line. */}
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable code block must be reachable by keyboard */}

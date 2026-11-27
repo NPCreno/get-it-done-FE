@@ -68,7 +68,7 @@ export default function SignupPage() {
       <main className="flex-1">
         <div className="relative min-h-screen w-full flex-col items-center justify-center grid lg:grid-cols-2">
           {/* Left side - Image/Illustration */}
-          <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
+          <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex">
             <div className="absolute inset-0 bg-gradient-to-br from-primary-default to-primary-100" />
             <div className="relative z-20 flex items-center text-lg font-medium gap-5">
               <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">

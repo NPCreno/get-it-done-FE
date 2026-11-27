@@ -87,14 +87,14 @@ export default function LoginForm({
   return (
     <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
       <div className="space-y-2 text-center">
-        <h2 className="text-3xl font-bold text-primary-default">Welcome Back</h2>
+        <h2 className="text-3xl font-bold text-th-acc-t-light">Welcome Back</h2>
         <p className="text-gray-600">
           Enter your credentials to access your account
         </p>
       </div>
       
       {error && (
-        <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800" role="alert">
+        <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
           {error}
         </div>
       )}
@@ -120,7 +120,7 @@ export default function LoginForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             {/* Visual heading only: the password field carries its own (screen-reader) label. */}
-            <span aria-hidden="true" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span aria-hidden="true" className="block text-sm font-medium text-gray-700">
               Password
             </span>
 
@@ -198,12 +198,12 @@ export default function LoginForm({
         <WakeHint pending={isLoading} />
       </form>
       
-      <div className="text-sm text-center text-gray-600 dark:text-gray-400">
+      <div className="text-sm text-center text-gray-600">
         Don&apos;t have an account?{" "}
         <button
           type="button"
           onClick={() => onChangeView("signup")}
-          className="font-medium text-primary-default hover:text-primary-hover transition-colors"
+          className="font-medium text-th-acc-t-light hover:text-primary-hover transition-colors"
         >
           Sign up
         </button>

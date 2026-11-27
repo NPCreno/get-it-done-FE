@@ -8,7 +8,6 @@ interface CopyButtonProps {
   what: string;
   /** The element showing the text. If the clipboard is refused, its text is selected instead. */
   target: RefObject<HTMLElement | null>;
-  dark?: boolean;
 }
 
 const RESET_MS = 2000;
@@ -34,7 +33,7 @@ function selectText(el: HTMLElement | null): void {
  * If the clipboard is unavailable or refused, it selects the text and says how to copy it.
  * It never logs the text (it may be a token).
  */
-export default function CopyButton({ text, what, target, dark }: CopyButtonProps) {
+export default function CopyButton({ text, what, target }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
   const [note, setNote] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -64,13 +63,13 @@ export default function CopyButton({ text, what, target, dark }: CopyButtonProps
         type="button"
         onClick={() => void copy()}
         aria-label={copied ? `${what} copied` : `Copy ${what}`}
-        className={`rounded-[5px] border px-3 py-1 font-lato text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2 ${
-          copied ? "border-green-600 text-green-600" : `border-primary-200 text-primary-default ${dark ? "bg-transparent" : "bg-white"}`
+        className={`rounded-[5px] border px-3 py-1 font-lato text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 ${
+          copied ? "border-green-600 text-green-600" : `border-th-acc-soft text-th-acc-t bg-th-card`
         }`}
       >
         {copied ? "Copied" : "Copy"}
       </button>
-      <span role="status" aria-live="polite" aria-atomic="true" className={copied || !note ? "sr-only" : `font-lato text-xs ${dark ? "text-gray-300" : "text-[#676767]"}`}>
+      <span role="status" aria-live="polite" aria-atomic="true" className={copied || !note ? "sr-only" : `font-lato text-xs ${"text-th-ink-note"}`}>
         {note}
       </span>
     </span>

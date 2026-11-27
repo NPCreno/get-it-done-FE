@@ -90,7 +90,7 @@ export default function SidebarLink({
         className={`font-bold font-lato text-[13px] ml-2 whitespace-nowrap transition-opacity duration-150
             ${sidebarAnimated ? "motion-reduce:transition-none" : "!transition-none"}
             ${showText ? "opacity-100 delay-100" : "opacity-0"}
-            ${isActive ? "text-white" : "text-primary-default"}
+            ${isActive ? "text-th-on-acc" : "text-th-acc-t"}
           `}
       >
         {text}

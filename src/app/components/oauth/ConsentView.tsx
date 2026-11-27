@@ -37,7 +37,7 @@ function Frame({ children }: { children: ReactNode }) {
 function InvalidRequest() {
   return (
     <Frame>
-      <h1 className="text-center text-2xl font-bold text-primary-default">Can&apos;t connect this app</h1>
+      <h1 className="text-center text-2xl font-bold text-th-acc-t-light">Can&apos;t connect this app</h1>
       <p role="alert" className="text-center text-gray-600">
         {INVALID_REQUEST_COPY}
       </p>
@@ -49,7 +49,7 @@ function Busy({ text }: { text: string }) {
   return (
     <Frame>
       <div role="status" className="flex flex-col items-center gap-3 text-center text-gray-600">
-        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-primary-default" />
+        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-th-acc-t-light" />
         <p>{text}</p>
       </div>
     </Frame>
@@ -174,7 +174,7 @@ function ConsentScreen({ app, username, pending, pendingChoice, sendError, onDec
   return (
     <Frame>
       <div className="space-y-1 text-center">
-        <h1 className="text-2xl font-bold text-primary-default">
+        <h1 className="text-2xl font-bold text-th-acc-t-light">
           <span className="break-words">{app.client_name}</span> wants to access your Get It Done account
         </h1>
         <p className="text-xs text-gray-500">The app name is provided by the app.</p>
@@ -205,7 +205,7 @@ function ConsentScreen({ app, username, pending, pendingChoice, sendError, onDec
           type="button"
           onClick={onSignOut}
           disabled={pending}
-          className="font-medium text-primary-default underline underline-offset-4 hover:text-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default disabled:opacity-60"
+          className="font-medium text-th-acc-t-light underline underline-offset-4 hover:text-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default disabled:opacity-60"
         >
           Not you? Sign out
         </button>

@@ -15,7 +15,8 @@ interface ToastProps {
 }
 
 const variantStyles: Record<ToastVariant, string> = {
-  default: 'bg-white border-[#CCCCCC]',
+  // The default toast is white in both Classic modes (today's look): its own tokens.
+  default: 'bg-th-toast-bg',
   success: 'bg-green-50 border-green-200',
   error: 'bg-red-50 border-red-200',
   warning: 'bg-amber-50 border-amber-200',
@@ -23,7 +24,7 @@ const variantStyles: Record<ToastVariant, string> = {
 };
 
 const variantTextColors: Record<ToastVariant, string> = {
-  default: 'text-text',
+  default: 'text-th-toast-t',
   success: 'text-green-700',
   error: 'text-red-700',
   warning: 'text-amber-700',
@@ -84,7 +85,7 @@ export function Toast({
             <h3 className={`text-sm font-semibold ${variantTextColors[variant]}`}>
               {title}
             </h3>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-th-toast-note">
               {description}
             </p>
           </div>

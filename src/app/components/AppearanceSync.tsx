@@ -52,6 +52,8 @@ function ApplyAppearance({ onCookie }: { onCookie: (a: Appearance) => void }) {
     html.setAttribute("data-theme", theme);
     html.setAttribute("data-mode", resolvedMode);
     html.setAttribute("data-pref", mode);
+    // Plan 52-3: the `dark` class follows the resolved mode (for libraries; no `dark:` utility is left).
+    html.classList.toggle("dark", resolvedMode === "dark");
   }, [theme, mode, resolvedMode]);
 
   // Remember the account's choice on this browser, so the next first paint is already right.

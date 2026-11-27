@@ -8,7 +8,6 @@ interface TokenDialogShellProps {
   title: string;
   description: ReactNode;
   onClose: () => void;
-  dark: boolean;
   children: ReactNode;
   width?: string;
   onPointerDownOutside?: ContentProps["onPointerDownOutside"];
@@ -21,21 +20,18 @@ export default function TokenDialogShell({
   title,
   description,
   onClose,
-  dark,
   children,
   width = "w-[520px]",
   onPointerDownOutside,
   onCloseAutoFocus,
   onOpenAutoFocus,
 }: TokenDialogShellProps) {
-  const muted = dark ? "text-gray-300" : "text-[#676767]";
+  const muted = "text-th-ink-note";
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent
-        overlayClassName={`fixed inset-0 z-[60] flex items-center justify-center ${dark ? "bg-black/60" : "bg-black/40"}`}
-        className={`modal-popup flex ${width} max-h-[calc(100vh-32px)] max-w-[calc(100vw-32px)] flex-col gap-4 overflow-y-auto rounded-[10px] p-5 shadow-lg ${
-          dark ? "bg-foreground-dark text-white" : "bg-white text-text"
-        }`}
+        overlayClassName={`fixed inset-0 z-[60] flex items-center justify-center bg-th-overlay`}
+        className={`modal-popup flex ${width} max-h-[calc(100vh-32px)] max-w-[calc(100vw-32px)] flex-col gap-4 overflow-y-auto rounded-[10px] p-5 shadow-lg bg-th-card text-th-ink`}
         onPointerDownOutside={onPointerDownOutside}
         onCloseAutoFocus={onCloseAutoFocus}
         onOpenAutoFocus={onOpenAutoFocus}
@@ -49,10 +45,10 @@ export default function TokenDialogShell({
             <button
               type="button"
               aria-label="Close"
-              className="rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
+              className="rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
             >
               <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" fill="none">
-                <path d="M11.5 4.5L4.5 11.5M11.5 11.5L4.5 4.5" stroke={dark ? "#9ca3af" : "#666666"} strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M11.5 4.5L4.5 11.5M11.5 11.5L4.5 4.5" className="stroke-th-ico-x" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </button>
           </DialogClose>

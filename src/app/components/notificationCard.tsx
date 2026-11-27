@@ -29,10 +29,10 @@ export default function NotificationCard({ notification, time, onMarkRead, pendi
       onClick={() => {
         if (unread && !pending) onMarkRead(notif_id);
       }}
-      className={`border-[2px] border-border p-[10px] h-[auto] rounded-[10px] bg-white flex justify-between items-start w-full ${unread ? "cursor-pointer" : ""}`}
+      className={`border-[2px] border-border p-[10px] h-[auto] rounded-[10px] bg-th-ncard-bg flex justify-between items-start w-full ${unread ? "cursor-pointer" : ""}`}
     >
       <div className="flex flex-row gap-[10px]">
-        <div className={`min-w-[5px] min-h-full rounded ${unread ? "bg-secondary-default" : "bg-white"}`}></div>
+        <div className={`min-w-[5px] min-h-full rounded ${unread ? "bg-secondary-default" : "bg-th-ncard-bg"}`}></div>
 
         <div className="flex items-start">
           <Image src={ICONS[type]} width={40} height={40} alt="" aria-hidden="true" />
@@ -40,11 +40,11 @@ export default function NotificationCard({ notification, time, onMarkRead, pendi
 
         <div className="flex flex-col w-full gap-[10px]">
           <div className="flex flex-col">
-            <h2 className="font-lato font-bold text-[13px] text-black">
+            <h2 className="font-lato font-bold text-[13px] text-th-ncard-t">
               {title}
               {unread && <span className="sr-only"> (unread)</span>}
             </h2>
-            <span className="font-lato font-normal text-xs text-black">{message}</span>
+            <span className="font-lato font-normal text-xs text-th-ncard-t">{message}</span>
           </div>
           {route && (
             <Link
@@ -53,7 +53,7 @@ export default function NotificationCard({ notification, time, onMarkRead, pendi
                 e.stopPropagation();
                 if (unread && !pending) onMarkRead(notif_id);
               }}
-              className="w-fit font-lato text-[11px] font-bold text-primary-default underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
+              className="w-fit font-lato text-[11px] font-bold text-th-acc-t-light underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
             >
               Open projects
             </Link>
@@ -66,7 +66,7 @@ export default function NotificationCard({ notification, time, onMarkRead, pendi
                 e.stopPropagation();
                 onMarkRead(notif_id);
               }}
-              className="flex flex-row gap-[5px] px-[10px] h-[30px] w-fit bg-background font-lato text-[10px] text-black items-center rounded-[5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
+              className="flex flex-row gap-[5px] px-[10px] h-[30px] w-fit bg-background font-lato text-[10px] text-th-ncard-t items-center rounded-[5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
             >
               <svg aria-hidden="true" width="10" height="10" viewBox="0 0 150 150" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M131.25 75.0139C131.25 43.9592 106.055 18.7639 75 18.7639C43.9453 18.7639 18.75 43.9592 18.75 75.0139C18.75 106.069 43.9453 131.264 75 131.264C106.055 131.264 131.25 106.069 131.25 75.0139Z" stroke="white" strokeWidth="10" strokeMiterlimit="10"/>
@@ -78,7 +78,7 @@ export default function NotificationCard({ notification, time, onMarkRead, pendi
         </div>
       </div>
 
-      <div className="flex items-start font-lato text-[10px] text-text gap-5">
+      <div className="flex items-start font-lato text-[10px] text-th-ncard-t2 gap-5">
         <span>{time}</span>
       </div>
     </div>

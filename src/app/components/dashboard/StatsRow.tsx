@@ -1,7 +1,6 @@
 "use client";
 import StatsCard from "@/app/components/statsCard";
 import LoadError from "@/app/components/LoadError";
-import { useAppearance } from "@/hooks/useAppearance";
 import type { DashboardData } from "./useDashboardData";
 
 interface StatsRowProps {
@@ -10,7 +9,6 @@ interface StatsRowProps {
 
 export default function StatsRow({ data }: StatsRowProps) {
   // Only LoadError (not converted in this batch) still takes the mode.
-  const { isDark: dark } = useAppearance();
   const { summary, summaryState, dashboardData } = data;
   const failed = summaryState.status === "error";
   return (
@@ -21,7 +19,6 @@ export default function StatsRow({ data }: StatsRowProps) {
           failure={summaryState.failure}
           onRetry={() => void summary.refetch()}
           retrying={summary.isFetching}
-          dark={dark}
         />
       )}
       {summaryState.status === "ready" && summaryState.refreshFailure && (
@@ -30,7 +27,6 @@ export default function StatsRow({ data }: StatsRowProps) {
           failure={summaryState.refreshFailure}
           onRetry={() => void summary.refetch()}
           retrying={summary.isFetching}
-          dark={dark}
           variant="compact"
         />
       )}

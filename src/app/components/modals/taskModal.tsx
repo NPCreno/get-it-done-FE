@@ -3,7 +3,6 @@ import InputBox from "../inputBox";
 import { IProject } from "@/app/interface/IProject";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/app/components/shadcn/dialog";
 import { assigneeAfterProjectChange } from "@/app/components/tasks/assignee";
-import { useAppearance } from "@/hooks/useAppearance";
 
 /** FEAT-09: a project someone shared with me, listed under "Shared with me". */
 export interface SharedProjectOption {
@@ -91,19 +90,19 @@ export default function TaskModal({
   isUpdate,
   isLoading,
 }: taskModalProps) {
-  const { isDark } = useAppearance();
   const [height, setHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
   const priorityOptions = [
-    { name: "Low", color: "#219EBC" },
-    { name: "Medium", color: "#FF7A25" },
-    { name: "High", color: "#FE6E6B" },
+    // Option dots are theme tokens (Classic: today's palette colours).
+    { name: "Low", color: "var(--dot-low)" },
+    { name: "Medium", color: "var(--dot-med)" },
+    { name: "High", color: "var(--dot-high)" },
   ];
 
   const statusOptions = [
-    { name: "Pending", color: "#219EBC" },
-    { name: "Complete", color: "#53D86A" },
+    { name: "Pending", color: "var(--dot-low)" },
+    { name: "Complete", color: "var(--dot-done)" },
   ];
 
   const repeatEveryOptions = [
@@ -169,13 +168,13 @@ export default function TaskModal({
     >
       <DialogContent
         overlayClassName="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
-        className={`modal-popup ${isDark ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'} dark:bg-gray-900 w-[550px] rounded-[10px] p-5 shadow-lg overflow-hidden transition-all duration-200 ease-in-out`}
+        className={`modal-popup bg-th-card [border-width:var(--edge-w)] border-th-edge w-[550px] rounded-[10px] p-5 shadow-lg overflow-hidden transition-all duration-200 ease-in-out`}
         style={{ height }}
       >
         <div ref={ref} className="h-auto flex flex-col gap-5 ">
           <div className="flex flex-col">
             <div className="flex flex-row justify-between items-center">
-              <DialogTitle className={`${isDark ? 'text-white' : 'text-text'} text-[20px] font-bold font-lato`}>
+              <DialogTitle className="text-th-ink text-[20px] font-bold font-lato">
                 {isUpdate ? "Task" : "Add New Task"}
               </DialogTitle>
               <DialogClose asChild>
@@ -194,7 +193,7 @@ export default function TaskModal({
                 >
                   <path
                     d="M11.5 4.50098L4.5 11.501M11.5 11.501L4.5 4.50098L11.5 11.501Z"
-                    stroke="#666666"
+                    className="stroke-th-ico-close"
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -203,7 +202,7 @@ export default function TaskModal({
               </button>
               </DialogClose>
             </div>
-            <DialogDescription className="text-[#676767] text-sm font-lato">
+            <DialogDescription className="text-th-dlg-note text-sm font-lato">
               {isUpdate
                 ? "View or update task"
                 : "Create a new task to track your work"}
@@ -323,11 +322,8 @@ export default function TaskModal({
             <>
               <div className="flex flex-row w-full justify-center">
                 <button
-                  className={`flex justify-center items-center text-primary-default 
-                        font-lato font-bold text-[13px] p-[10px] ${
-                          formik.values.isRecurring
-                            ? "bg-primary-default text-white rounded-sm"
-                            : ""
+                  className={`flex justify-center items-center font-lato font-bold text-[13px] p-[10px] ${
+                          formik.values.isRecurring ? "bg-th-acc text-th-on-acc rounded-sm" : "text-th-acc-t"
                         }`}
                   onClick={() =>
                     formik.setFieldValue(
@@ -431,7 +427,7 @@ export default function TaskModal({
               <DialogClose asChild>
               <button
                 type="button"
-                className="border border-primary-200 rounded-[5px] flex justify-center items-center text-primary-default 
+                className="border border-th-acc-soft rounded-[5px] flex justify-center items-center text-th-acc-t 
                 font-lato text-[13px] font-bold p-[10px]"
               >
                 Cancel
@@ -439,7 +435,7 @@ export default function TaskModal({
               </DialogClose>
               <button
                 disabled={isLoading}
-                className="bg-primary-default rounded-[5px] w-[60px] flex justify-center items-center text-white font-lato 
+                className="bg-th-acc rounded-[5px] w-[60px] flex justify-center items-center text-th-on-acc font-lato 
                 text-[13px] font-bold p-[10px]"
                 type="button"
                 onClick={() =>

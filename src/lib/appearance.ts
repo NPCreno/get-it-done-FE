@@ -242,9 +242,9 @@ export function clearAppearanceCookieString(): string {
 /**
  * What `<html>` carries. `data-pref` is the chosen mode (so the inline script can resolve
  * `system`); `data-mode` is the resolved one the tokens key on.
- * No `dark` class: nothing sets it today, so the few `dark:` utilities and shadcn's `.dark`
- * variables are inactive; turning them on would restyle dark screens (calendar, menus, chart
- * tooltips, the task modal). Phase 2 can enable it deliberately.
+ * The `dark` class follows `data-mode` (plan 52-3): `htmlClassName` on the server, `noFlash` before
+ * first paint and `AppearanceSync` after. No `dark:` utility is left in the app and shadcn's colour
+ * variables are theme tokens, so the class changes nothing in Classic; it is there for libraries.
  */
 export interface HtmlAppearance {
   "data-theme": AppTheme;
@@ -256,6 +256,11 @@ export interface HtmlAppearance {
  * The server-rendered `<html>` attributes. For `system` the server cannot know the device, so it
  * renders light and the inline script (`noFlash`) corrects it before first paint.
  */
+/** `<html>`'s class: the font variables, plus `dark` when the resolved mode is dark (plan 52-3). */
+export function htmlClassName(fontVariables: string, attrs: HtmlAppearance): string {
+  return attrs["data-mode"] === "dark" ? `${fontVariables} dark` : fontVariables;
+}
+
 export function htmlAttributes(a: Appearance, prefersDark = false): HtmlAppearance {
   return {
     "data-theme": enabledTheme(a.theme),
@@ -279,8 +284,11 @@ export function noFlash(d: Document, path: string, mm: (q: string) => { matches:
       h.setAttribute("data-theme", "classic");
       h.setAttribute("data-pref", "system");
     }
-    if (h.getAttribute("data-pref") !== "system") return;
-    h.setAttribute("data-mode", mm("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    if (h.getAttribute("data-pref") === "system") {
+      h.setAttribute("data-mode", mm("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    }
+    var c = h.classList; // eslint-disable-line no-var
+    if (c) c.toggle("dark", h.getAttribute("data-mode") === "dark");
   } catch {
     /* never block the page */
   }

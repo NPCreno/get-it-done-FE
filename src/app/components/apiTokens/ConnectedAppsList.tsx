@@ -13,14 +13,13 @@ import { NO_CONNECTED_APPS_COPY, tokenDate } from "./tokenCopy";
 
 interface ConnectedAppsListProps {
   toast: ToastController;
-  dark: boolean;
 }
 
 /**
  * FEAT-07d "Connected apps": apps the user approved on the consent page (claude.ai and other MCP
  * clients). Disconnect revokes the grant and every token issued under it.
  */
-export default function ConnectedAppsList({ toast, dark }: ConnectedAppsListProps) {
+export default function ConnectedAppsList({ toast }: ConnectedAppsListProps) {
   const query = useOAuthGrants();
   const state = loadStateOf(query, isEmptyList);
   const revoke = useRevokeOAuthGrant();
@@ -28,8 +27,8 @@ export default function ConnectedAppsList({ toast, dark }: ConnectedAppsListProp
   const headingId = useId();
   const headingRef = useRef<HTMLHeadingElement>(null);
 
-  const muted = dark ? "text-gray-300" : "text-[#676767]";
-  const border = dark ? "border-gray-800" : "border-gray-100";
+  const muted = "text-th-ink-note";
+  const border = "border-th-sep";
 
   const confirmDisconnect = async (grant: OAuthGrant) => {
     setDisconnecting(null);
@@ -56,7 +55,6 @@ export default function ConnectedAppsList({ toast, dark }: ConnectedAppsListProp
           failure={state.failure}
           onRetry={() => void query.refetch()}
           retrying={query.isFetching}
-          dark={dark}
         />
       ) : state.status === "empty" ? (
         <p className={`font-lato text-sm ${muted}`}>{NO_CONNECTED_APPS_COPY}</p>
@@ -68,7 +66,6 @@ export default function ConnectedAppsList({ toast, dark }: ConnectedAppsListProp
               failure={state.refreshFailure}
               onRetry={() => void query.refetch()}
               retrying={query.isFetching}
-              dark={dark}
               variant="compact"
             />
           )}
@@ -88,7 +85,7 @@ export default function ConnectedAppsList({ toast, dark }: ConnectedAppsListProp
                   type="button"
                   onClick={() => setDisconnecting(g)}
                   aria-label={`Disconnect ${g.client_name}`}
-                  className="rounded-[5px] border border-error-default px-3 py-1 text-xs text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
+                  className="rounded-[5px] border border-error-default px-3 py-1 text-xs text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
                 >
                   Disconnect
                 </button>
@@ -101,7 +98,6 @@ export default function ConnectedAppsList({ toast, dark }: ConnectedAppsListProp
       {disconnecting && (
         <DisconnectAppDialog
           grant={disconnecting}
-          dark={dark}
           onCancel={() => setDisconnecting(null)}
           onConfirm={() => void confirmDisconnect(disconnecting)}
         />

@@ -20,11 +20,10 @@ interface CreateTokenDialogProps {
   /** Called once with the new secret; the dialog has already dropped its own copy. */
   onCreated: (created: NewToken) => void;
   toast: ToastController;
-  dark: boolean;
 }
 
 /** Name (1-60 characters) and expiry (90 days preselected). Backend errors show in the form. */
-export default function CreateTokenDialog({ onClose, onCreated, toast, dark }: CreateTokenDialogProps) {
+export default function CreateTokenDialog({ onClose, onCreated, toast }: CreateTokenDialogProps) {
   const create = useCreateApiToken();
   const [name, setName] = useState("");
   const [expiry, setExpiry] = useState<ExpiryChoice>(DEFAULT_EXPIRY);
@@ -32,7 +31,7 @@ export default function CreateTokenDialog({ onClose, onCreated, toast, dark }: C
   const [formError, setFormError] = useState<string | undefined>();
   const formErrorId = useId();
   const nameRef = useRef<HTMLInputElement>(null);
-  const muted = dark ? "text-gray-300" : "text-[#676767]";
+  const muted = "text-th-ink-note";
 
   const submit = async () => {
     if (create.isPending) return;
@@ -62,7 +61,6 @@ export default function CreateTokenDialog({ onClose, onCreated, toast, dark }: C
       title="Create a token"
       description="Give it a name you'll recognize, like the computer or app that will use it."
       onClose={onClose}
-      dark={dark}
       width="w-[480px]"
       // Start on the name, not on Close.
       onOpenAutoFocus={(e) => {
@@ -91,16 +89,14 @@ export default function CreateTokenDialog({ onClose, onCreated, toast, dark }: C
         />
 
         <fieldset className="flex flex-col gap-2">
-          <legend className={`font-lato text-base ${dark ? "text-white" : "text-text"}`}>
+          <legend className={`font-lato text-base text-th-ink`}>
             Expires after
           </legend>
           <div className="grid grid-cols-2 gap-2">
             {EXPIRY_OPTIONS.map((o) => (
               <label
                 key={o.label}
-                className={`flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 font-lato text-sm has-[:checked]:border-primary-default has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary-default ${
-                  dark ? "border-gray-800" : "border-[#E0E0E0]"
-                }`}
+                className={`flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 font-lato text-sm has-[:checked]:border-th-acc has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-th-focus border-th-line`}
               >
                 <input
                   type="radio"
@@ -108,7 +104,7 @@ export default function CreateTokenDialog({ onClose, onCreated, toast, dark }: C
                   value={o.value ?? "never"}
                   checked={expiry === o.value}
                   onChange={() => setExpiry(o.value)}
-                  className="accent-primary-default"
+                  className="accent-th-acc"
                 />
                 {o.label}
               </label>
@@ -131,16 +127,14 @@ export default function CreateTokenDialog({ onClose, onCreated, toast, dark }: C
           <button
             type="button"
             onClick={onClose}
-            className={`rounded-[5px] border px-4 py-2 font-lato text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default ${
-              dark ? "border-gray-700" : "border-[#E0E0E0]"
-            }`}
+            className={`rounded-[5px] border px-4 py-2 font-lato text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus border-th-row-edge`}
           >
             Cancel
           </button>
           <button
             type="submit"
             aria-disabled={create.isPending}
-            className="rounded-[5px] bg-primary-default px-4 py-2 font-lato text-sm font-bold text-white transition-colors hover:bg-primary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2 aria-disabled:opacity-60"
+            className="rounded-[5px] bg-th-acc px-4 py-2 font-lato text-sm font-bold text-th-on-acc transition-colors hover:bg-th-acc-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 aria-disabled:opacity-60"
           >
             {create.isPending ? "Creating…" : "Create token"}
           </button>
