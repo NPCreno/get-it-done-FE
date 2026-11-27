@@ -24,7 +24,6 @@ interface HeatmapValue {
 interface MonthlyHeatmapProps {
   values: HeatmapValue[];
   className?: string;
-  dark?: boolean;
   /** Replaces the day grid (loading or error). The month navigation above it stays usable. */
   statusSlot?: React.ReactNode;
 }
@@ -32,7 +31,6 @@ interface MonthlyHeatmapProps {
 export default function MonthlyHeatmap({ 
   values = [], 
   className = '',
-  dark = false,
   statusSlot,
 }: MonthlyHeatmapProps) {
   const { calendarMonthYear, setCalendarMonthYear } = useFormState();
@@ -93,22 +91,23 @@ export default function MonthlyHeatmap({
     const count = valueMap[dayKey] || 0;
     let classes = 'w-6 h-6 rounded-sm flex items-center justify-center text-xs';
     
+    // RD-2: the levels are heat tokens (board 18 --h*); Classic's values are today's greens.
     if (!isSameMonth(day, monthStart)) {
-      return classes + ` ${dark ? "bg-foreground-dark" : "bg-gray-50"} text-gray-600`;
+      return classes + ' bg-th-heat-out text-th-ink-mid';
     }
     
     if (isToday(day)) {
-      classes += ' ring-1 ring-gray-200';
+      classes += ' ring-1 ring-th-rule';
     }
     
     if (count > 0) {
-      if (count <= 1) classes += ` ${dark ? "bg-success-dark-100 text-white" : "bg-success-100 text-black"}`;
-      else if (count <= 2) classes += ` ${dark ? "bg-success-dark-200 text-white" : "bg-success-200 text-black"}`;
-      else if (count <= 4) classes += ` ${dark ? "bg-success-dark-300 text-white" : "bg-success-300 text-black"}`;
-      else if (count <= 6) classes += ` ${dark ? "bg-success-dark-600 text-white" : "bg-success-600 text-black"}`;
-      else classes += ` ${dark ? "bg-success-dark-700 text-white" : "bg-success-700 text-black"}`;
+      if (count <= 1) classes += ' bg-th-heat-1 text-th-on-heat';
+      else if (count <= 2) classes += ' bg-th-heat-2 text-th-on-heat';
+      else if (count <= 4) classes += ' bg-th-heat-3 text-th-on-heat';
+      else if (count <= 6) classes += ' bg-th-heat-4 text-th-on-heat';
+      else classes += ' bg-th-heat-5 text-th-on-heat';
     } else {
-      classes += ` ${dark ? "bg-gray-dark-50" : "bg-gray-50"} text-gray-200`;
+      classes += ' bg-th-heat-0 text-th-heat-0-t';
     }
     
     return classes;
@@ -121,7 +120,7 @@ export default function MonthlyHeatmap({
   
   for (let i = 0; i < 7; i++) {
     dayHeaders.push(
-      <div key={`header-${i}`} className="text-xs text-gray-500 text-center w-6">
+      <div key={`header-${i}`} className="text-xs text-th-ink-dim text-center w-6">
         {format(addDays(startDateHeaders, i), dayHeaderFormat)}
       </div>
     );
@@ -161,17 +160,17 @@ export default function MonthlyHeatmap({
         <div className="flex w-full items-center justify-center">
           <button 
             onClick={handlePrevMonth}
-            className={`p-1 hover:bg-gray-100 rounded ${dark ? "text-white hover:text-black" : "text-black hover:text-white"}`}
+            className="p-1 hover:bg-th-menu-hover rounded text-th-ink-abs"
             aria-label="Previous month"
           >
             <ChevronLeft className={`w-4 h-4 `} />
           </button>
-          <span className={`text-sm mx-2 w-32 text-center ${dark ? "text-white" : "text-black"}`}>
+          <span className="text-sm mx-2 w-32 text-center text-th-ink-abs">
             {format(currentMonth, 'MMM yyyy')}
           </span>
           <button 
             onClick={handleNextMonth}
-            className={`p-1 hover:bg-gray-100 rounded ${dark ? "text-white hover:text-black" : "text-black hover:text-white"}`}
+            className="p-1 hover:bg-th-menu-hover rounded text-th-ink-abs"
             aria-label="Next month"
           >
             <ChevronRight className="w-4 h-4" />
@@ -187,7 +186,7 @@ export default function MonthlyHeatmap({
         rows={heatmapRows(values.map(({ date, count }) => ({ date, count })), currentMonth)}
       />
       <div aria-hidden="true">
-      <div className="grid grid-cols-7 gap-1 mb-1 text-xs text-gray-500 text-center">
+      <div className="grid grid-cols-7 gap-1 mb-1 text-xs text-th-ink-dim text-center">
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
           <div key={i} className="h-4">{day}</div>
         ))}
@@ -197,15 +196,16 @@ export default function MonthlyHeatmap({
         {rows}
       </div>
       
-      <div className="flex justify-end mt-2 text-xs text-gray-500">
+      <div className="flex justify-end mt-2 text-xs text-th-ink-dim">
         <div className="flex items-center">
           <span className="mr-2">Less</span>
           <div className="flex space-x-1">
-            <div className={`w-3 h-3 ${dark ? "bg-success-dark-100" : "bg-success-100"} rounded-sm`}></div>
-            <div className={`w-3 h-3 ${dark ? "bg-success-dark-200" : "bg-success-200"} rounded-sm`}></div>
-            <div className={`w-3 h-3 ${dark ? "bg-success-dark-300" : "bg-success-300"} rounded-sm`}></div>
-            <div className={`w-3 h-3 ${dark ? "bg-success-dark-600" : "bg-success-600"} rounded-sm`}></div>
-            <div className={`w-3 h-3 ${dark ? "bg-success-dark-800" : "bg-success-800"} rounded-sm`}></div>
+            <div className="w-3 h-3 bg-th-heat-1 rounded-sm"></div>
+            <div className="w-3 h-3 bg-th-heat-2 rounded-sm"></div>
+            <div className="w-3 h-3 bg-th-heat-3 rounded-sm"></div>
+            <div className="w-3 h-3 bg-th-heat-4 rounded-sm"></div>
+            {/* Classic never painted this one (its class named a shade that doesn't exist): --heat-top is transparent there. */}
+            <div className="w-3 h-3 bg-th-heat-top rounded-sm"></div>
           </div>
           <span className="ml-2">More</span>
         </div>

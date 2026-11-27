@@ -2,15 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
-interface DashboardSearchProps {
-  dark?: boolean;
-}
-
 /**
  * Expandable task search box. It owns its own state so typing re-renders only this
  * component, not the whole dashboard page. (The box does not filter anything yet.)
  */
-export default function DashboardSearch({ dark }: DashboardSearchProps) {
+export default function DashboardSearch() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   // Focus the search box when the user expands it (instead of autoFocus).
@@ -22,18 +18,11 @@ export default function DashboardSearch({ dark }: DashboardSearchProps) {
   return (
     <div className="relative flex justify-end">
       <div
-        className={`relative flex items-center ${
-          dark 
-            ? 'bg-foreground-dark border border-gray-800' 
-            : 'bg-white'
-        } rounded-xl overflow-hidden h-[44px] transition-all duration-300 ease-out ${
+        // RD-2: --edge-w is 0 in Classic light (no border there), 1px elsewhere.
+        className={`relative flex items-center bg-th-card [border-width:var(--edge-w)] border-th-edge rounded-xl overflow-hidden h-[44px] transition-all duration-300 ease-out ${
           isSearchExpanded
-            ? dark
-              ? "shadow-lg ring-1 ring-gray-800"
-              : "shadow-md ring-1 ring-gray-200"
-            : dark
-              ? "w-[44px] hover:bg-gray-900/80"
-              : "w-[44px] hover:bg-gray-50"
+            ? "shadow-pop ring-1 ring-th-ring-soft"
+            : "w-[44px] hover:bg-th-search-hover"
         }`}
         style={{
           width: isSearchExpanded ? "280px" : "44px",
@@ -46,11 +35,7 @@ export default function DashboardSearch({ dark }: DashboardSearchProps) {
           ref={searchInputRef}
           type="text"
           placeholder={isSearchExpanded ? "Search tasks..." : ""}
-          className={`bg-transparent border-0 focus:ring-0 focus:outline-none h-full pl-4 pr-10 ${
-            dark 
-              ? 'text-white placeholder-gray-500' 
-              : 'text-gray-700 placeholder-gray-400'
-          } transition-all duration-200 ${
+          className={`bg-transparent border-0 focus:ring-0 focus:outline-none h-full pl-4 pr-10 text-th-input placeholder-th-placeholder transition-all duration-200 ${
             isSearchExpanded
               ? "w-full opacity-100"
               : "w-0 opacity-0"
@@ -79,12 +64,8 @@ export default function DashboardSearch({ dark }: DashboardSearchProps) {
         <button
           className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all duration-200 ${
             isSearchExpanded && searchQuery
-              ? dark
-                ? "text-gray-400 hover:bg-gray-800"
-                : "text-gray-500 hover:bg-gray-100"
-              : dark
-                ? "text-gray-500 hover:text-gray-300 right-[4px]"
-                : "text-gray-400 hover:text-gray-600 right-[4px]"
+              ? "text-th-ink-sub hover:bg-th-menu-hover"
+              : "text-th-placeholder hover:text-th-ico-hover right-[4px]"
           }`}
           onClick={(e) => {
             e.stopPropagation();

@@ -8,7 +8,6 @@ import { accent, surface } from "./faceClasses";
 
 export interface MiniProps {
   style: PomodoroStyle;
-  dark: boolean;
   phase: TimerPhase;
   type: TimerType;
   timeLeft: number;
@@ -25,13 +24,13 @@ export interface MiniProps {
  *  - horizon: a thin number, a line with a dot, and a caption.
  * Decorative: the button around it carries the accessible name.
  */
-export default function PomodoroMini({ style, dark, phase, type, timeLeft, fullDuration, rounds, label }: MiniProps) {
-  const s = surface(dark);
+export default function PomodoroMini({ style, phase, type, timeLeft, fullDuration, rounds, label }: MiniProps) {
+  const s = surface();
   const dim = phase === "paused" ? "opacity-[.45]" : "";
   const quiet = phase === "running" ? "" : s.txt2;
 
   if (style === "dial") {
-    const a = accent(dark, type, true);
+    const a = accent(type, true);
     return (
       <span aria-hidden="true" className="flex items-center gap-2">
         <svg viewBox="0 0 34 34" className="size-7 shrink-0">
@@ -43,7 +42,7 @@ export default function PomodoroMini({ style, dark, phase, type, timeLeft, fullD
     );
   }
 
-  const a = accent(dark, type);
+  const a = accent(type);
   const caption = miniCaption(style, phase, type, rounds);
 
   if (style === "ticket") {

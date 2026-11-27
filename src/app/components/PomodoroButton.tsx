@@ -9,7 +9,6 @@ import { pomodoroStyleOf } from '@/lib/pomodoroStyle';
 import { useFormState } from '@/app/context/FormProvider';
 import PomodoroMini from './pomodoro/PomodoroMini';
 import { surface } from './pomodoro/faceClasses';
-import { useAppearance } from "@/hooks/useAppearance";
 
 interface PomodoroButtonProps {
   onOpenChange: (open: boolean) => void;
@@ -23,7 +22,6 @@ interface PomodoroButtonProps {
  */
 export default function PomodoroButton({ onOpenChange }: PomodoroButtonProps) {
   const { userData } = useFormState();
-  const { isDark: dark } = useAppearance();
   const style = pomodoroStyleOf(userData);
   const { timeLeft, isActive, currentTimer, completedFocusRounds, pause, start, reset, isAtDefaultTime } = useTimer();
 
@@ -56,11 +54,11 @@ export default function PomodoroButton({ onOpenChange }: PomodoroButtonProps) {
   // idle | running | paused: every label below comes from this one phase (BUG-04)
   const phase = timerPhase(isActive, timeLeft, TimerConfig[currentTimer]);
   const copy = timerCopy(phase, currentTimer, formatTime(timeLeft));
-  const s = surface(dark);
+  const s = surface();
   const control = `grid place-items-center size-7 rounded-full ${s.txt2} ${s.hover} ${s.ring}`;
 
   return (
-    <div className={`relative group flex items-center gap-1 h-[44px] pr-1.5 rounded-[10px] border font-lato ${s.card} ${s.border} ${s.txt}`}>
+    <div className={`relative group flex items-center gap-1 h-[44px] pr-1.5 rounded-[10px] border font-ui ${s.card} ${s.border} ${s.txt}`}>
       <button
         type="button"
         className={`flex items-center h-full pl-3 pr-1.5 rounded-[10px] ${s.ring}`}
@@ -69,7 +67,6 @@ export default function PomodoroButton({ onOpenChange }: PomodoroButtonProps) {
       >
         <PomodoroMini
           style={style}
-          dark={dark}
           phase={phase}
           type={currentTimer}
           timeLeft={timeLeft}

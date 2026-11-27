@@ -89,10 +89,89 @@ export function currentAppearance(input: {
   cookie: Appearance | null;
   demo: boolean;
   prefersDark: boolean;
+  /** RD-2 dev theme preview (development builds only; see `previewOverride`). */
+  preview?: PreviewOverride | null;
 }): AppearanceState {
   const pref = input.demo ? DEMO_APPEARANCE : input.user ? appearanceOf(input.user) : (input.cookie ?? DEFAULT_APPEARANCE);
-  const resolvedMode = resolveMode(pref.mode, input.prefersDark);
-  return { theme: enabledTheme(pref.theme), mode: pref.mode, resolvedMode, isDark: resolvedMode === "dark" };
+  const resolvedMode = input.preview?.mode ?? resolveMode(pref.mode, input.prefersDark);
+  // The preview may show a theme that isn't enabled yet: that is its whole point.
+  const theme = input.preview?.theme ?? enabledTheme(pref.theme);
+  return { theme, mode: pref.mode, resolvedMode, isDark: resolvedMode === "dark" };
+}
+
+// ---------------------------------------------------------------- dev theme preview (RD-2)
+
+/**
+ * Plan 52-0 §4. In development only, `?theme=calm|field|classic` and `?mode=light|dark` on any URL
+ * override the appearance for this tab (sessionStorage), so Calm and Field notes can be checked
+ * before roadmap Phase 3 turns them on. Never saved to the account or the cookie. A production
+ * build ignores it: `env` is `process.env.NODE_ENV`, inlined at build time.
+ */
+export interface PreviewOverride {
+  theme?: AppTheme;
+  mode?: ResolvedMode;
+}
+
+export const PREVIEW_STORAGE_KEY = "gid_theme_preview";
+const RESOLVED_MODES = ["light", "dark"] as const;
+
+/** The bits of `Storage` the preview uses (sessionStorage in the browser, a fake in tests). */
+export interface PreviewStorage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+}
+
+function previewOf(theme: unknown, mode: unknown): PreviewOverride | null {
+  const t = narrow(APP_THEMES, theme);
+  const m = narrow(RESOLVED_MODES, mode);
+  if (!t && !m) return null;
+  return { ...(t ? { theme: t } : {}), ...(m ? { mode: m } : {}) };
+}
+
+/**
+ * The preview for this tab, or null. A `theme`/`mode` query wins and is remembered in `storage`;
+ * without one, the remembered preview applies. Pure apart from writing `storage`; never throws.
+ */
+export function previewOverride(search: string, storage: PreviewStorage | null, env: string | undefined): PreviewOverride | null {
+  if (env === "production") return null;
+  const q = new URLSearchParams(search);
+  const fromQuery = previewOf(q.get("theme"), q.get("mode"));
+  try {
+    if (fromQuery) {
+      storage?.setItem(PREVIEW_STORAGE_KEY, JSON.stringify(fromQuery));
+      return fromQuery;
+    }
+    const raw = storage?.getItem(PREVIEW_STORAGE_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw) as { theme?: unknown; mode?: unknown } | null;
+    return saved ? previewOf(saved.theme, saved.mode) : null;
+  } catch {
+    return fromQuery;
+  }
+}
+
+/** The chip's ×: forget the preview for this tab. */
+export function clearPreview(storage: PreviewStorage | null): void {
+  try {
+    storage?.removeItem(PREVIEW_STORAGE_KEY);
+  } catch {
+    /* storage unavailable: nothing to clear */
+  }
+}
+
+/** `search` without the preview's own parameters (so a reload after × stays cleared). */
+export function searchWithoutPreview(search: string): string {
+  const q = new URLSearchParams(search);
+  q.delete("theme");
+  q.delete("mode");
+  const rest = q.toString();
+  return rest ? `?${rest}` : "";
+}
+
+/** "Preview: Calm · Dark", from what is on screen. */
+export function previewLabel(state: Pick<AppearanceState, "theme" | "resolvedMode">): string {
+  return `Preview: ${APP_THEME_NAMES[state.theme]} · ${MODE_NAMES[state.resolvedMode]}`;
 }
 
 /** The account's choice to remember in the cookie, or null when there is nothing to remember. */

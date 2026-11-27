@@ -1,8 +1,9 @@
 "use client";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { useFormState } from "@/app/context/FormProvider";
 import { currentAppearance, isDemoPath, type Appearance, type AppearanceState } from "@/lib/appearance";
+import { getPreview, getServerPreview, subscribePreview } from "@/lib/themePreview";
 
 /**
  * RD-1: what the root layout knows about appearance before any user loads. `cookie` is the last
@@ -19,6 +20,7 @@ export const AppearanceContext = createContext<AppearanceContextValue>({ cookie:
 /**
  * The only source of theme and mode for components (`isDark` replaces every
  * hand-written dark check on the user). Follows the device live when the mode is System.
+ * RD-2: in development, a `?theme=`/`?mode=` preview overrides it for the tab (never in production).
  */
 export function useAppearance(): AppearanceState {
   const { userData } = useFormState();
@@ -28,9 +30,10 @@ export function useAppearance(): AppearanceState {
   const hasUser = !!userData;
   const theme = userData?.theme;
   const appTheme = userData?.appTheme;
+  const preview = useSyncExternalStore(subscribePreview, getPreview, getServerPreview);
   return useMemo(
-    () => currentAppearance({ user: hasUser ? { theme, appTheme } : null, cookie, demo, prefersDark }),
-    [hasUser, theme, appTheme, cookie, demo, prefersDark]
+    () => currentAppearance({ user: hasUser ? { theme, appTheme } : null, cookie, demo, prefersDark, preview }),
+    [hasUser, theme, appTheme, cookie, demo, prefersDark, preview]
   );
 }
 

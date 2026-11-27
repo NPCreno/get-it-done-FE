@@ -46,7 +46,7 @@ export function ChartAreaGradient({ data, colors, className }: AreaChartProps) {
     <Card className={`flex flex-col h-full min-h-[280px] ${className}`}>
       <CardHeader className="p-4 pb-2">
         <CardTitle>Task Completion Trend</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-th-chart-note">
           Showing task completion vs creation for the week
         </CardDescription>
       </CardHeader>
@@ -110,10 +110,12 @@ export function ChartAreaGradient({ data, colors, className }: AreaChartProps) {
       <CardFooter className="p-4 pt-0">
         <div className="flex w-full justify-between items-center text-xs">
           <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-[var(--chart-1)]"></div>
+            {/* RD-2: kept as spacing only. Its colour was shadcn's HSL triplet, so it never painted; now that
+                --chart-1 is a real colour, painting it would add a dot Classic never showed (board 18 has none). */}
+            <div aria-hidden="true" className="h-2 w-2 rounded-full"></div>
             <span>Completed: {data.reduce((sum, item) => sum + item.completed, 0)}</span>
           </div>
-          <div className="flex items-center gap-1 text-muted-foreground">
+          <div className="flex items-center gap-1 text-th-chart-note">
             <TrendingUp className="h-3 w-3" />
             <span>Last 7 days</span>
           </div>

@@ -47,12 +47,10 @@ export default function ChartCard({
   const skeleton = (
     <div
       aria-busy="true"
-      className={`w-full h-full min-h-[200px] flex items-center justify-center p-4 animate-pulse ${
-        isDark ? "bg-background-dark" : "bg-background-light"
-      }`}
+      className="w-full h-full min-h-[200px] flex items-center justify-center p-4 animate-pulse bg-th-page"
     >
       <span className="sr-only">Loading {widget}</span>
-      <div className="h-24 w-full max-w-[220px] rounded-[10px] bg-gray-300/40" />
+      <div className="h-24 w-full max-w-[220px] rounded-card bg-th-skeleton" />
     </div>
   );
 
@@ -73,12 +71,9 @@ export default function ChartCard({
   const status = load.state.status;
 
   const renderNoDataState = () => (
-    <div className={`w-full h-full flex flex-col items-center justify-center p-4 text-center 
-        ${isDark ? "bg-background-dark" : "bg-background-light"} 
-        ${isDark ? "text-white" : "text-black"}
-        ${isDark ? "border-background-dark" : "border-background-light"}`}>
-      <Database className="h-16 w-16 text-gray-400 mb-2" />
-      <p className="text-gray-500 text-sm">No data available</p>
+    <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-th-page text-th-ink-abs border-th-page">
+      <Database className="h-16 w-16 text-th-ink-faint mb-2" />
+      <p className="text-th-ink-dim text-sm">No data available</p>
     </div>
   );
 
@@ -89,13 +84,13 @@ export default function ChartCard({
         if (status === "error") return errorBlock("full");
         if (status === "empty") return renderNoDataState();
         return (
-          <div className={`w-full h-full ${isDark ? "bg-foreground-dark" : "bg-foreground-light"}`}>
+          <div className="w-full h-full bg-th-card">
             <ChartAreaGradient 
               data={taskCompletionData}
               colors={{
-                completed: "#53D86A",
+                completed: "var(--chart-1)",
               }}
-              className={isDark ? "bg-foreground-dark border-gray-800 border text-white" : "bg-foreground-light"}
+              className="bg-th-card border-th-edge text-th-card-fg"
               aria-label={`Task completion trend chart showing ${taskCompletionData.length} days of data`}
             />
             {refreshBlock}
@@ -103,14 +98,13 @@ export default function ChartCard({
         );
       case "Task Distribution by project":
         return (
-          <div className={`${isDark ? "bg-foreground-dark" : "bg-foreground-light"} w-full h-full`}>
+          <div className="bg-th-card w-full h-full">
             <ChartPieInteractive 
               data={taskDistributionData}
               title="Task Distribution"
               description="Completed tasks by project"
               noData={status === "empty"}
               statusSlot={status === "loading" ? skeleton : status === "error" ? errorBlock("full") : undefined}
-              dark={isDark}
             />
           </div>
         );
@@ -119,22 +113,21 @@ export default function ChartCard({
         if (status === "error") return errorBlock("full");
         return (
           <>
-            <StreakCounter streakCount={streakCount} header={header} dark={isDark}/>
+            <StreakCounter streakCount={streakCount} header={header} />
             {refreshBlock}
           </>
         );
       case "Calendar Heat map":
         return (
-          <div className={`w-full h-full p-4  rounded-[10px] shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] 
-          hover:shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] transition-all duration-300 fade-in-left 
-          ${isDark ? "bg-foreground-dark border-gray-800 border" : "bg-foreground-light"}`}>
-            <CardTitle className={`${isDark ? "text-white" : "text-black"}`}>{header}</CardTitle>
+          <div className="w-full h-full p-4 rounded-card shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)]
+          hover:shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] transition-all duration-300 fade-in-left
+          bg-th-card [border-width:var(--edge-w)] border-th-edge">
+            <CardTitle className="text-th-ink-abs">{header}</CardTitle>
             <MonthlyHeatmap 
               values={calendarHeatmapData.map(item => ({
                 date: item.date,
                 count: item.value
               }))}
-              dark={isDark}
               statusSlot={status === "loading" ? skeleton : status === "error" ? errorBlock("full") : undefined}
             />
             {refreshBlock}
@@ -143,11 +136,10 @@ export default function ChartCard({
       default:
         return (
           <div
-      className={`p-5 flex flex-col gap-[10px] justify-start items-start 
-      ${isDark ? "bg-background-dark" : "bg-background-light"}
+      className={`p-5 flex flex-col gap-[10px] justify-start items-start bg-th-page
       hover:shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] transition-all duration-300 fade-in-left ${delay}`}
     >
-      <span className="text-text text-[13px] font-lato">{header}</span>
+      <span className="text-th-ink text-[13px] font-ui">{header}</span>
       <div className="w-full h-full rounded-[10px] bg-background flex items-center justify-center flex-col">
         <Image
         src={"/svgs/under-development.svg"}
@@ -167,15 +159,15 @@ export default function ChartCard({
     <div
       className={`relative flex flex-col gap-[10px] justify-start items-start 
        
-        rounded-[10px] w-full h-full min-h-[300px]
+        rounded-card w-full h-full min-h-[300px]
       hover:shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] transition-all duration-300 fade-in-left 
-      ${isDark ? "bg-foreground-dark" : "bg-foreground-light"}${delay} group`}
+      bg-th-card${delay} group`}
       role="region"
       aria-label={`${header} chart`}
       tabIndex={-1}
       ref={focusRef}
     >
-      <div className={`w-full h-full rounded-[10px] overflow-hidden ${isDark ? "bg-background-dark" : "bg-background-light"}`}>
+      <div className="w-full h-full rounded-card overflow-hidden bg-th-page">
         <div className="h-full transform transition-all duration-300 group-hover:scale-[1.01]">
           {renderChart()}
         </div>

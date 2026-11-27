@@ -220,7 +220,7 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
               </p>
             )}
             <div className="w-full">
-              <AssigneeChip task={task} dark={isDark} />
+              <AssigneeChip task={task} />
             </div>
           </div>
         </div>

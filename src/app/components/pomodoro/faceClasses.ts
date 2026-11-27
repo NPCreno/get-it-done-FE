@@ -2,9 +2,10 @@ import type { TimerType } from "@/lib/timerService";
 
 /**
  * FEAT-10 colour roles for the three faces and minis (boards 17A–C), as literal Tailwind classes so
- * the content scan sees them. Light and dark come from `useAppearance().isDark`, like the rest of the app.
- * Contrast (plan 47b §1a): a primary action is `text-text` on amber (6.73:1), never white on amber;
- * a break action is white on secondary-500 (5.23:1), or foreground-dark on secondary-300 in dark.
+ * the content scan sees them. RD-2: every colour is a theme token, so the light/dark/theme switch
+ * happens in CSS; nothing here takes `isDark`.
+ * Contrast (plan 47b §1a, tested on the tokens): a primary action is `--on-acc` on `--acc`; a break
+ * action is `--on-brk` on `--brk` (Classic: white on teal 5.23:1; the dark card colour on light teal in dark).
  */
 
 export interface Surface {
@@ -34,54 +35,36 @@ export interface Surface {
   hover: string;
 }
 
-const LIGHT: Surface = {
-  page: "bg-background-light",
-  card: "bg-white",
-  cardFill: "fill-white",
-  border: "border-[#E0E0E0]",
-  lineBg: "bg-[#E0E0E0]",
-  faceStroke: "stroke-[#E0E0E0]",
-  tick: "stroke-[#B8B8B8]",
-  numFill: "fill-[#676767]",
-  txt: "text-text",
-  txt2: "text-[#676767]",
-  ring: "outline-none focus-visible:ring-2 focus-visible:ring-secondary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
-  ringWithin: "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-secondary-500 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-white",
-  scrim: "bg-[rgba(17,19,23,.45)]",
-  hzPage: "bg-[#F2F0EA]",
-  hzLineBg: "bg-[#D9D5CC]",
-  hzBorder: "border-[#D9D5CC]",
-  sunHalo: "shadow-[0_0_0_5px_#F2F0EA]",
+/**
+ * RD-2 (plan 52-1): one palette, from theme tokens, so it follows the theme and the mode by itself.
+ * Classic's token values are exactly the FEAT-10 colours (white card, light grey line, dark grey text and
+ * teal focus in light; the dark card, gray-800, white, gray-400 and light teal in dark).
+ */
+const SURFACE: Surface = {
+  page: "bg-th-page",
+  card: "bg-th-card",
+  cardFill: "fill-th-card",
+  border: "border-th-line",
+  lineBg: "bg-th-line",
+  faceStroke: "stroke-th-line",
+  tick: "stroke-th-tick",
+  numFill: "fill-th-ink2",
+  txt: "text-th-ink",
+  txt2: "text-th-ink2",
+  ring: "outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 focus-visible:ring-offset-th-card",
+  ringWithin: "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-th-focus has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-th-card",
+  scrim: "bg-th-pom-scrim",
+  hzPage: "bg-th-hz-page",
+  hzLineBg: "bg-th-hz-line",
+  hzBorder: "border-th-hz-line",
+  sunHalo: "shadow-[0_0_0_5px_var(--hz-page)]",
   notches:
-    "[background:radial-gradient(circle_at_left,transparent_12px,#FFFFFF_12.5px)_left/51%_100%_no-repeat,radial-gradient(circle_at_right,transparent_12px,#FFFFFF_12.5px)_right/51%_100%_no-repeat]",
-  hover: "hover:bg-black/5",
+    "[background:radial-gradient(circle_at_left,transparent_12px,var(--card)_12.5px)_left/51%_100%_no-repeat,radial-gradient(circle_at_right,transparent_12px,var(--card)_12.5px)_right/51%_100%_no-repeat]",
+  hover: "hover:bg-th-hover",
 };
 
-const DARK: Surface = {
-  page: "bg-background-dark",
-  card: "bg-foreground-dark",
-  cardFill: "fill-foreground-dark",
-  border: "border-gray-800",
-  lineBg: "bg-gray-800",
-  faceStroke: "stroke-gray-800",
-  tick: "stroke-gray-600",
-  numFill: "fill-gray-400",
-  txt: "text-white",
-  txt2: "text-gray-400",
-  ring: "outline-none focus-visible:ring-2 focus-visible:ring-secondary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground-dark",
-  ringWithin: "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-secondary-300 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-foreground-dark",
-  scrim: "bg-[rgba(0,0,0,.62)]",
-  hzPage: "bg-background-dark",
-  hzLineBg: "bg-[#262A33]",
-  hzBorder: "border-[#262A33]",
-  sunHalo: "shadow-[0_0_0_5px_#0D0E12]",
-  notches:
-    "[background:radial-gradient(circle_at_left,transparent_12px,#111317_12.5px)_left/51%_100%_no-repeat,radial-gradient(circle_at_right,transparent_12px,#111317_12.5px)_right/51%_100%_no-repeat]",
-  hover: "hover:bg-white/5",
-};
-
-export function surface(dark: boolean): Surface {
-  return dark ? DARK : LIGHT;
+export function surface(): Surface {
+  return SURFACE;
 }
 
 export interface Accent {
@@ -102,50 +85,33 @@ export interface Accent {
   sun: string;
 }
 
-const FOCUS_LIGHT: Accent = {
-  bg: "bg-primary-default",
-  fill: "fill-primary-default",
-  text: "text-primary-600",
-  sub: "bg-primary-100",
-  border: "border-primary-600",
-  action: "bg-primary-default text-text",
-  underline: "shadow-[inset_0_-2px_0_#FEAD03]",
-  sun: "bg-primary-default",
+const FOCUS: Accent = {
+  bg: "bg-th-acc",
+  fill: "fill-th-acc",
+  text: "text-th-acc-t",
+  sub: "bg-th-acc-sub",
+  border: "border-th-acc-t",
+  action: "bg-th-acc text-th-on-acc",
+  underline: "shadow-[inset_0_-2px_0_var(--acc)]",
+  sun: "bg-th-acc",
 };
-const FOCUS_DARK: Accent = {
-  ...FOCUS_LIGHT,
-  text: "text-primary-default",
-  sub: "bg-primary-700",
-  border: "border-primary-default",
-};
-const BREAK_LIGHT: Accent = {
-  bg: "bg-secondary-500",
-  fill: "fill-secondary-500",
-  text: "text-secondary-500",
-  sub: "bg-secondary-100",
-  border: "border-secondary-500",
-  action: "bg-secondary-500 text-white",
-  underline: "shadow-[inset_0_-2px_0_#19768D]",
-  sun: "bg-[#F2F0EA] border-[3px] border-secondary-500",
-};
-const BREAK_DARK: Accent = {
-  bg: "bg-secondary-300",
-  fill: "fill-secondary-300",
-  text: "text-secondary-300",
-  sub: "bg-secondary-700",
-  border: "border-secondary-300",
-  action: "bg-secondary-300 text-foreground-dark",
-  underline: "shadow-[inset_0_-2px_0_#59B6CD]",
-  sun: "bg-background-dark border-[3px] border-secondary-300",
+const BREAK: Accent = {
+  bg: "bg-th-brk",
+  fill: "fill-th-brk",
+  text: "text-th-brk-t",
+  sub: "bg-th-brk-sub",
+  border: "border-th-brk",
+  action: "bg-th-brk text-th-on-brk",
+  underline: "shadow-[inset_0_-2px_0_var(--brk)]",
+  sun: "bg-th-hz-page border-[3px] border-th-brk",
 };
 
 /**
  * The mode's accent. The dial draws a short break's wedge (and its mini) in the lighter teal
- * (`secondary-default`); everything else uses the deep teal for breaks.
+ * (`--brk-wedge`); everything else uses `--brk` for breaks.
  */
-export function accent(dark: boolean, type: TimerType, dialWedge = false): Accent {
-  if (type === "pomodoro") return dark ? FOCUS_DARK : FOCUS_LIGHT;
-  const base = dark ? BREAK_DARK : BREAK_LIGHT;
-  if (dialWedge && type === "shortBreak") return { ...base, bg: "bg-secondary-default", fill: "fill-secondary-default" };
-  return base;
+export function accent(type: TimerType, dialWedge = false): Accent {
+  if (type === "pomodoro") return FOCUS;
+  if (dialWedge && type === "shortBreak") return { ...BREAK, bg: "bg-th-brk-wedge", fill: "fill-th-brk-wedge" };
+  return BREAK;
 }

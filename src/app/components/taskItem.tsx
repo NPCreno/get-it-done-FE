@@ -13,7 +13,6 @@ import { ISubTaskFormValues } from '../interface/forms/ISubTaskFormValues';
 import InputBox from './inputBox';
 import AssigneeChip from './tasks/AssigneeChip';
 import { canDeleteTask } from './tasks/assignee';
-import { useAppearance } from "@/hooks/useAppearance";
 
 interface TaskItemProps {
   task: ITask;
@@ -38,7 +37,6 @@ export function TaskItem({
   showSubtasks = false,
   onToggleSubtasks
 }: TaskItemProps) {
-  const { isDark } = useAppearance();
   // Server data goes through mutations: optimistic status, per-parent serialization
   // (scope) and invalidation live in lib/query. This component keeps no request state.
   const setTaskStatus = useSetTaskStatus(task.task_id);
@@ -156,11 +154,11 @@ export function TaskItem({
     }
   }, [isUpdating, task.task_id, task.status, subTasks, notify, setTaskStatus, setSubTaskStatus]);
 
-  // Priority color mapping (more subtle)
+  // Priority color mapping (more subtle). RD-2: priority tokens (board 18 --p-*).
   const priorityColors = {
-    'Low': 'border-l-2 border-blue-400',
-    'Medium': 'border-l-2 border-orange-400',
-    'High': 'border-l-2 border-red-400',
+    'Low': 'border-l-2 border-th-prio-low-b',
+    'Medium': 'border-l-2 border-th-prio-med-b',
+    'High': 'border-l-2 border-th-prio-high-b',
   };
 
   // Get priority color class
@@ -168,9 +166,9 @@ export function TaskItem({
 
   // Visible text next to the title so priority never depends on colour alone.
   const priorityChipColors: Record<string, string> = {
-    Low: isDark ? 'text-blue-300 border-blue-400' : 'text-blue-700 border-blue-400',
-    Medium: isDark ? 'text-orange-300 border-orange-400' : 'text-orange-700 border-orange-400',
-    High: isDark ? 'text-red-300 border-red-400' : 'text-red-700 border-red-400',
+    Low: 'text-th-prio-low border-th-prio-low-b',
+    Medium: 'text-th-prio-med border-th-prio-med-b',
+    High: 'text-th-prio-high border-th-prio-high-b bg-th-prio-high-bg',
   };
   const priorityChipColor = priorityChipColors[task.priority as string];
 
@@ -179,7 +177,7 @@ export function TaskItem({
       {/* The row is clickable for the mouse; the title button is the keyboard and screen-reader control. */}
       <div 
         role="presentation"
-        className={`flex flex-row w-full h-[46px] items-center rounded-[10px] ${isDark ? "hover:bg-gray-900" : "hover:bg-[#FAFAFA] "} 
+        className={`flex flex-row w-full h-[46px] items-center rounded-[10px] hover:bg-th-row-hover 
           cursor-pointer gap-3 pr-4 pl-3 mb-1 ${isComplete ? 'opacity-70' : ''} ${priorityColor}`}
         onClick={() => {
           handleUpdateTask();
@@ -203,7 +201,7 @@ export function TaskItem({
               aria-label={isComplete ? 'Mark task as pending' : 'Mark task as complete'}
               className="peer appearance-none w-full h-full cursor-pointer"
             />
-            <div className="absolute inset-0 rounded-full border-[2px] border-solid border-gray-300 peer-checked:border-0 group-hover:border-0 pointer-events-none" />
+            <div className="absolute inset-0 rounded-full border-[2px] border-solid border-th-check-ring peer-checked:border-0 group-hover:border-0 pointer-events-none" />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
               <Image
                 src="/svgs/checkmark-circle-green.svg"
@@ -226,23 +224,23 @@ export function TaskItem({
                   e.stopPropagation();
                   handleUpdateTask();
                 }}
-                className={`flex-1 font-lato text-4 ${task.status === 'Complete' 
-                ? 'line-through text-start text-gray-400' 
-                : `text-start ${isDark ? 'text-gray-300' : 'text-gray-700'}`}`}>
+                className={`flex-1 font-ui text-4 text-start ${task.status === 'Complete'
+                ? 'line-through text-th-ink-faint'
+                : 'text-th-task'}`}>
                 {task.title}
               </button>
               {priorityChipColor && (
-                <span className={`shrink-0 px-1.5 py-px rounded border text-[10px] leading-4 font-lato ${priorityChipColor}`}>
+                <span className={`shrink-0 px-1.5 py-px rounded border text-[10px] leading-4 font-ui ${priorityChipColor}`}>
                   {task.priority}
                 </span>
               )}
               </div>
               {task.description && (
-                <p className="text-xs text-gray-400 truncate">
+                <p className="text-xs text-th-ink-faint truncate">
                   {task.description}
                 </p>
               )}
-              <AssigneeChip task={task} dark={isDark} />
+              <AssigneeChip task={task} />
             </div>
             <div className="flex flex-row gap-2">            
               {/* FEAT-09: the server decides who may delete (the owner, or the task's creator).
@@ -279,7 +277,7 @@ export function TaskItem({
                       setIsAddingSubtask(true);
                     }
                   }}
-                  className={`p-1 -mr-2 ${hasSubtasks ? 'text-gray-600' : 'text-gray-300 hover:text-gray-600'}`}
+                  className={`p-1 -mr-2 ${hasSubtasks ? 'text-th-ink-mid' : 'text-th-ico-faint hover:text-th-ink-mid'}`}
                   aria-label={showSubtasks ? 'Hide subtasks' : 'Show subtasks'}
                 >
                   <svg 
@@ -299,7 +297,7 @@ export function TaskItem({
 
       {/* Subtasks Section */}
       {showSubtasks && (
-        <div className="ml-8 pl-2 border-l-2 border-gray-200">
+        <div className="ml-8 pl-2 border-l-2 border-th-rule">
           {/* Subtasks List */}
           {hasSubtasks && subTasks.map((subtask) => (
             <div key={subtask.taskSubInstance_id} className="flex items-center py-1 px-3">
@@ -313,7 +311,7 @@ export function TaskItem({
                   className="peer appearance-none w-full h-full cursor-pointer"
                   aria-label={subtask.status === 'Complete' ? 'Mark subtask as pending' : 'Mark subtask as complete'}
                 />
-                <div className="absolute inset-0 rounded-full border-[2px] border-solid border-gray-300 peer-checked:border-0 group-hover:border-0 pointer-events-none" />
+                <div className="absolute inset-0 rounded-full border-[2px] border-solid border-th-check-ring peer-checked:border-0 group-hover:border-0 pointer-events-none" />
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
                   <Image
                     src="/svgs/checkmark-circle-green.svg"
@@ -323,13 +321,13 @@ export function TaskItem({
                   />
                 </div>
               </div>
-              <span className={`text-sm ml-2 flex-1 ${subtask.status === 'Complete' 
-                ? 'line-through text-start text-gray-400' 
-                : `text-start ${isDark ? 'text-gray-300' : 'text-gray-700'}`}`}>
+              <span className={`text-sm ml-2 flex-1 text-start ${subtask.status === 'Complete'
+                ? 'line-through text-th-ink-faint'
+                : 'text-th-task'}`}>
                 {subtask.title}
               </span>
               <button 
-                className="text-gray-400 hover:text-gray-600 p-1 -mr-2"
+                className="text-th-ink-faint hover:text-th-ink-mid p-1 -mr-2"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDeleteSub(subtask.taskSubInstance_id)
@@ -392,7 +390,7 @@ export function TaskItem({
                     setIsAddingSubtask(false);
                     setFieldValue('title', '');
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-th-ink-faint hover:text-th-ink-mid"
                   aria-label="Cancel adding subtask"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

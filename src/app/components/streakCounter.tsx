@@ -6,10 +6,9 @@ import { DotLottie } from '@lottiefiles/dotlottie-web';
 interface StreakCounterProps {
   streakCount: number;
   header: string;
-  dark?: boolean;
 }
 
-export default function StreakCounter({ streakCount, header, dark = false}: StreakCounterProps) {
+export default function StreakCounter({ streakCount, header }: StreakCounterProps) {
     
     const isInactive = streakCount === 0;
     const isActive = streakCount > 0 && streakCount < 6;
@@ -56,12 +55,12 @@ export default function StreakCounter({ streakCount, header, dark = false}: Stre
       }, [streakCount]);
 
     return (
-      <div className={`flex flex-col h-full p-4 text-center rounded-[10px] shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] 
-        ${isOnFirePlus ? 'border border-orange-500 animate-fire-glow' : ''}
-        ${dark ? "bg-foreground-dark border-gray-800 border" : "bg-foreground-light"}`}
+      // RD-2: --edge-w is 0 in Classic light (no border there). "On fire" keeps its status orange.
+      <div className={`flex flex-col h-full p-4 text-center rounded-card shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] bg-th-card
+        ${isOnFirePlus ? 'border border-orange-500 animate-fire-glow' : '[border-width:var(--edge-w)] border-th-edge'}`}
       >
         <div className="flex w-full items-start">
-        <CardTitle className={`text-text ${dark ? "text-white" : "text-black"}`}>
+        <CardTitle className="text-th-ink-abs">
           {header}
         </CardTitle>
         </div>
@@ -81,7 +80,7 @@ export default function StreakCounter({ streakCount, header, dark = false}: Stre
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
                 viewBox="0 0 448 512"
-                className="w-16 h-16 text-gray-300"
+                className="w-16 h-16 text-th-ico-faint"
               >
                 <path 
                   fill="currentColor" 
@@ -92,7 +91,7 @@ export default function StreakCounter({ streakCount, header, dark = false}: Stre
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
                     viewBox="0 0 448 512"
-                    className={`w-16 h-16 ${isOnFire ? 'text-orange-500' : 'text-orange-400'}`}
+                    className={`w-16 h-16 ${isOnFire ? 'text-orange-500' : 'text-th-fire'}`}
                   >
                     <path 
                       fill="currentColor" 
@@ -105,31 +104,23 @@ export default function StreakCounter({ streakCount, header, dark = false}: Stre
           )}
           {!isInactive && !isOnFirePlus && (
             <div className={`absolute -top-2 -right-2 ${
-              isOnFire ? 'bg-red-500' : 'bg-blue-500'
-            } text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold`}>
+              isOnFire ? 'bg-red-500 text-white' : 'bg-th-badge text-th-on-badge'
+            } rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold`}>
               {streakCount}
             </div>
           )}
         </div>
-        <h3 className={`text-xl font-bold ${dark ? "text-white" : "text-gray-800"} mb-2 `}>{streakMessage}</h3>
-        <p className="text-gray-600 mb-4">{progressMessage}</p>
+        <h3 className="text-xl font-bold text-th-ink-hd mb-2">{streakMessage}</h3>
+        <p className="text-th-ink-mid mb-4">{progressMessage}</p>
         {!isInactive && (
           <>
-            <div className={`w-full rounded-full h-2.5 ${
-              dark ? 'bg-gray-800' : 'bg-gray-200'
-              }`}>
+            <div className="w-full rounded-full h-2.5 bg-th-track">
               <div 
-                className={`h-2.5 rounded-full ${
-                  isOnFire || isOnFirePlus 
-                    ? 'bg-red-500' 
-                    : dark 
-                      ? 'bg-orange-400' 
-                      : 'bg-orange-400'
-                }`} 
+                className={`h-2.5 rounded-full ${isOnFire || isOnFirePlus ? 'bg-red-500' : 'bg-th-fire'}`}
                 style={{ width: `${progressWidth}%` }}
               ></div>
               </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-th-ink-dim mt-2">
               {isOnFire 
                 ? 'Amazing! Keep the streak going!' 
                 : `Complete a task to continue your streak`
