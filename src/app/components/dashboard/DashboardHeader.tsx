@@ -3,26 +3,22 @@ import DashboardSearch from "@/app/components/DashboardSearch";
 import PomodoroButton from "@/app/components/PomodoroButton";
 
 interface DashboardHeaderProps {
-  dark?: boolean;
   onPomodoroOpenChange: (open: boolean) => void;
 }
 
-export default function DashboardHeader({ dark, onPomodoroOpenChange }: DashboardHeaderProps) {
+export default function DashboardHeader({ onPomodoroOpenChange }: DashboardHeaderProps) {
   return (
     <div className="relative flex flex-col md:flex-row justify-between gap-4 mb-2">
       {/* Left header */}
       <div className="relative z-10 flex flex-col group">
         <div className="flex items-center gap-3">
-          <div className="w-1 h-8 bg-gradient-to-b from-primary-default to-primary-200 rounded-full transform transition-transform duration-300 group-hover:scale-y-110"></div>
+          <div className="w-1 h-8 bg-[image:var(--abar)] rounded-full transform transition-transform duration-300 group-hover:scale-y-110"></div>
           <div className="space-y-0.5">
-            <h1 className={`text-2xl md:text-3xl font-bold fade-in select-none bg-clip-text text-transparent ${
-              dark
-                ? "bg-gradient-to-r from-blue-300 via-amber-200 to-blue-300"
-                : "bg-gradient-to-r from-gray-800 to-gray-600"
-            }`}>
+            {/* RD-2: --title is Classic's gradient (gray in light, blue–amber in dark); Calm and Field notes are flat --txt. */}
+            <h1 className="text-2xl md:text-3xl font-title [font-weight:var(--w-title)] [letter-spacing:var(--ls-title)] fade-in select-none bg-clip-text text-transparent bg-[image:var(--title)]">
               Dashboard
             </h1>
-            <p className="font-lato text-sm text-gray-500 fade-in-delay-1 select-none transition-all duration-300 group-hover:text-gray-600">
+            <p className="font-ui text-sm text-th-ink-dim fade-in-delay-1 select-none transition-all duration-300 group-hover:text-th-ink-mid">
               Track your tasks and monitor your progress
             </p>
           </div>
@@ -32,7 +28,7 @@ export default function DashboardHeader({ dark, onPomodoroOpenChange }: Dashboar
       </div>
       {/* Right header */}
       <div className="flex flex-col lg:flex-row gap-[10px] md:items-end items-start">
-        <DashboardSearch dark={dark} />
+        <DashboardSearch />
 
         <PomodoroButton onOpenChange={onPomodoroOpenChange} />
       </div>

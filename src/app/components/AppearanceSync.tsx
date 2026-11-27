@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } fr
 import { usePathname } from "next/navigation";
 import { useFormState } from "@/app/context/FormProvider";
 import { AppearanceContext, useAppearance } from "@/hooks/useAppearance";
+import ThemePreviewChip from "./ThemePreviewChip";
 import {
   appearanceCookieString,
   cookieChoice,
@@ -34,6 +35,8 @@ export default function AppearanceSync({ initialCookie, children }: { initialCoo
   return (
     <AppearanceContext.Provider value={value}>
       <ApplyAppearance onCookie={setCookie} />
+      {/* RD-2 dev theme preview: development builds only. */}
+      {process.env.NODE_ENV !== "production" && <ThemePreviewChip />}
       {children}
     </AppearanceContext.Provider>
   );

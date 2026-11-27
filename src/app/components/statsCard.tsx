@@ -8,7 +8,6 @@ interface StatsCardProps {
   content: string;
   delay: string;
   className?: string;
-  dark?: boolean;
 }
 
 export default function StatsCard({
@@ -16,8 +15,7 @@ export default function StatsCard({
   header,
   content,
   delay,
-  className = '',
-  dark = false 
+  className = ''
 }: StatsCardProps) {
   // Determine icon color based on header
   const getIconColor = () => {
@@ -33,30 +31,18 @@ export default function StatsCard({
     }
   };
 
-  // Get gradient class based on header and theme
+  // The hover tint (it only paints under `hover:bg-gradient-to-br`). RD-2: each card's stops are
+  // tokens, so Classic keeps its own colour per card and the mode switches in CSS.
   const getGradientClass = () => {
-    if (dark) {
-      switch (header.toLowerCase()) {
-        case 'to do':
-          return 'from-amber-900/30 to-amber-800/20 hover:from-amber-900/40 hover:to-amber-800/30';
-        case 'all projects':
-          return 'from-blue-900/30 to-blue-800/20 hover:from-blue-900/40 hover:to-blue-800/30';
-        case 'complete':
-          return 'from-green-900/30 to-green-800/20 hover:from-green-900/40 hover:to-green-800/30';
-        default:
-          return 'from-gray-800/30 to-gray-700/20 hover:from-gray-800/40 hover:to-gray-700/30';
-      }
-    } else {
-      switch (header.toLowerCase()) {
-        case 'to do':
-          return 'from-amber-50 to-amber-100/30 hover:from-amber-100 hover:to-amber-200/40';
-        case 'all projects':
-          return 'from-blue-50 to-blue-100/30 hover:from-blue-100 hover:to-blue-200/40';
-        case 'complete':
-          return 'from-green-50 to-green-100/30 hover:from-green-100 hover:to-green-200/40';
-        default:
-          return 'from-gray-50 to-gray-100/30 hover:from-gray-100 hover:to-gray-200/40';
-      }
+    switch (header.toLowerCase()) {
+      case 'to do':
+        return 'hover:from-[var(--stat-todo-a)] hover:to-[var(--stat-todo-b)]';
+      case 'all projects':
+        return 'hover:from-[var(--stat-proj-a)] hover:to-[var(--stat-proj-b)]';
+      case 'complete':
+        return 'hover:from-[var(--stat-done-a)] hover:to-[var(--stat-done-b)]';
+      default:
+        return 'hover:from-[var(--stat-all-a)] hover:to-[var(--stat-all-b)]';
     }
   };
 
@@ -66,10 +52,10 @@ export default function StatsCard({
       animate={{ opacity: 1, y: 0 }}
       transition={statCardTransition(delay)}
       className={`lg:p-5 p-1 flex flex-row items-center gap-6 rounded-xl w-full h-full transition-all duration-300 
-      hover:shadow-lg group ${getGradientClass()} ${className}`}
+      bg-th-stat-bg [border-width:var(--stat-bw)] border-th-rule hover:shadow-lg group ${getGradientClass()} ${className}`}
     >
       <div className={`relative sm:p-3 rounded-xl shadow-sm group-hover:shadow-md transition-all duration-300 ${getIconColor()}
-      ${dark ? 'bg-foreground-dark border-gray-800 border' : 'bg-white'}`}>
+      bg-th-tile-bg [border-width:var(--edge-w)] border-th-edge`}>
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
@@ -86,11 +72,11 @@ export default function StatsCard({
       </div>
       
       <div className="flex-1">
-        <span className={`sm:text-sm text-[8px] font-medium ${dark ? 'text-white' : 'text-gray-500'} font-lato tracking-wide`}>
+        <span className="sm:text-sm text-[8px] font-medium text-th-stat-label font-ui tracking-wide">
           {header.toUpperCase()}
         </span>
         <motion.p 
-          className={`sm:text-2xl text-lg font-bold ${dark ? 'text-white' : 'text-gray-800'} font-lato mt-1`}
+          className="sm:text-2xl text-lg font-bold text-th-ink-hd font-ui mt-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={STAT_VALUE_TRANSITION}
@@ -101,7 +87,7 @@ export default function StatsCard({
       
       {/* Decorative element */}
       <div className="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-300">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-th-ico-faint">
           <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>

@@ -1,13 +1,13 @@
 "use client";
 import { useCallback, useState, type RefObject } from "react";
 import LoadError from "@/app/components/LoadError";
+import { useAppearance } from "@/hooks/useAppearance";
 import { TaskItem } from "@/app/components/taskItem";
 import type { ITask } from "@/app/interface/ITask";
 import type { DashboardData } from "./useDashboardData";
 
 interface TaskBoardProps {
   data: Pick<DashboardData, "tasks" | "upcoming" | "upcomingState">;
-  dark?: boolean;
   /** Where focus goes when a delete removes the button that opened its dialog. */
   headingRef: RefObject<HTMLHeadingElement | null>;
   onNewTask: () => void;
@@ -20,7 +20,6 @@ interface TaskBoardProps {
 
 export default function TaskBoard({
   data,
-  dark,
   headingRef,
   onNewTask,
   onEditTask,
@@ -29,6 +28,8 @@ export default function TaskBoard({
   notify,
 }: TaskBoardProps) {
   const { tasks, upcoming, upcomingState } = data;
+  // Only LoadError (not converted in this batch) still takes the mode.
+  const { isDark: dark } = useAppearance();
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const [expandedTaskIds, setExpandedTaskIds] = useState<Set<string>>(new Set());
 
@@ -45,38 +46,27 @@ export default function TaskBoard({
   }, []);
 
   return (
-    <div className={`w-full h-full p-6 flex flex-col rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 fade-in-delay-2 flex-grow border
-      ${dark ? "bg-foreground-dark" : "bg-white"}
-      ${dark ? "border-gray-800" : ""}
-       `}>
+    <div className="w-full h-full p-6 flex flex-col rounded-board shadow-sm hover:shadow-md transition-shadow duration-300 fade-in-delay-2 flex-grow border bg-th-card border-th-edge">
       {/* Header - Fixed */}
-      <div className={`flex flex-col sm:flex-row justify-between gap-4
-      ${dark ? 'border-gray-800' : 'border-gray-100'}
-      `}>
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
-          <h1 ref={headingRef} tabIndex={-1} className={`outline-none text-xl font-lato font-bold text-start ${
-            dark ? 'text-white' : 'text-gray-800'
-          }`}>
+          <h1 ref={headingRef} tabIndex={-1} className="outline-none text-xl font-card [font-weight:var(--w-card)] [letter-spacing:var(--ls-title)] text-start text-th-ink-hd">
             Recent Tasks
           </h1>
-          <p className={`text-sm mt-1 text-start ${
-            dark ? 'text-gray-400' : 'text-gray-500'
-          }`}>
+          <p className="text-sm mt-1 text-start text-th-ink-sub">
             Your most recent activities and tasks
           </p>
         </div>
         <button
-          className={`relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-lato font-medium text-white
+          // RD-2 primary button: --on-acc on the accent (dark grey on amber in Classic; was white, 1.9:1).
+          // Classic keeps its gradient through the --acc-grad-* stops; Calm and Field notes are flat --acc.
+          className="relative px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-xl h-[44px] font-ui font-medium text-th-on-acc
           shadow-md hover:shadow-lg transform transition-all duration-300 hover:translate-y-[-1px]
           active:translate-y-0 active:scale-95 overflow-hidden group
-          ${dark ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:shadow-amber-500/20' : 'bg-gradient-to-r from-primary-default to-primary-200 hover:shadow-primary-default/20'}
+          bg-gradient-to-r from-th-grad-start to-th-grad-end hover:shadow-th-glow
           before:absolute before:inset-0
-          ${
-            dark
-              ? 'before:bg-gradient-to-r before:from-amber-600 before:to-yellow-400'
-              : 'before:bg-gradient-to-r before:from-primary-200 before:to-primary-default'
-          }
-          before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300`}
+          before:bg-gradient-to-r before:from-th-grad-hover-start before:to-th-grad-hover-end
+          before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
           onClick={onNewTask}
         >
           {/* Animated ring effect */}
@@ -100,7 +90,7 @@ export default function TaskBoard({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-white"
+                className="text-th-on-acc"
               />
             </svg>
           </div>
@@ -111,9 +101,7 @@ export default function TaskBoard({
           </span>
 
           {/* Subtle shine effect on hover */}
-          <span className={`absolute inset-0 ${
-            dark ? 'bg-amber-400/5' : 'bg-white/5'
-          } opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></span>
+          <span className="absolute inset-0 bg-th-shine opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
         </button>
       </div>
 
@@ -143,11 +131,11 @@ export default function TaskBoard({
             />
           ) : upcomingState.status === "empty" ? (
             <div className="flex flex-col items-center justify-center text-center gap-3">
-              <h3 className={`text-xl font-semibold mb-1 ${dark ? "text-white" : "text-gray-800"}`}>Nothing due right now</h3>
-              <p className="text-gray-500 max-w-md">No tasks are overdue or due in the next 24 hours.</p>
+              <h3 className="text-xl font-semibold mb-1 text-th-ink-hd">Nothing due right now</h3>
+              <p className="text-th-ink-dim max-w-md">No tasks are overdue or due in the next 24 hours.</p>
               <button
                 type="button"
-                className="rounded-xl px-5 py-2 font-lato font-medium text-white bg-primary-default hover:opacity-90"
+                className="rounded-xl px-5 py-2 font-ui font-medium text-th-on-acc bg-th-acc hover:opacity-90"
                 onClick={onNewTask}
               >
                 New Task
@@ -174,13 +162,13 @@ export default function TaskBoard({
           )))
           : (
             <div className="flex flex-col items-center justify-center text-center">
-              <div className="w-24 h-24 mb-6 text-primary-default">
+              <div className="w-24 h-24 mb-6 text-th-acc">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className={`text-xl font-semibold text-gray-800 mb-2 ${dark ? "text-white" : "text-gray-800"}`}>All caught up!</h3>
-              <p className="text-gray-500 mb-6 max-w-md">You&apos;ve completed all your tasks. Time to celebrate or add a new challenge!</p>
+              <h3 className="text-xl font-semibold mb-2 text-th-ink-hd">All caught up!</h3>
+              <p className="text-th-ink-dim mb-6 max-w-md">You&apos;ve completed all your tasks. Time to celebrate or add a new challenge!</p>
             </div>
           )}
         </div>
@@ -191,7 +179,7 @@ export default function TaskBoard({
             <div className="mt-4">
               <button
                 onClick={() => setShowCompletedTasks((v) => !v)}
-                className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors mb-2"
+                className="flex items-center gap-2 text-sm font-medium text-th-ink-dim hover:text-th-task transition-colors mb-2"
               >
                 <span>Completed ({tasks.filter(task => task.status === 'Complete').length})</span>
                 <svg
@@ -205,7 +193,7 @@ export default function TaskBoard({
               </button>
 
               {showCompletedTasks && (
-                <div className="space-y-2 pl-4 border-l-2 border-gray-200">
+                <div className="space-y-2 pl-4 border-l-2 border-th-rule">
                   {tasks
                     .filter(task => task.status === 'Complete')
                     .map((task) => (

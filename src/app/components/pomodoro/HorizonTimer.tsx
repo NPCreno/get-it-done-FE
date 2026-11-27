@@ -11,14 +11,14 @@ import type { PomodoroController } from "./usePomodoroController";
  * screen. A sun travels along one line as the round passes; it glides with a 1 s linear transition
  * per tick and steps with reduced motion. "Leave focus" only closes: `timerService` keeps running.
  */
-export default function HorizonTimer({ ctl, dark }: { ctl: PomodoroController; dark: boolean }) {
-  const s = surface(dark);
-  const a = accent(dark, ctl.type);
+export default function HorizonTimer({ ctl }: { ctl: PomodoroController }) {
+  const s = surface();
+  const a = accent(ctl.type);
   const done = pct(fractionDone(ctl.timeLeft, ctl.fullDuration));
   return (
     <DialogContent
       overlayClassName="fixed inset-0 z-50"
-      className={`fixed inset-0 rounded-none max-w-none flex flex-col font-lato ${s.hzPage} ${s.txt}`}
+      className={`fixed inset-0 rounded-none max-w-none flex flex-col font-ui ${s.hzPage} ${s.txt}`}
     >
       <DialogTitle className="sr-only">Focus mode</DialogTitle>
       <DialogDescription className="sr-only">A full-screen Pomodoro timer. Start, pause or reset it.</DialogDescription>
@@ -28,7 +28,7 @@ export default function HorizonTimer({ ctl, dark }: { ctl: PomodoroController; d
           <span aria-hidden="true" className={`size-2.5 rounded-full ${a.bg}`} />
           {kicker(ctl.phase, ctl.type, ctl.completedFocusRounds, false)}
         </p>
-        <ModeRadios value={ctl.type} onChange={ctl.requestType} variant="tab" dark={dark} className="hidden md:flex" />
+        <ModeRadios value={ctl.type} onChange={ctl.requestType} variant="tab" className="hidden md:flex" />
         <DialogClose asChild>
           <button
             type="button"
@@ -73,7 +73,6 @@ export default function HorizonTimer({ ctl, dark }: { ctl: PomodoroController; d
         value={ctl.type}
         onChange={ctl.requestType}
         variant="tab"
-        dark={dark}
         short
         className="md:hidden absolute left-4 right-4 bottom-[116px] justify-center"
       />

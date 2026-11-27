@@ -20,6 +20,14 @@
   --big: 1;
   --r-card: 10px;
   --r-ctl: 6px;
+  /* RD-2: today's dashboard title is Tailwind's default sans at 700; body text is font-lato. */
+  --f-title: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --f-ui: var(--font-lato), Lato, sans-serif;
+  --w-title: 700;
+  --ls-title: normal;
+  --r-board: 12px;
+  --f-card: var(--font-lato), Lato, sans-serif;
+  --w-card: 700;
 }
 
 [data-theme="calm"] {
@@ -30,6 +38,13 @@
   --big: 1;
   --r-card: 14px;
   --r-ctl: 10px;
+  --f-title: var(--f-head);
+  --f-ui: var(--f-body);
+  --w-title: 600;
+  --ls-title: var(--ls-head);
+  --r-board: 14px;
+  --f-card: var(--f-head);
+  --w-card: 600;
 }
 
 [data-theme="field"] {
@@ -40,6 +55,13 @@
   --big: 1.35;
   --r-card: 24px;
   --r-ctl: 999px;
+  --f-title: var(--f-head);
+  --f-ui: var(--f-body);
+  --w-title: 400;
+  --ls-title: var(--ls-head);
+  --r-board: 24px;
+  --f-card: var(--f-head);
+  --w-card: 400;
 }
 
 /* ---------------------------------------------------------------- colours */
@@ -62,6 +84,110 @@
   --focus: #19768D;
   --bar-now: #FEAD03;
   --scrim: #6B6B6B;
+  /* RD-2 text (Classic = today's dashboard greys; Calm/Field = their --txt/--txt2/--strong) */
+  --txt-hd: #1F2937;
+  --txt-sub: #6B7280;
+  --txt-dim: #6B7280;
+  --txt-mid: #4B5563;
+  --txt-faint: #9CA3AF;
+  --txt-abs: #000000;
+  --txt-note: #676767;
+  --task-t: #374151;
+  --input-t: #374151;
+  --placeholder: #9CA3AF;
+  --stat-label: #6B7280;
+  --card-fg: #0A0A0A;
+  --ico-faint: #D1D5DB;
+  --ico-hover: #4B5563;
+  --title: linear-gradient(to right, #1F2937, #4B5563);
+  --abar: linear-gradient(to bottom, #FEAD03, #FED580);
+
+  /* RD-2 lines and surfaces */
+  --edge: #E5E7EB;
+  --edge-w: 0px;
+  --rule: #E5E7EB;
+  --ring-soft: #E5E7EB;
+  --check-ring: #D1D5DB;
+  --ctl-border: #1F2937;
+  --sel-border: #E5E5E5;
+  --row-hover: #FAFAFA;
+  --menu-hover: #F3F4F6;
+  --search-hover: #F9FAFB;
+  --shadow-pop: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --skeleton: rgba(209, 213, 219, 0.4);
+  --tile-bg: #FFFFFF;
+  --stat-bg: transparent;
+  --stat-bw: 0px;
+
+  /* RD-2 stat card hover tints (Classic: each card's own colour; Calm/Field: --acc-sub to --card) */
+  --stat-all-a: #F3F4F6;
+  --stat-all-b: rgba(229, 231, 235, 0.4);
+  --stat-todo-a: #FEF3C7;
+  --stat-todo-b: rgba(253, 230, 138, 0.4);
+  --stat-proj-a: #DBEAFE;
+  --stat-proj-b: rgba(191, 219, 254, 0.4);
+  --stat-done-a: #DCFCE7;
+  --stat-done-b: rgba(187, 247, 208, 0.4);
+
+  /* RD-2 primary button gradient (Classic keeps its amber gradient; Calm/Field are flat --acc) */
+  --acc-grad-start: #FEAD03;
+  --acc-grad-end: #FED580;
+  --acc-grad-hover-start: #FED580;
+  --acc-grad-hover-end: #FEAD03;
+  --acc-glow: rgba(254, 173, 3, 0.2);
+  --shine: rgba(255, 255, 255, 0.05);
+
+  /* RD-2 task priority (board 18 --p-*; Classic = today's chips) */
+  --prio-low: #1D4ED8;
+  --prio-low-b: #60A5FA;
+  --prio-med: #C2410C;
+  --prio-med-b: #FB923C;
+  --prio-high: #B91C1C;
+  --prio-high-b: #F87171;
+  --prio-high-bg: transparent;
+  --chip-bg: #FEEAC0;
+  --chip-t: #FEAD03;
+
+  /* RD-2 charts (board 18: --line1, --d1, --d2, --fire, --badge). Axis text is held to 4.5:1 on --card */
+  --chart-1: #53D86A;
+  --chart-2: #4F46E5;
+  --chart-3: #22A04B;
+  --chart-4: #FB923C;
+  --chart-5: #3B82F6;
+  --chart-grid: rgba(229, 229, 229, 0.5);
+  --chart-axis: #737373;
+  --chart-label: #000000;
+  --chart-note: #737373;
+
+  /* RD-2 calendar heat map (board 18 --h0..--h4, --on-h). Classic's legend never painted a 5th level */
+  --heat-0: #F9FAFB;
+  --heat-0-t: #E5E7EB;
+  --heat-out: #F9FAFB;
+  --heat-1: #D4F5D9;
+  --heat-2: #A8EBB4;
+  --heat-3: #7EE28F;
+  --heat-4: #296C35;
+  --heat-5: #15361A;
+  --heat-top: transparent;
+  --on-heat: #000000;
+
+  /* RD-2 streak (board 18 --fire, --badge, --h0) */
+  --fire: #FB923C;
+  --badge: #3B82F6;
+  --on-badge: #FFFFFF;
+  --track: #E5E7EB;
+
+  /* RD-2 Pomodoro faces (FEAT-10 palette). Breaks: Classic teal; Calm reuses it (its --focus); Field uses --hi */
+  --tick: #B8B8B8;
+  --hz-page: #F2F0EA;
+  --hz-line: #D9D5CC;
+  --pom-scrim: rgba(17, 19, 23, 0.45);
+  --hover: rgba(0, 0, 0, 0.05);
+  --brk: #19768D;
+  --brk-t: #19768D;
+  --brk-sub: #C7E6EE;
+  --on-brk: #FFFFFF;
+  --brk-wedge: #219EBC;
 }
 
 [data-theme="classic"][data-mode="dark"] {
@@ -82,6 +208,110 @@
   --focus: #59B6CD;
   --bar-now: #FEAD03;
   --scrim: #050608;
+  /* RD-2 text (Classic = today's dashboard greys; Calm/Field = their --txt/--txt2/--strong) */
+  --txt-hd: #FFFFFF;
+  --txt-sub: #9CA3AF;
+  --txt-dim: #6B7280;
+  --txt-mid: #4B5563;
+  --txt-faint: #9CA3AF;
+  --txt-abs: #FFFFFF;
+  --txt-note: #D1D5DB;
+  --task-t: #D1D5DB;
+  --input-t: #FFFFFF;
+  --placeholder: #6B7280;
+  --stat-label: #FFFFFF;
+  --card-fg: #FFFFFF;
+  --ico-faint: #D1D5DB;
+  --ico-hover: #D1D5DB;
+  --title: linear-gradient(to right, #93C5FD, #FDE68A, #93C5FD);
+  --abar: linear-gradient(to bottom, #FEAD03, #FED580);
+
+  /* RD-2 lines and surfaces */
+  --edge: #1F2937;
+  --edge-w: 1px;
+  --rule: #E5E7EB;
+  --ring-soft: #1F2937;
+  --check-ring: #D1D5DB;
+  --ctl-border: #1F2937;
+  --sel-border: #1F2937;
+  --row-hover: #111827;
+  --menu-hover: #1F2937;
+  --search-hover: rgba(17, 24, 39, 0.8);
+  --shadow-pop: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --skeleton: rgba(209, 213, 219, 0.4);
+  --tile-bg: #111317;
+  --stat-bg: transparent;
+  --stat-bw: 0px;
+
+  /* RD-2 stat card hover tints (Classic: each card's own colour; Calm/Field: --acc-sub to --card) */
+  --stat-all-a: rgba(31, 41, 55, 0.4);
+  --stat-all-b: rgba(55, 65, 81, 0.3);
+  --stat-todo-a: rgba(120, 53, 15, 0.4);
+  --stat-todo-b: rgba(146, 64, 14, 0.3);
+  --stat-proj-a: rgba(30, 58, 138, 0.4);
+  --stat-proj-b: rgba(30, 64, 175, 0.3);
+  --stat-done-a: rgba(20, 83, 45, 0.4);
+  --stat-done-b: rgba(22, 101, 52, 0.3);
+
+  /* RD-2 primary button gradient (Classic keeps its amber gradient; Calm/Field are flat --acc) */
+  --acc-grad-start: #F59E0B;
+  --acc-grad-end: #EAB308;
+  --acc-grad-hover-start: #D97706;
+  --acc-grad-hover-end: #FACC15;
+  --acc-glow: rgba(245, 158, 11, 0.2);
+  --shine: rgba(251, 191, 36, 0.05);
+
+  /* RD-2 task priority (board 18 --p-*; Classic = today's chips) */
+  --prio-low: #93C5FD;
+  --prio-low-b: #60A5FA;
+  --prio-med: #FDBA74;
+  --prio-med-b: #FB923C;
+  --prio-high: #FCA5A5;
+  --prio-high-b: #F87171;
+  --prio-high-bg: transparent;
+  --chip-bg: #374151;
+  --chip-t: #F3F4F6;
+
+  /* RD-2 charts (board 18: --line1, --d1, --d2, --fire, --badge). Axis text is held to 4.5:1 on --card */
+  --chart-1: #53D86A;
+  --chart-2: #818CF8;
+  --chart-3: #4BC75E;
+  --chart-4: #FB923C;
+  --chart-5: #3B82F6;
+  --chart-grid: rgba(229, 229, 229, 0.5);
+  --chart-axis: #7E7E7E;
+  --chart-label: #000000;
+  --chart-note: #737373;
+
+  /* RD-2 calendar heat map (board 18 --h0..--h4, --on-h). Classic's legend never painted a 5th level */
+  --heat-0: transparent;
+  --heat-0-t: #E5E7EB;
+  --heat-out: #111317;
+  --heat-1: #1A2E21;
+  --heat-2: #245C3A;
+  --heat-3: #2E8A53;
+  --heat-4: #4BC75E;
+  --heat-5: #7EE28F;
+  --heat-top: transparent;
+  --on-heat: #FFFFFF;
+
+  /* RD-2 streak (board 18 --fire, --badge, --h0) */
+  --fire: #FB923C;
+  --badge: #3B82F6;
+  --on-badge: #FFFFFF;
+  --track: #1F2937;
+
+  /* RD-2 Pomodoro faces (FEAT-10 palette). Breaks: Classic teal; Calm reuses it (its --focus); Field uses --hi */
+  --tick: #4B5563;
+  --hz-page: #0D0E12;
+  --hz-line: #262A33;
+  --pom-scrim: rgba(0, 0, 0, 0.62);
+  --hover: rgba(255, 255, 255, 0.05);
+  --brk: #59B6CD;
+  --brk-t: #59B6CD;
+  --brk-sub: #08272F;
+  --on-brk: #111317;
+  --brk-wedge: #219EBC;
 }
 
 [data-theme="calm"][data-mode="light"] {
@@ -102,6 +332,110 @@
   --focus: #19768D;
   --bar-now: #2B8A46;
   --scrim: #6E6A62;
+  /* RD-2 text (Classic = today's dashboard greys; Calm/Field = their --txt/--txt2/--strong) */
+  --txt-hd: #1C1A17;
+  --txt-sub: #5C574F;
+  --txt-dim: #5C574F;
+  --txt-mid: #5C574F;
+  --txt-faint: #5C574F;
+  --txt-abs: #1C1A17;
+  --txt-note: #5C574F;
+  --task-t: #1C1A17;
+  --input-t: #1C1A17;
+  --placeholder: #5C574F;
+  --stat-label: #5C574F;
+  --card-fg: #1C1A17;
+  --ico-faint: #8A847A;
+  --ico-hover: #1C1A17;
+  --title: linear-gradient(to right, #1C1A17, #1C1A17);
+  --abar: none;
+
+  /* RD-2 lines and surfaces */
+  --edge: #E3E0D9;
+  --edge-w: 1px;
+  --rule: #E3E0D9;
+  --ring-soft: #E3E0D9;
+  --check-ring: #8A847A;
+  --ctl-border: #8A847A;
+  --sel-border: #E3E0D9;
+  --row-hover: #F8F7F4;
+  --menu-hover: #FFF3D1;
+  --search-hover: #F8F7F4;
+  --shadow-pop: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --skeleton: #E3E0D9;
+  --tile-bg: #FFF3D1;
+  --stat-bg: #FFFFFF;
+  --stat-bw: 1px;
+
+  /* RD-2 stat card hover tints (Classic: each card's own colour; Calm/Field: --acc-sub to --card) */
+  --stat-all-a: #FFF3D1;
+  --stat-all-b: #FFFFFF;
+  --stat-todo-a: #FFF3D1;
+  --stat-todo-b: #FFFFFF;
+  --stat-proj-a: #FFF3D1;
+  --stat-proj-b: #FFFFFF;
+  --stat-done-a: #FFF3D1;
+  --stat-done-b: #FFFFFF;
+
+  /* RD-2 primary button gradient (Classic keeps its amber gradient; Calm/Field are flat --acc) */
+  --acc-grad-start: #FEAD03;
+  --acc-grad-end: #FEAD03;
+  --acc-grad-hover-start: #FEAD03;
+  --acc-grad-hover-end: #FEAD03;
+  --acc-glow: rgba(254, 173, 3, 0.2);
+  --shine: rgba(255, 255, 255, 0.05);
+
+  /* RD-2 task priority (board 18 --p-*; Classic = today's chips) */
+  --prio-low: #5C574F;
+  --prio-low-b: #E3E0D9;
+  --prio-med: #1C1A17;
+  --prio-med-b: #8A847A;
+  --prio-high: #8A5600;
+  --prio-high-b: #FEAD03;
+  --prio-high-bg: #FFF3D1;
+  --chip-bg: #FFF3D1;
+  --chip-t: #8A5600;
+
+  /* RD-2 charts (board 18: --line1, --d1, --d2, --fire, --badge). Axis text is held to 4.5:1 on --card */
+  --chart-1: #2B8A46;
+  --chart-2: #FEAD03;
+  --chart-3: #2B8A46;
+  --chart-4: #FEAD03;
+  --chart-5: #2B8A46;
+  --chart-grid: #E3E0D9;
+  --chart-axis: #5C574F;
+  --chart-label: #1C1A17;
+  --chart-note: #5C574F;
+
+  /* RD-2 calendar heat map (board 18 --h0..--h4, --on-h). Classic's legend never painted a 5th level */
+  --heat-0: #F1EFEA;
+  --heat-0-t: #5C574F;
+  --heat-out: transparent;
+  --heat-1: #D9EEDD;
+  --heat-2: #A9D8B3;
+  --heat-3: #5FB070;
+  --heat-4: #2B8A46;
+  --heat-5: #2B8A46;
+  --heat-top: #2B8A46;
+  --on-heat: #1C1A17;
+
+  /* RD-2 streak (board 18 --fire, --badge, --h0) */
+  --fire: #FEAD03;
+  --badge: #2B8A46;
+  --on-badge: #FFFFFF;
+  --track: #F1EFEA;
+
+  /* RD-2 Pomodoro faces (FEAT-10 palette). Breaks: Classic teal; Calm reuses it (its --focus); Field uses --hi */
+  --tick: #8A847A;
+  --hz-page: #F8F7F4;
+  --hz-line: #E3E0D9;
+  --pom-scrim: rgba(17, 19, 23, 0.45);
+  --hover: rgba(0, 0, 0, 0.05);
+  --brk: #19768D;
+  --brk-t: #19768D;
+  --brk-sub: #C7E6EE;
+  --on-brk: #FFFFFF;
+  --brk-wedge: #19768D;
 }
 
 [data-theme="calm"][data-mode="dark"] {
@@ -122,6 +456,110 @@
   --focus: #7DD3E8;
   --bar-now: #53D86A;
   --scrim: #050505;
+  /* RD-2 text (Classic = today's dashboard greys; Calm/Field = their --txt/--txt2/--strong) */
+  --txt-hd: #F3F1EC;
+  --txt-sub: #ADA79B;
+  --txt-dim: #ADA79B;
+  --txt-mid: #ADA79B;
+  --txt-faint: #ADA79B;
+  --txt-abs: #F3F1EC;
+  --txt-note: #ADA79B;
+  --task-t: #F3F1EC;
+  --input-t: #F3F1EC;
+  --placeholder: #ADA79B;
+  --stat-label: #ADA79B;
+  --card-fg: #F3F1EC;
+  --ico-faint: #6E695F;
+  --ico-hover: #F3F1EC;
+  --title: linear-gradient(to right, #F3F1EC, #F3F1EC);
+  --abar: none;
+
+  /* RD-2 lines and surfaces */
+  --edge: #34312C;
+  --edge-w: 1px;
+  --rule: #34312C;
+  --ring-soft: #34312C;
+  --check-ring: #6E695F;
+  --ctl-border: #6E695F;
+  --sel-border: #34312C;
+  --row-hover: #141311;
+  --menu-hover: #3A2E10;
+  --search-hover: #141311;
+  --shadow-pop: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --skeleton: #34312C;
+  --tile-bg: #3A2E10;
+  --stat-bg: #1E1C19;
+  --stat-bw: 1px;
+
+  /* RD-2 stat card hover tints (Classic: each card's own colour; Calm/Field: --acc-sub to --card) */
+  --stat-all-a: #3A2E10;
+  --stat-all-b: #1E1C19;
+  --stat-todo-a: #3A2E10;
+  --stat-todo-b: #1E1C19;
+  --stat-proj-a: #3A2E10;
+  --stat-proj-b: #1E1C19;
+  --stat-done-a: #3A2E10;
+  --stat-done-b: #1E1C19;
+
+  /* RD-2 primary button gradient (Classic keeps its amber gradient; Calm/Field are flat --acc) */
+  --acc-grad-start: #FEAD03;
+  --acc-grad-end: #FEAD03;
+  --acc-grad-hover-start: #FEAD03;
+  --acc-grad-hover-end: #FEAD03;
+  --acc-glow: rgba(254, 173, 3, 0.2);
+  --shine: rgba(255, 255, 255, 0.05);
+
+  /* RD-2 task priority (board 18 --p-*; Classic = today's chips) */
+  --prio-low: #ADA79B;
+  --prio-low-b: #34312C;
+  --prio-med: #F3F1EC;
+  --prio-med-b: #6E695F;
+  --prio-high: #FEAD03;
+  --prio-high-b: #FEAD03;
+  --prio-high-bg: #3A2E10;
+  --chip-bg: #3A2E10;
+  --chip-t: #FEAD03;
+
+  /* RD-2 charts (board 18: --line1, --d1, --d2, --fire, --badge). Axis text is held to 4.5:1 on --card */
+  --chart-1: #53D86A;
+  --chart-2: #FEAD03;
+  --chart-3: #53D86A;
+  --chart-4: #FEAD03;
+  --chart-5: #53D86A;
+  --chart-grid: #34312C;
+  --chart-axis: #ADA79B;
+  --chart-label: #F3F1EC;
+  --chart-note: #ADA79B;
+
+  /* RD-2 calendar heat map (board 18 --h0..--h4, --on-h). Classic's legend never painted a 5th level */
+  --heat-0: #26241F;
+  --heat-0-t: #ADA79B;
+  --heat-out: transparent;
+  --heat-1: #1F3326;
+  --heat-2: #2A5636;
+  --heat-3: #3E8F50;
+  --heat-4: #53D86A;
+  --heat-5: #53D86A;
+  --heat-top: #53D86A;
+  --on-heat: #F3F1EC;
+
+  /* RD-2 streak (board 18 --fire, --badge, --h0) */
+  --fire: #FEAD03;
+  --badge: #53D86A;
+  --on-badge: #141311;
+  --track: #26241F;
+
+  /* RD-2 Pomodoro faces (FEAT-10 palette). Breaks: Classic teal; Calm reuses it (its --focus); Field uses --hi */
+  --tick: #6E695F;
+  --hz-page: #141311;
+  --hz-line: #34312C;
+  --pom-scrim: rgba(0, 0, 0, 0.62);
+  --hover: rgba(255, 255, 255, 0.05);
+  --brk: #7DD3E8;
+  --brk-t: #7DD3E8;
+  --brk-sub: #08272F;
+  --on-brk: #141311;
+  --brk-wedge: #7DD3E8;
 }
 
 [data-theme="field"][data-mode="light"] {
@@ -142,6 +580,110 @@
   --focus: #1F5C46;
   --bar-now: #1F5C46;
   --scrim: #56645B;
+  /* RD-2 text (Classic = today's dashboard greys; Calm/Field = their --txt/--txt2/--strong) */
+  --txt-hd: #14201A;
+  --txt-sub: #4F5E55;
+  --txt-dim: #4F5E55;
+  --txt-mid: #4F5E55;
+  --txt-faint: #4F5E55;
+  --txt-abs: #14201A;
+  --txt-note: #4F5E55;
+  --task-t: #14201A;
+  --input-t: #14201A;
+  --placeholder: #4F5E55;
+  --stat-label: #4F5E55;
+  --card-fg: #14201A;
+  --ico-faint: #7C8A80;
+  --ico-hover: #14201A;
+  --title: linear-gradient(to right, #14201A, #14201A);
+  --abar: none;
+
+  /* RD-2 lines and surfaces */
+  --edge: #D5DED3;
+  --edge-w: 1px;
+  --rule: #D5DED3;
+  --ring-soft: #D5DED3;
+  --check-ring: #7C8A80;
+  --ctl-border: #7C8A80;
+  --sel-border: #D5DED3;
+  --row-hover: #F3F6F1;
+  --menu-hover: #DDEEE4;
+  --search-hover: #F3F6F1;
+  --shadow-pop: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --skeleton: #D5DED3;
+  --tile-bg: #DDEEE4;
+  --stat-bg: #FFFFFF;
+  --stat-bw: 1px;
+
+  /* RD-2 stat card hover tints (Classic: each card's own colour; Calm/Field: --acc-sub to --card) */
+  --stat-all-a: #DDEEE4;
+  --stat-all-b: #FFFFFF;
+  --stat-todo-a: #DDEEE4;
+  --stat-todo-b: #FFFFFF;
+  --stat-proj-a: #DDEEE4;
+  --stat-proj-b: #FFFFFF;
+  --stat-done-a: #DDEEE4;
+  --stat-done-b: #FFFFFF;
+
+  /* RD-2 primary button gradient (Classic keeps its amber gradient; Calm/Field are flat --acc) */
+  --acc-grad-start: #1F5C46;
+  --acc-grad-end: #1F5C46;
+  --acc-grad-hover-start: #1F5C46;
+  --acc-grad-hover-end: #1F5C46;
+  --acc-glow: rgba(31, 92, 70, 0.2);
+  --shine: rgba(255, 255, 255, 0.05);
+
+  /* RD-2 task priority (board 18 --p-*; Classic = today's chips) */
+  --prio-low: #4F5E55;
+  --prio-low-b: #E8EEE6;
+  --prio-med: #14201A;
+  --prio-med-b: #D5DED3;
+  --prio-high: #14201A;
+  --prio-high-b: #F2B84B;
+  --prio-high-bg: #F2B84B;
+  --chip-bg: #DDEEE4;
+  --chip-t: #1F5C46;
+
+  /* RD-2 charts (board 18: --line1, --d1, --d2, --fire, --badge). Axis text is held to 4.5:1 on --card */
+  --chart-1: #1F5C46;
+  --chart-2: #F2B84B;
+  --chart-3: #1F5C46;
+  --chart-4: #F2B84B;
+  --chart-5: #1F5C46;
+  --chart-grid: #D5DED3;
+  --chart-axis: #4F5E55;
+  --chart-label: #14201A;
+  --chart-note: #4F5E55;
+
+  /* RD-2 calendar heat map (board 18 --h0..--h4, --on-h). Classic's legend never painted a 5th level */
+  --heat-0: #E8EEE6;
+  --heat-0-t: #4F5E55;
+  --heat-out: transparent;
+  --heat-1: #CBE3D5;
+  --heat-2: #94C6A8;
+  --heat-3: #4F8E6F;
+  --heat-4: #1F5C46;
+  --heat-5: #1F5C46;
+  --heat-top: #1F5C46;
+  --on-heat: #14201A;
+
+  /* RD-2 streak (board 18 --fire, --badge, --h0) */
+  --fire: #F2B84B;
+  --badge: #1F5C46;
+  --on-badge: #FFFFFF;
+  --track: #E8EEE6;
+
+  /* RD-2 Pomodoro faces (FEAT-10 palette). Breaks: Classic teal; Calm reuses it (its --focus); Field uses --hi */
+  --tick: #7C8A80;
+  --hz-page: #F3F6F1;
+  --hz-line: #D5DED3;
+  --pom-scrim: rgba(17, 19, 23, 0.45);
+  --hover: rgba(0, 0, 0, 0.05);
+  --brk: #F2B84B;
+  --brk-t: #14201A;
+  --brk-sub: #FCEFD2;
+  --on-brk: #14201A;
+  --brk-wedge: #F2B84B;
 }
 
 [data-theme="field"][data-mode="dark"] {
@@ -162,4 +704,108 @@
   --focus: #7FD1A8;
   --bar-now: #7FD1A8;
   --scrim: #040705;
+  /* RD-2 text (Classic = today's dashboard greys; Calm/Field = their --txt/--txt2/--strong) */
+  --txt-hd: #EEF3EE;
+  --txt-sub: #A3B2A8;
+  --txt-dim: #A3B2A8;
+  --txt-mid: #A3B2A8;
+  --txt-faint: #A3B2A8;
+  --txt-abs: #EEF3EE;
+  --txt-note: #A3B2A8;
+  --task-t: #EEF3EE;
+  --input-t: #EEF3EE;
+  --placeholder: #A3B2A8;
+  --stat-label: #A3B2A8;
+  --card-fg: #EEF3EE;
+  --ico-faint: #6A7A70;
+  --ico-hover: #EEF3EE;
+  --title: linear-gradient(to right, #EEF3EE, #EEF3EE);
+  --abar: none;
+
+  /* RD-2 lines and surfaces */
+  --edge: #2A372F;
+  --edge-w: 1px;
+  --rule: #2A372F;
+  --ring-soft: #2A372F;
+  --check-ring: #6A7A70;
+  --ctl-border: #6A7A70;
+  --sel-border: #2A372F;
+  --row-hover: #0F1512;
+  --menu-hover: #1D3A2D;
+  --search-hover: #0F1512;
+  --shadow-pop: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --skeleton: #2A372F;
+  --tile-bg: #1D3A2D;
+  --stat-bg: #18211C;
+  --stat-bw: 1px;
+
+  /* RD-2 stat card hover tints (Classic: each card's own colour; Calm/Field: --acc-sub to --card) */
+  --stat-all-a: #1D3A2D;
+  --stat-all-b: #18211C;
+  --stat-todo-a: #1D3A2D;
+  --stat-todo-b: #18211C;
+  --stat-proj-a: #1D3A2D;
+  --stat-proj-b: #18211C;
+  --stat-done-a: #1D3A2D;
+  --stat-done-b: #18211C;
+
+  /* RD-2 primary button gradient (Classic keeps its amber gradient; Calm/Field are flat --acc) */
+  --acc-grad-start: #7FD1A8;
+  --acc-grad-end: #7FD1A8;
+  --acc-grad-hover-start: #7FD1A8;
+  --acc-grad-hover-end: #7FD1A8;
+  --acc-glow: rgba(127, 209, 168, 0.2);
+  --shine: rgba(255, 255, 255, 0.05);
+
+  /* RD-2 task priority (board 18 --p-*; Classic = today's chips) */
+  --prio-low: #A3B2A8;
+  --prio-low-b: #1D3A2D;
+  --prio-med: #EEF3EE;
+  --prio-med-b: #2A372F;
+  --prio-high: #14201A;
+  --prio-high-b: #F2B84B;
+  --prio-high-bg: #F2B84B;
+  --chip-bg: #1D3A2D;
+  --chip-t: #7FD1A8;
+
+  /* RD-2 charts (board 18: --line1, --d1, --d2, --fire, --badge). Axis text is held to 4.5:1 on --card */
+  --chart-1: #7FD1A8;
+  --chart-2: #F2B84B;
+  --chart-3: #7FD1A8;
+  --chart-4: #F2B84B;
+  --chart-5: #7FD1A8;
+  --chart-grid: #2A372F;
+  --chart-axis: #A3B2A8;
+  --chart-label: #EEF3EE;
+  --chart-note: #A3B2A8;
+
+  /* RD-2 calendar heat map (board 18 --h0..--h4, --on-h). Classic's legend never painted a 5th level */
+  --heat-0: #1A241F;
+  --heat-0-t: #A3B2A8;
+  --heat-out: transparent;
+  --heat-1: #1D3A2D;
+  --heat-2: #2C5C45;
+  --heat-3: #4F9A77;
+  --heat-4: #7FD1A8;
+  --heat-5: #7FD1A8;
+  --heat-top: #7FD1A8;
+  --on-heat: #EEF3EE;
+
+  /* RD-2 streak (board 18 --fire, --badge, --h0) */
+  --fire: #F2B84B;
+  --badge: #7FD1A8;
+  --on-badge: #0F1512;
+  --track: #1A241F;
+
+  /* RD-2 Pomodoro faces (FEAT-10 palette). Breaks: Classic teal; Calm reuses it (its --focus); Field uses --hi */
+  --tick: #6A7A70;
+  --hz-page: #0F1512;
+  --hz-line: #2A372F;
+  --pom-scrim: rgba(0, 0, 0, 0.62);
+  --hover: rgba(255, 255, 255, 0.05);
+  --brk: #F2B84B;
+  --brk-t: #F2B84B;
+  --brk-sub: #3A2E10;
+  --on-brk: #14201A;
+  --brk-wedge: #F2B84B;
 }

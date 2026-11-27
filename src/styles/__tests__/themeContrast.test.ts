@@ -70,10 +70,84 @@ describe("theme token contrast", () => {
     }
   }
 
+  // ------------------------------------------------------------------ RD-2 (plan 52-1)
+
+  /** Every RD-2 colour token is a 6-digit hex, `transparent` or an rgba() overlay. */
+  const RD2_COLOURS = [
+    "txt-hd", "txt-sub", "txt-dim", "txt-mid", "txt-faint", "txt-abs", "txt-note", "task-t", "input-t", "placeholder",
+    "stat-label", "card-fg", "ico-faint", "ico-hover", "edge", "rule", "ring-soft", "check-ring", "ctl-border", "sel-border",
+    "row-hover", "menu-hover", "search-hover", "skeleton", "tile-bg", "stat-bg", "acc-grad-start", "acc-grad-end",
+    "acc-grad-hover-start", "acc-grad-hover-end", "acc-glow", "shine", "prio-low", "prio-low-b", "prio-med", "prio-med-b",
+    "prio-high", "prio-high-b", "prio-high-bg", "chip-bg", "chip-t", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5",
+    "chart-grid", "chart-axis", "chart-label", "chart-note", "heat-0", "heat-0-t", "heat-out", "heat-1", "heat-2", "heat-3",
+    "heat-4", "heat-5", "heat-top", "on-heat", "fire", "badge", "on-badge", "track", "tick", "hz-page", "hz-line",
+    "pom-scrim", "hover", "brk", "brk-t", "brk-sub", "on-brk", "brk-wedge",
+  ];
+  const HEX = /^#[0-9A-Fa-f]{6}$/;
+  const COLOUR = /^(#[0-9A-Fa-f]{6}|transparent|rgba\(\d{1,3}, \d{1,3}, \d{1,3}, (0|1|0?\.\d+)\))$/;
+
+  /** [foreground, background, minimum, themes] — Classic's own values are exempt where they are today's (unchanged). */
+  const RD2_PAIRS: [string, string, number, string[]][] = [
+    // Plan 52-1: chart axis text against the card, in all six. Classic dark moved #737373 → #7E7E7E for this.
+    ["chart-axis", "card", 4.5, THEMES],
+    ["on-acc", "acc-grad-start", 4.5, THEMES],
+    ["on-acc", "acc-grad-end", 4.5, THEMES],
+    ["on-brk", "brk", 4.5, THEMES],
+    ["brk-t", "card", 4.5, THEMES],
+    ["prio-low", "card", 4.5, THEMES],
+    ["prio-med", "card", 4.5, THEMES],
+    ["prio-high", "card", 4.5, ["classic", "calm"]],
+    // The badge number on --badge: Classic's white on blue-500 is 3.68:1 today, so 3:1 (as --on-ok).
+    ["on-badge", "badge", 3, THEMES],
+    // Calm and Field notes map these onto --txt/--txt2; Classic keeps today's greys (gray-500 on the dark card is 3.9:1).
+    ["txt-hd", "card", 4.5, ["calm", "field"]],
+    ["txt-sub", "card", 4.5, ["calm", "field"]],
+    ["txt-dim", "card", 4.5, ["calm", "field"]],
+    ["txt-mid", "card", 4.5, ["calm", "field"]],
+    ["task-t", "card", 4.5, ["calm", "field"]],
+    ["stat-label", "card", 4.5, ["calm", "field"]],
+    ["chip-t", "chip-bg", 4.5, ["calm", "field"]],
+  ];
+
+  for (const theme of THEMES) {
+    for (const mode of MODES) {
+      describe(`RD-2 tokens · ${theme} · ${mode}`, () => {
+        const t = tokens(theme, mode);
+
+        it("defines every RD-2 colour", () => {
+          for (const name of RD2_COLOURS) expect(t[name], `--${name}`).toMatch(COLOUR);
+        });
+
+        for (const [fg, bg, min, themes] of RD2_PAIRS) {
+          if (!themes.includes(theme)) continue;
+          it(`--${fg} on --${bg} ≥ ${min}`, () => {
+            expect(t[fg], `--${fg}`).toMatch(HEX);
+            expect(t[bg], `--${bg}`).toMatch(HEX);
+            expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(min);
+          });
+        }
+
+        // A high-priority chip with its own fill (Calm, Field notes): its text against that fill.
+        if (theme !== "classic") {
+          it("--prio-high on --prio-high-bg ≥ 4.5", () => {
+            expect(contrast(t["prio-high"], t["prio-high-bg"])).toBeGreaterThanOrEqual(4.5);
+          });
+        }
+      });
+    }
+  }
+
+  it("Classic's chart and heat-map colours are today's (no visible change)", () => {
+    expect(tokens("classic", "light")["chart-1"]).toBe("#53D86A");
+    expect(tokens("classic", "light")["chart-axis"]).toBe("#737373");
+    expect(tokens("classic", "light")["heat-1"]).toBe("#D4F5D9");
+    expect(tokens("classic", "dark")["heat-1"]).toBe("#1A2E21");
+  });
+
   it("defines type and shape for every theme", () => {
     for (const theme of THEMES) {
       const block = new RegExp(`\\[data-theme="${theme}"\\]\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? "";
-      for (const name of ["f-head", "w-head", "f-body", "ls-head", "big", "r-card", "r-ctl"]) {
+      for (const name of ["f-head", "w-head", "f-body", "ls-head", "big", "r-card", "r-ctl", "f-title", "f-ui", "f-card", "w-title", "w-card", "ls-title", "r-board"]) {
         expect(block, `${theme} --${name}`).toContain(`--${name}:`);
       }
     }

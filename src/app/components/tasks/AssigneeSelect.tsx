@@ -13,7 +13,6 @@ interface AssigneeSelectProps {
   onChange: (assigneeId: string) => void;
   isRecurring: boolean;
   disabled?: boolean;
-  dark?: boolean;
 }
 
 /**
@@ -21,16 +20,15 @@ interface AssigneeSelectProps {
  * Unassigned, the owner and the members (`useChatMembers`), with "(you)" marked. A recurring task
  * shows a hint instead: each repeat starts unassigned.
  */
-export default function AssigneeSelect({ projectId, value, onChange, isRecurring, disabled, dark }: AssigneeSelectProps) {
+export default function AssigneeSelect({ projectId, value, onChange, isRecurring, disabled }: AssigneeSelectProps) {
   const sharingEnabled = useSharingEnabled();
   const visible = showAssigneeSelect({ projectId, isRecurring, sharingEnabled });
   const members = useChatMembers(projectId, { enabled: visible });
   const me = useSessionUserId();
   const id = useId();
-  const muted = dark ? "text-gray-300" : "text-[#676767]";
 
   if (showRecurringAssigneeHint({ projectId, isRecurring, sharingEnabled })) {
-    return <p className={`font-lato text-xs ${muted}`}>{RECURRING_ASSIGNEE_HINT}</p>;
+    return <p className="font-ui text-xs text-th-ink-note">{RECURRING_ASSIGNEE_HINT}</p>;
   }
   if (!visible) return null;
 
@@ -39,7 +37,7 @@ export default function AssigneeSelect({ projectId, value, onChange, isRecurring
   const known = options.some((o) => o.value === value);
   return (
     <div className="flex w-full flex-col gap-1">
-      <label htmlFor={id} className={`font-lato text-sm ${dark ? "text-white" : "text-text"}`}>
+      <label htmlFor={id} className="font-ui text-sm text-th-ink">
         Assignee
       </label>
       <select
@@ -48,9 +46,7 @@ export default function AssigneeSelect({ projectId, value, onChange, isRecurring
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         aria-describedby={members.isError ? `${id}-error` : undefined}
-        className={`h-[40px] w-full rounded-[10px] border px-3 font-lato text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default ${
-          dark ? "border-gray-800 bg-foreground-dark text-white" : "border-gray-800 bg-white text-text"
-        }`}
+        className="h-[40px] w-full rounded-[10px] border px-3 font-ui text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 focus-visible:ring-offset-th-card border-th-ctl-border bg-th-card text-th-ink"
       >
         {options.map((o) => (
           <option key={o.value || "unassigned"} value={o.value}>
@@ -60,7 +56,7 @@ export default function AssigneeSelect({ projectId, value, onChange, isRecurring
         {!known && <option value={value}>{members.isPending ? "Loading…" : "Current assignee"}</option>}
       </select>
       {members.isError && (
-        <p id={`${id}-error`} className="font-lato text-xs text-error-default">
+        <p id={`${id}-error`} className="font-ui text-xs text-error-default">
           Couldn&apos;t load the project&apos;s members.
         </p>
       )}

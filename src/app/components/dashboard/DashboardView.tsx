@@ -73,12 +73,11 @@ export default function DashboardView() {
               show their own loading state instead of the whole page going blank. */}
           {!firstLoad && (
             <>
-              <DashboardHeader dark={isDark} onPomodoroOpenChange={setIsPomodoroModalOpen} />
-              <StatsRow data={data} dark={isDark} />
+              <DashboardHeader onPomodoroOpenChange={setIsPomodoroModalOpen} />
+              <StatsRow data={data} />
               <div className="w-full h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5 items-center justify-center text-center">
                 <TaskBoard
                   data={data}
-                  dark={isDark}
                   headingRef={headingRef}
                   onNewTask={() => editor.open({ mode: "create" })}
                   onEditTask={(task) => editor.open({ mode: "update", task })}

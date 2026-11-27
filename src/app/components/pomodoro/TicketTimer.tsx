@@ -12,14 +12,14 @@ import type { PomodoroController } from "./usePomodoroController";
  * the choices and one big button. The bar on the right drains with the time left (it steps once a
  * second); the pips are the focus rounds done in this cycle.
  */
-export default function TicketTimer({ ctl, dark }: { ctl: PomodoroController; dark: boolean }) {
-  const s = surface(dark);
-  const a = accent(dark, ctl.type);
+export default function TicketTimer({ ctl }: { ctl: PomodoroController }) {
+  const s = surface();
+  const a = accent(ctl.type);
   const rounds = ctl.completedFocusRounds;
   return (
     <DialogContent
       overlayClassName={`fixed inset-0 z-50 flex items-end md:items-center justify-center ${s.scrim}`}
-      className={`flex flex-col w-full md:w-[400px] font-lato ${s.txt}`}
+      className={`flex flex-col w-full md:w-[400px] font-ui ${s.txt}`}
     >
       <DialogTitle className="sr-only">Pomodoro timer</DialogTitle>
       <DialogDescription className="sr-only">Start, pause or reset a focus or break timer.</DialogDescription>
@@ -68,7 +68,7 @@ export default function TicketTimer({ ctl, dark }: { ctl: PomodoroController; da
       </div>
 
       <div className={`md:rounded-b-[22px] px-6 pt-2.5 pb-8 md:pb-6 flex flex-col gap-4 ${s.card}`}>
-        <ModeRadios value={ctl.type} onChange={ctl.requestType} variant="card" dark={dark} />
+        <ModeRadios value={ctl.type} onChange={ctl.requestType} variant="card" />
         <div className="flex gap-2.5">
           {ctl.canReset && (
             <button

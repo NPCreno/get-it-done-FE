@@ -14,21 +14,21 @@ const NUMBERS = dialNumbers();
  * FEAT-10 option A, the dial (board 17A): the time left is a wedge on a 60-minute face. A centred
  * card from 768 px, a bottom sheet on a phone. The wedge redraws once a second, no tween.
  */
-export default function DialTimer({ ctl, dark }: { ctl: PomodoroController; dark: boolean }) {
-  const s = surface(dark);
-  const a = accent(dark, ctl.type);
-  const wedge = accent(dark, ctl.type, true);
+export default function DialTimer({ ctl }: { ctl: PomodoroController }) {
+  const s = surface();
+  const a = accent(ctl.type);
+  const wedge = accent(ctl.type, true);
   const idleReset = !ctl.canReset;
   return (
     <DialogContent
       overlayClassName={`fixed inset-0 z-50 flex items-end md:items-center justify-center ${s.scrim}`}
-      className={`relative flex flex-col items-center gap-[18px] w-full md:w-[440px] min-h-[92%] md:min-h-0 rounded-t-3xl md:rounded-3xl border-t md:border px-4 pt-3 pb-7 md:px-6 md:pt-5 font-lato ${s.card} ${s.border} ${s.txt}`}
+      className={`relative flex flex-col items-center gap-[18px] w-full md:w-[440px] min-h-[92%] md:min-h-0 rounded-t-3xl md:rounded-3xl border-t md:border px-4 pt-3 pb-7 md:px-6 md:pt-5 font-ui ${s.card} ${s.border} ${s.txt}`}
     >
       <DialogTitle className="sr-only">Pomodoro timer</DialogTitle>
       <DialogDescription className="sr-only">Start, pause or reset a focus or break timer.</DialogDescription>
       <span aria-hidden="true" className={`md:hidden w-10 h-[5px] rounded-full ${s.lineBg}`} />
       <div className="w-full flex items-center justify-between">
-        <ModeRadios value={ctl.type} onChange={ctl.requestType} variant="pill" dark={dark} short />
+        <ModeRadios value={ctl.type} onChange={ctl.requestType} variant="pill" short />
         <DialogClose asChild>
           <button
             type="button"
@@ -47,7 +47,7 @@ export default function DialTimer({ ctl, dark }: { ctl: PomodoroController; dark
           <path d={dialWedgePath(ctl.timeLeft)} className={wedge.fill} />
           <circle cx={DIAL.cx} cy={DIAL.cy} r={DIAL.hubR} className={s.cardFill} />
           {NUMBERS.map((n) => (
-            <text key={n.label} x={n.x} y={n.y} textAnchor="middle" className={`${s.numFill} font-lato font-bold text-[9px]`}>
+            <text key={n.label} x={n.x} y={n.y} textAnchor="middle" className={`${s.numFill} font-ui font-bold text-[9px]`}>
               {n.label}
             </text>
           ))}

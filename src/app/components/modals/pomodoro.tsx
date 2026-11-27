@@ -7,7 +7,6 @@ import DialTimer from "../pomodoro/DialTimer";
 import TicketTimer from "../pomodoro/TicketTimer";
 import HorizonTimer from "../pomodoro/HorizonTimer";
 import { usePomodoroController } from "../pomodoro/usePomodoroController";
-import { useAppearance } from "@/hooks/useAppearance";
 
 interface PomodoroModalProps {
   onClose: () => void;
@@ -24,7 +23,6 @@ const titleCase = (type: string) => type.replace(/^\w/, (c) => c.toUpperCase());
  */
 export default function PomodoroModal({ onClose }: PomodoroModalProps) {
   const { userData } = useFormState();
-  const { isDark } = useAppearance();
   const ctl = usePomodoroController();
   const Face = FACES[pomodoroStyleOf(userData)];
   const pending = ctl.confirm.pending;
@@ -43,7 +41,7 @@ export default function PomodoroModal({ onClose }: PomodoroModalProps) {
         />
       )}
       <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-        <Face ctl={ctl} dark={isDark} />
+        <Face ctl={ctl} />
       </Dialog>
     </>
   );
