@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useAppearance } from "@/hooks/useAppearance";
 import type { ToastController } from "@/hooks/toastController";
 import { useChatUnread } from "@/lib/query/chat";
 import ChatPanel from "./ChatPanel";
@@ -14,14 +13,12 @@ interface ProjectChatActionsProps {
 
 /** "Members" and "Chat" for the owner's project view. Each opens its own dialog on top. */
 export default function ProjectChatActions({ project, toast }: ProjectChatActionsProps) {
-  const { isDark: dark } = useAppearance();
   const [open, setOpen] = useState<"members" | "chat" | null>(null);
   const unread = useChatUnread().countFor(project.project_id);
   if (!project.project_id) return null;
 
-  const button = `rounded-[5px] border px-4 p-[10px] font-lato text-xs transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default ${
-    dark ? "border-gray-600 text-gray-200 hover:bg-gray-700" : "border-primary-200 text-primary-default hover:bg-gray-50"
-  }`;
+  const button =
+    "rounded-btn border px-4 p-[10px] font-ui text-xs transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus border-th-line-acc text-th-btn2-t hover:bg-th-btn2-hover";
 
   return (
     <>

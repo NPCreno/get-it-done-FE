@@ -4,7 +4,7 @@ import ConfirmationModal from "./modals/confirmation";
 import { Pencil2Icon } from "@radix-ui/react-icons"
 import { useChatUnread } from "@/lib/query/chat";
 import UnreadBadge from "./chat/UnreadBadge";
-import { useAppearance } from "@/hooks/useAppearance";
+import { projectTintStyle } from "@/lib/projectColors";
 
 
 export default function ProjectCard({
@@ -20,49 +20,11 @@ export default function ProjectCard({
   onEditClick?: (e: React.MouseEvent) => void;
   onDeleteClick?: (project: IProject) => void;
 }) {
-  const { isDark } = useAppearance();
   const chatUnread = useChatUnread().countFor(project.project_id);
-  const projectColor = project.colorLabel?.toLowerCase() || 'gray';
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   // Portal target for the delete confirmation: the card is relative + overflow-hidden, so it clips the dialog.
   const cardRef = useRef<HTMLDivElement>(null);
-
-  // Helper functions for colors and gradients
-const getGradientClass = (color: string = 'gray') => {
-  
-
-  const lightGradients: Record<string, string> = {
-    'lavender': 'from-violet-50 to-violet-100',
-    'mint': 'from-emerald-50 to-emerald-100',
-    'peach': 'from-orange-50 to-orange-100',
-    'sky': 'from-sky-50 to-sky-100',
-    'lemon': 'from-yellow-50 to-yellow-100',
-    'rose': 'from-pink-50 to-pink-100',
-    'mauve': 'from-fuchsia-50 to-fuchsia-100',
-    'baby blue': 'from-blue-50 to-blue-100',
-    'coral': 'from-rose-50 to-rose-100',
-    'seafoam': 'from-teal-50 to-teal-100',
-  };
-
-  const darkGradients: Record<string, string> = {
-    'lavender': 'from-violet-900/30 to-violet-800/30',
-    'mint': 'from-emerald-900/30 to-emerald-800/30',
-    'peach': 'from-orange-900/30 to-orange-800/30',
-    'sky': 'from-sky-900/30 to-sky-800/30',
-    'lemon': 'from-yellow-900/30 to-yellow-800/30',
-    'rose': 'from-pink-900/30 to-pink-800/30',
-    'mauve': 'from-fuchsia-900/30 to-fuchsia-800/30',
-    'baby blue': 'from-blue-900/30 to-blue-800/30',
-    'coral': 'from-rose-900/30 to-rose-800/30',
-    'seafoam': 'from-teal-900/30 to-teal-800/30',
-  };
-
-  const gradientMap = isDark ? darkGradients : lightGradients;
-  return gradientMap[color.toLowerCase()] || (isDark ? 'from-gray-800/30 to-gray-700/30' : 'from-gray-50 to-gray-100');
-  };
-
-  const gradientClass = getGradientClass(projectColor);
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Prevent card click when clicking on action buttons
@@ -102,7 +64,8 @@ const getGradientClass = (color: string = 'gray') => {
       ref={cardRef}
       role="presentation"
       onClick={handleCardClick}
-      className={`group relative p-5 rounded-2xl bg-gradient-to-br ${gradientClass} 
+      style={projectTintStyle(project.colorLabel)}
+      className={`group relative p-5 rounded-pcard bg-gradient-to-br from-th-pc-a to-th-pc-b 
          shadow-lg hover:shadow-xl transition-all duration-300 
         cursor-pointer overflow-hidden w-full h-full flex flex-col ${
           progress >= 100 
@@ -133,7 +96,7 @@ const getGradientClass = (color: string = 'gray') => {
       <div className="flex justify-between items-start gap-3 mb-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+            <h2 className="text-lg font-title [font-weight:var(--w-sub)] text-th-ink-strong truncate">
               <button type="button" className="max-w-full truncate text-left" onClick={(e) => {
                 e.stopPropagation();
                 onClick();
@@ -144,11 +107,11 @@ const getGradientClass = (color: string = 'gray') => {
             {priority !== 'none' && (
               <span 
                 className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                  priority === 'high' 
-                    ? isDark ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-800' 
-                    : priority === 'medium' 
-                      ? isDark ? 'bg-yellow-900/30 text-yellow-300' : 'bg-yellow-100 text-yellow-800'
-                      : isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
+                  priority === 'high'
+                    ? 'bg-th-vprio-high-bg text-th-vprio-high-t'
+                    : priority === 'medium'
+                      ? 'bg-th-vprio-med-bg text-th-vprio-med-t'
+                      : 'bg-th-vprio-low-bg text-th-vprio-low-t'
                 }`}
               >
                 {priority.charAt(0).toUpperCase() + priority.slice(1)}
@@ -156,7 +119,7 @@ const getGradientClass = (color: string = 'gray') => {
             )}
             <UnreadBadge count={chatUnread} className="flex-shrink-0" />
           </div>
-          <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} truncate`}>
+          <p className="text-sm text-th-ink-body truncate">
             {project.description || 'No description'}
           </p>
         </div>
@@ -168,7 +131,7 @@ const getGradientClass = (color: string = 'gray') => {
               e.stopPropagation();
               onEditClick?.(e);
             }}
-            className={`text-xs font-medium ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors duration-200 text-blue-400 hover:text-blue-300 z-10`}
+            className="text-xs font-medium transition-colors duration-200 text-th-ico-edit hover:text-th-ico-edit-h z-10"
             aria-label="Edit project"
           >
             <Pencil2Icon width="18" height="18" aria-hidden="true"/>
@@ -189,19 +152,15 @@ const getGradientClass = (color: string = 'gray') => {
       {/* Completion Status */}
       <div className="mb-4">
         <div className="flex justify-between items-center">
-          <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+          <span className="text-sm font-medium text-th-ink-body">
             {project.task_completed ?? 0} of {project.task_count || 0} tasks completed
             {progress >= 100 && (
-              <span className={`ml-2 px-2 py-0.5 text-xs font-semibold ${
-                isDark 
-                  ? 'text-green-300 bg-green-900/30' 
-                  : 'text-green-800 bg-green-100'
-              } rounded-full`}>
+              <span className="ml-2 px-2 py-0.5 text-xs font-semibold text-th-done-chip-t bg-th-done-chip-bg rounded-full">
                 Completed!
               </span>
             )}
           </span>
-          <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+          <span className="text-xs text-th-ink-sub">
             {project.due_date ? new Date(project.due_date).toLocaleDateString() : ''}
           </span>
         </div>
@@ -216,8 +175,8 @@ const getGradientClass = (color: string = 'gray') => {
               e.stopPropagation();
               onAddTaskClick();
             }}
-            className="relative px-4 py-2 flex flex-row gap-2 items-center justify-center rounded-xl h-[36px] font-medium text-white 
-                     bg-gradient-to-r from-primary-default to-primary-200 shadow-sm hover:shadow-md
+            className="relative px-4 py-2 flex flex-row gap-2 items-center justify-center rounded-btn-lg h-[36px] font-medium text-th-on-acc 
+                     bg-gradient-to-r from-th-acc to-th-acc-soft shadow-sm hover:shadow-md
                      transition-all duration-300 hover:opacity-90 active:opacity-100 overflow-hidden"
           >
             
@@ -237,7 +196,7 @@ const getGradientClass = (color: string = 'gray') => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="text-white"
+                  className="text-th-on-acc"
                 />
               </svg>
             </div>
@@ -258,7 +217,7 @@ const getGradientClass = (color: string = 'gray') => {
                     ? 'bg-error-100 text-error-700 border-error-200'
                     : daysUntilDue === 3
                       ? 'bg-accent-100 text-accent-700 border-accent-200'
-                      : 'bg-white/90 text-gray-800 border-white/30'
+                      : 'bg-th-date-chip-bg text-th-date-chip-t border-th-date-chip-b'
               }`}
             >
               <svg 

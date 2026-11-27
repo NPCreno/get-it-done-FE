@@ -82,6 +82,12 @@ describe("theme token contrast", () => {
     "chart-grid", "chart-axis", "chart-label", "chart-note", "heat-0", "heat-0-t", "heat-out", "heat-1", "heat-2", "heat-3",
     "heat-4", "heat-5", "heat-top", "on-heat", "fire", "badge", "on-badge", "track", "tick", "hz-page", "hz-line",
     "pom-scrim", "hover", "brk", "brk-t", "brk-sub", "on-brk", "brk-wedge",
+    // Plan 52-2: projects and chat
+    "txt-strong", "txt-body", "txt-done", "sep", "modal-edge", "row-edge", "row-bg", "field-bg", "ico-x", "overlay",
+    "line-acc", "btn2-t", "btn2-t-alt", "btn2-hover", "ghost-b", "ghost-t", "acc-ink", "acc-soft", "acc-grad2-start",
+    "acc-grad2-end", "pend-dot", "done-dot", "done-chip-bg", "done-chip-t", "date-chip-bg", "date-chip-t", "date-chip-b",
+    "vprio-low-bg", "vprio-low-t", "vprio-med-bg", "vprio-med-t", "vprio-high-bg", "vprio-high-t", "bubble-me",
+    "bubble-me-ink", "bubble-other", "bubble-other-ink", "ico-edit", "ico-edit-h",
   ];
   const HEX = /^#[0-9A-Fa-f]{6}$/;
   const COLOUR = /^(#[0-9A-Fa-f]{6}|transparent|rgba\(\d{1,3}, \d{1,3}, \d{1,3}, (0|1|0?\.\d+)\))$/;
@@ -107,6 +113,30 @@ describe("theme token contrast", () => {
     ["task-t", "card", 4.5, ["calm", "field"]],
     ["stat-label", "card", 4.5, ["calm", "field"]],
     ["chip-t", "chip-bg", 4.5, ["calm", "field"]],
+    // Plan 52-2. Chat bubbles in every theme: Classic's own bubble moved white → #333 on amber (white was 1.9:1).
+    ["bubble-me-ink", "bubble-me", 4.5, THEMES],
+    ["bubble-other-ink", "bubble-other", 4.5, THEMES],
+    ["on-acc", "acc-soft", 4.5, THEMES],
+    ["on-acc", "acc-grad2-end", 4.5, THEMES],
+    ["on-acc", "acc-grad2-start", 4.5, ["calm", "field"]],
+    ["txt-strong", "card", 4.5, THEMES],
+    ["txt-body", "card", 4.5, THEMES],
+    ["ghost-t", "card", 4.5, THEMES],
+    ["ico-x", "card", 3, THEMES],
+    // Classic keeps today's values (exempt, listed in the 52-2 report): amber text on white (secondary buttons,
+    // the "Owner" label, 1.9:1), #828282 done text (3.8:1), the project-view chips.
+    ["txt-done", "card", 4.5, ["calm", "field"]],
+    ["btn2-t", "card", 4.5, ["calm", "field"]],
+    ["btn2-t-alt", "card", 4.5, ["calm", "field"]],
+    ["acc-ink", "card", 4.5, ["calm", "field"]],
+    ["ico-edit", "card", 3, THEMES],
+    ["vprio-low-t", "vprio-low-bg", 4.5, ["calm", "field"]],
+    ["vprio-med-t", "vprio-med-bg", 4.5, ["calm", "field"]],
+    ["vprio-high-t", "vprio-high-bg", 4.5, ["calm", "field"]],
+    ["done-chip-t", "done-chip-bg", 4.5, ["calm", "field"]],
+    ["date-chip-t", "date-chip-bg", 4.5, ["calm", "field"]],
+    ["pend-dot", "row-bg", 3, ["calm", "field"]],
+    ["done-dot", "row-bg", 3, ["calm", "field"]],
   ];
 
   for (const theme of THEMES) {
@@ -144,10 +174,27 @@ describe("theme token contrast", () => {
     expect(tokens("classic", "dark")["heat-1"]).toBe("#1A2E21");
   });
 
+  it("Classic's projects and chat colours are today's, except the own-bubble text (plan 52-2)", () => {
+    const light = tokens("classic", "light");
+    const dark = tokens("classic", "dark");
+    expect([light["bubble-me"], light["bubble-other"], light["bubble-other-ink"]]).toEqual(["#FEAD03", "#F3F4F6", "#333333"]);
+    expect([dark["bubble-me"], dark["bubble-other"], dark["bubble-other-ink"]]).toEqual(["#FEAD03", "#1F2937", "#FFFFFF"]);
+    // The one intended change: white on amber (1.9:1) → #333 on amber, as every primary button label.
+    expect(light["bubble-me-ink"]).toBe("#333333");
+    expect(dark["bubble-me-ink"]).toBe("#333333");
+    expect([light["txt-note"], dark["txt-note"]]).toEqual(["#676767", "#D1D5DB"]);
+    expect([light["row-edge"], dark["row-edge"], dark["row-bg"]]).toEqual(["#E0E0E0", "#374151", "rgba(31, 41, 55, 0.5)"]);
+  });
+
+  it("Classic's darker gradient start keeps #333 at ≥ 3.9:1 (was white at 3.2:1; listed in the 52-2 report)", () => {
+    expect(contrast(tokens("classic", "light")["on-acc"], tokens("classic", "light")["acc-grad2-start"])).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(tokens("classic", "dark")["on-acc"], tokens("classic", "dark")["acc-grad2-start"])).toBeGreaterThanOrEqual(3.9);
+  });
+
   it("defines type and shape for every theme", () => {
     for (const theme of THEMES) {
       const block = new RegExp(`\\[data-theme="${theme}"\\]\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? "";
-      for (const name of ["f-head", "w-head", "f-body", "ls-head", "big", "r-card", "r-ctl", "f-title", "f-ui", "f-card", "w-title", "w-card", "ls-title", "r-board"]) {
+      for (const name of ["f-head", "w-head", "f-body", "ls-head", "big", "r-card", "r-ctl", "f-title", "f-ui", "f-card", "w-title", "w-card", "ls-title", "r-board", "w-sub", "r-btn", "r-btn-lg", "r-pcard"]) {
         expect(block, `${theme} --${name}`).toContain(`--${name}:`);
       }
     }

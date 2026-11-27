@@ -51,13 +51,13 @@ export default function ChatPanel({ projectId, projectTitle, isOwner, onClose, t
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent
-        overlayClassName={`fixed inset-0 z-[60] flex justify-end ${dark ? "bg-black/60" : "bg-black/40"}`}
-        className={`flex h-full w-full max-w-[440px] flex-col shadow-xl ${dark ? "bg-foreground-dark text-white" : "bg-white text-text"}`}
+        overlayClassName="fixed inset-0 z-[60] flex justify-end bg-th-overlay"
+        className="flex h-full w-full max-w-[440px] flex-col shadow-xl bg-th-card text-th-ink"
       >
-        <header className={`flex items-start justify-between gap-3 border-b p-4 ${dark ? "border-gray-800" : "border-gray-100"}`}>
+        <header className="flex items-start justify-between gap-3 border-b p-4 border-th-sep">
           <div className="min-w-0">
-            <DialogTitle className="truncate font-lato text-lg font-bold">{projectTitle || "Project"} chat</DialogTitle>
-            <DialogDescription className={`font-lato text-xs ${dark ? "text-gray-300" : "text-[#676767]"}`}>
+            <DialogTitle className="truncate font-card text-lg [font-weight:var(--w-card)]">{projectTitle || "Project"} chat</DialogTitle>
+            <DialogDescription className="font-ui text-xs text-th-ink-note">
               Messages are visible to the owner and every member.
             </DialogDescription>
           </div>
@@ -65,10 +65,10 @@ export default function ChatPanel({ projectId, projectTitle, isOwner, onClose, t
             <button
               type="button"
               aria-label="Close"
-              className="rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
+              className="rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
             >
               <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" fill="none">
-                <path d="M11.5 4.5L4.5 11.5M11.5 11.5L4.5 4.5" stroke={dark ? "#9ca3af" : "#666666"} strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M11.5 4.5L4.5 11.5M11.5 11.5L4.5 4.5" stroke="var(--ico-x)" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </button>
           </DialogClose>
@@ -76,7 +76,7 @@ export default function ChatPanel({ projectId, projectTitle, isOwner, onClose, t
 
         <div className="flex min-h-0 flex-1 flex-col">
           {state.status === "loading" ? (
-            <div role="status" className={`m-auto font-lato text-sm ${dark ? "text-gray-300" : "text-[#676767]"}`}>
+            <div role="status" className="m-auto font-ui text-sm text-th-ink-note">
               Loading messages…
             </div>
           ) : state.status === "error" ? (
@@ -94,7 +94,6 @@ export default function ChatPanel({ projectId, projectTitle, isOwner, onClose, t
               messages={messages}
               me={me}
               isOwner={isOwner}
-              dark={dark}
               empty={state.status === "empty"}
               hasOlder={!!query.hasNextPage}
               loadingOlder={query.isFetchingNextPage}
@@ -119,12 +118,12 @@ export default function ChatPanel({ projectId, projectTitle, isOwner, onClose, t
         {removed ? (
           <p
             role="status"
-            className={`border-t p-4 font-lato text-sm ${dark ? "border-gray-800 text-gray-300" : "border-gray-100 text-[#676767]"}`}
+            className="border-t p-4 font-ui text-sm border-th-sep text-th-ink-note"
           >
             You no longer have access to this chat.
           </p>
         ) : (
-          <Composer projectId={projectId} dark={dark} toast={toast} />
+          <Composer projectId={projectId} toast={toast} />
         )}
 
         {pendingDelete && (
@@ -149,7 +148,6 @@ interface MessageLogProps {
   messages: ChatMessage[];
   me: string | undefined;
   isOwner: boolean;
-  dark: boolean;
   empty: boolean;
   hasOlder: boolean;
   loadingOlder: boolean;
@@ -158,7 +156,7 @@ interface MessageLogProps {
   refreshError: React.ReactNode;
 }
 
-function MessageLog({ messages, me, isOwner, dark, empty, hasOlder, loadingOlder, onLoadOlder, onDelete, refreshError }: MessageLogProps) {
+function MessageLog({ messages, me, isOwner, empty, hasOlder, loadingOlder, onLoadOlder, onDelete, refreshError }: MessageLogProps) {
   const scroller = useRef<HTMLDivElement>(null);
   const atBottom = useRef(true);
   const snapshot = useRef<{ first: string | undefined; last: string | undefined; height: number }>({
@@ -192,7 +190,7 @@ function MessageLog({ messages, me, isOwner, dark, empty, hasOlder, loadingOlder
     if (el.scrollTop < EDGE_PX && hasOlder && !loadingOlder) onLoadOlder();
   };
 
-  const muted = dark ? "text-gray-300" : "text-[#676767]";
+  const muted = "text-th-ink-note";
 
   return (
     <div ref={scroller} onScroll={onScroll} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
@@ -202,7 +200,7 @@ function MessageLog({ messages, me, isOwner, dark, empty, hasOlder, loadingOlder
           type="button"
           onClick={onLoadOlder}
           aria-disabled={loadingOlder}
-          className={`self-center rounded-[5px] px-3 py-1 font-lato text-xs underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default ${muted}`}
+          className={`self-center rounded-btn px-3 py-1 font-ui text-xs underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus ${muted}`}
         >
           {loadingOlder ? "Loading older messages…" : "Load older messages"}
         </button>
@@ -213,7 +211,7 @@ function MessageLog({ messages, me, isOwner, dark, empty, hasOlder, loadingOlder
           const canDelete = mine || isOwner;
           return (
             <li key={m.id} className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
-              <div className={`flex items-baseline gap-2 font-lato text-[11px] ${muted}`}>
+              <div className={`flex items-baseline gap-2 font-ui text-[11px] ${muted}`}>
                 <span className="font-bold">{mine ? "You" : m.username}</span>
                 <time dateTime={m.created_at}>{formatRelativeTime(m.created_at)}</time>
                 {canDelete && (
@@ -221,19 +219,15 @@ function MessageLog({ messages, me, isOwner, dark, empty, hasOlder, loadingOlder
                     type="button"
                     onClick={() => onDelete(m)}
                     aria-label={`Delete message from ${mine ? "you" : m.username}`}
-                    className="rounded px-1 underline hover:text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
+                    className="rounded px-1 underline hover:text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
                   >
                     Delete
                   </button>
                 )}
               </div>
               <p
-                className={`mt-1 max-w-[85%] whitespace-pre-wrap break-words rounded-[10px] px-3 py-2 font-lato text-sm ${
-                  mine
-                    ? "bg-primary-default text-white"
-                    : dark
-                      ? "bg-gray-800 text-white"
-                      : "bg-gray-100 text-text"
+                className={`mt-1 max-w-[85%] whitespace-pre-wrap break-words rounded-card px-3 py-2 font-ui text-sm ${
+                  mine ? "bg-th-bubble-me text-th-bubble-me-ink" : "bg-th-bubble-other text-th-bubble-other-ink"
                 }`}
               >
                 {m.body}
@@ -242,14 +236,14 @@ function MessageLog({ messages, me, isOwner, dark, empty, hasOlder, loadingOlder
           );
         })}
       </ol>
-      {empty && <p className={`m-auto font-lato text-sm ${muted}`}>No messages yet. Say hello!</p>}
+      {empty && <p className={`m-auto font-ui text-sm ${muted}`}>No messages yet. Say hello!</p>}
     </div>
   );
 }
 
 // ------------------------------------------------------------- the composer
 
-function Composer({ projectId, dark, toast }: { projectId: string; dark: boolean; toast: ToastController }) {
+function Composer({ projectId, toast }: { projectId: string; toast: ToastController }) {
   const [draft, setDraft] = useState("");
   const send = useSendChatMessage(projectId);
   const inputId = useId();
@@ -277,7 +271,7 @@ function Composer({ projectId, dark, toast }: { projectId: string; dark: boolean
 
   return (
     <form
-      className={`flex flex-col gap-2 border-t p-4 ${dark ? "border-gray-800" : "border-gray-100"}`}
+      className="flex flex-col gap-2 border-t p-4 border-th-sep"
       onSubmit={(e) => {
         e.preventDefault();
         void submit();
@@ -301,18 +295,16 @@ function Composer({ projectId, dark, toast }: { projectId: string; dark: boolean
             void submit();
           }
         }}
-        className={`w-full resize-none rounded-[10px] border p-2 font-lato text-sm focus:outline-none focus:ring-2 focus:ring-primary-default ${
-          dark ? "border-gray-700 bg-gray-800 text-white" : "border-[#E0E0E0] bg-white text-text"
-        }`}
+        className="w-full resize-none rounded-card border p-2 font-ui text-sm focus:outline-none focus:ring-2 focus:ring-th-focus border-th-row-edge bg-th-field-bg text-th-ink"
       />
       <div className="flex items-center justify-between">
-        <span id={counterId} className={`font-lato text-xs ${over ? "text-error-default" : dark ? "text-gray-300" : "text-[#676767]"}`}>
+        <span id={counterId} className={`font-ui text-xs ${over ? "text-error-default" : "text-th-ink-note"}`}>
           {draft.length} / {LIMITS.chatMessageMax}
         </span>
         <button
           type="submit"
           aria-disabled={!canSend}
-          className="rounded-[5px] bg-primary-default px-4 py-2 font-lato text-xs text-white transition-colors hover:bg-primary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2 aria-disabled:opacity-60"
+          className="rounded-btn bg-th-acc px-4 py-2 font-ui text-xs text-th-on-acc transition-colors hover:bg-th-acc-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)] aria-disabled:opacity-60"
         >
           {send.isPending ? "Sending…" : "Send"}
         </button>

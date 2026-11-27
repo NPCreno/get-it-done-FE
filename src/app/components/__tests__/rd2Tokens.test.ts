@@ -42,6 +42,23 @@ const OWNED = [
   "modals/pomodoro.tsx",
   // Dev theme preview
   "ThemePreviewChip.tsx",
+  // Batch 52-2: projects and chat. The project colour CHOICES are data (src/lib/projectColors.ts),
+  // which is outside this gate on purpose.
+  "projects/ProjectsView.tsx",
+  "projects/ProjectGrid.tsx",
+  "projects/ProjectEditorDialog.tsx",
+  "projects/useProjectEditor.ts",
+  "projects/projectPrefill.ts",
+  "projects/sharedProject.ts",
+  "projectCard.tsx",
+  "modals/projectModal.tsx",
+  "modals/viewProject.tsx",
+  "chat/ChatPanel.tsx",
+  "chat/MembersDialog.tsx",
+  "chat/ProjectChatActions.tsx",
+  "chat/SharedProjectsSection.tsx",
+  "chat/UnreadBadge.tsx",
+  "../(routes)/projects/page.tsx",
 ];
 
 /**
@@ -63,7 +80,7 @@ function offences(rel: string): string[] {
     });
 }
 
-describe("RD-2 batch 52-1: owned files are on theme tokens", () => {
+describe("RD-2 batches 52-1 and 52-2: owned files are on theme tokens", () => {
   it("has no hex colours and no isDark colour ternaries", () => {
     expect(OWNED.flatMap(offences)).toEqual([]);
   });

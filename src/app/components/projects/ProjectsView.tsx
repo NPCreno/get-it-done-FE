@@ -84,7 +84,6 @@ export default function ProjectsView() {
           projectData={projectData}
           onRetry={() => void projectsQuery.refetch()}
           retrying={projectsQuery.isFetching}
-          dark={isDark}
           headingRef={headingRef}
           onNewProject={() => projectEditor.open()}
           onOpenProject={(project) => {

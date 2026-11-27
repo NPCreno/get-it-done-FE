@@ -69,20 +69,18 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
     else toast.failure(result.failure);
   };
 
-  const muted = dark ? "text-gray-300" : "text-[#676767]";
+  const muted = "text-th-ink-note";
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent
-        overlayClassName={`fixed inset-0 z-[60] flex items-center justify-center ${dark ? "bg-black/60" : "bg-black/40"}`}
-        className={`modal-popup flex w-[480px] max-w-[calc(100vw-32px)] flex-col gap-4 rounded-[10px] p-5 shadow-lg ${
-          dark ? "bg-foreground-dark text-white" : "bg-white text-text"
-        }`}
+        overlayClassName="fixed inset-0 z-[60] flex items-center justify-center bg-th-overlay"
+        className="modal-popup flex w-[480px] max-w-[calc(100vw-32px)] flex-col gap-4 rounded-card p-5 shadow-lg bg-th-card text-th-ink"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <DialogTitle className="font-lato text-[20px] font-bold">Members of {projectTitle || "this project"}</DialogTitle>
-            <DialogDescription className={`font-lato text-sm ${muted}`}>
+            <DialogTitle className="font-card text-[20px] [font-weight:var(--w-card)]">Members of {projectTitle || "this project"}</DialogTitle>
+            <DialogDescription className={`font-ui text-sm ${muted}`}>
               Members can work on this project&apos;s tasks and use its chat. Removing someone gives their tasks back to you.
             </DialogDescription>
           </div>
@@ -90,10 +88,10 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
             <button
               type="button"
               aria-label="Close"
-              className="rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
+              className="rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
             >
               <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" fill="none">
-                <path d="M11.5 4.5L4.5 11.5M11.5 11.5L4.5 4.5" stroke={dark ? "#9ca3af" : "#666666"} strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M11.5 4.5L4.5 11.5M11.5 11.5L4.5 4.5" stroke="var(--ico-x)" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </button>
           </DialogClose>
@@ -123,20 +121,20 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
             type="submit"
             aria-disabled={add.isPending || full}
             disabled={full}
-            className="mt-[26px] rounded-[5px] bg-primary-default px-4 py-[11px] font-lato text-xs text-white transition-colors hover:bg-primary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2 aria-disabled:opacity-60"
+            className="mt-[26px] rounded-btn bg-th-acc px-4 py-[11px] font-ui text-xs text-th-on-acc transition-colors hover:bg-th-acc-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)] aria-disabled:opacity-60"
           >
             {add.isPending ? "Adding…" : "Add"}
           </button>
         </form>
         {full && (
-          <p className={`font-lato text-xs ${muted}`}>
+          <p className={`font-ui text-xs ${muted}`}>
             This project has the maximum of {LIMITS.chatMembersMax} members.
           </p>
         )}
 
         <div className="flex max-h-[360px] min-h-[120px] flex-col gap-2 overflow-y-auto">
           {state.status === "loading" ? (
-            <p role="status" className={`m-auto font-lato text-sm ${muted}`}>
+            <p role="status" className={`m-auto font-ui text-sm ${muted}`}>
               Loading members…
             </p>
           ) : state.status === "error" ? (
@@ -149,19 +147,18 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
             />
           ) : (
             <ul className="flex flex-col gap-2" aria-label={`${members.length} of ${LIMITS.chatMembersMax} members`}>
-              {owner && <MemberRow member={owner} label="Owner" dark={dark} />}
+              {owner && <MemberRow member={owner} label="Owner" />}
               {members.map((m) => (
                 <MemberRow
                   key={m.user_id}
                   member={m}
-                  dark={dark}
                   action={
                     <button
                       type="button"
                       onClick={() => void removeMember(m)}
                       aria-disabled={remove.isPending}
                       aria-label={`Remove ${m.username}`}
-                      className="rounded-[5px] border border-error-default px-3 py-1 font-lato text-xs text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default aria-disabled:opacity-60"
+                      className="rounded-btn border border-error-default px-3 py-1 font-ui text-xs text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus aria-disabled:opacity-60"
                     >
                       Remove
                     </button>
@@ -169,7 +166,7 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
                 />
               ))}
               {members.length === 0 && (
-                <li className={`py-4 text-center font-lato text-sm ${muted}`}>No members yet. Add someone by username.</li>
+                <li className={`py-4 text-center font-ui text-sm ${muted}`}>No members yet. Add someone by username.</li>
               )}
             </ul>
           )}
@@ -189,14 +186,14 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
   );
 }
 
-function MemberRow({ member, label, action, dark }: { member: ChatMember; label?: string; action?: React.ReactNode; dark: boolean }) {
+function MemberRow({ member, label, action }: { member: ChatMember; label?: string; action?: React.ReactNode }) {
   return (
-    <li className={`flex items-center justify-between gap-3 rounded-[10px] border px-3 py-2 ${dark ? "border-gray-800" : "border-gray-100"}`}>
+    <li className="flex items-center justify-between gap-3 rounded-card border px-3 py-2 border-th-sep">
       <div className="min-w-0">
-        <p className="truncate font-lato text-sm font-bold">{member.fullname || member.username}</p>
-        <p className={`truncate font-lato text-xs ${dark ? "text-gray-300" : "text-[#676767]"}`}>@{member.username}</p>
+        <p className="truncate font-ui text-sm font-bold">{member.fullname || member.username}</p>
+        <p className="truncate font-ui text-xs text-th-ink-note">@{member.username}</p>
       </div>
-      {label ? <span className="font-lato text-xs font-bold text-primary-default">{label}</span> : action}
+      {label ? <span className="font-ui text-xs font-bold text-th-acc-ink">{label}</span> : action}
     </li>
   );
 }
