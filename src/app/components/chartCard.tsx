@@ -11,7 +11,6 @@ import { ITaskCompletionTrendData } from "../interface/ITaskCompletionTrendData"
 import { ITaskDistribution } from "../interface/ITaskDistribution";
 import { Database } from 'lucide-react';
 import { IHeatmapData } from "../interface/IHeatmapData";
-import { useAppearance } from "@/hooks/useAppearance";
 import LoadError, { useRecoveryFocus } from "./LoadError";
 import type { LoadState } from "@/lib/query/loadState";
 
@@ -40,7 +39,6 @@ export default function ChartCard({
   calendarHeatmapData = [],
   load,
 }: ChartCardProps) {
-  const { isDark } = useAppearance();
   const focusRef = useRecoveryFocus<HTMLDivElement>(load.state.status);
   const widget = header.toLowerCase();
 
@@ -57,14 +55,14 @@ export default function ChartCard({
   const errorBlock = (variant: "full" | "compact") =>
     load.state.status === "error" ? (
       <div className={variant === "full" ? "w-full h-full flex items-center p-3" : "w-full p-2"}>
-        <LoadError widget={widget} failure={load.state.failure} onRetry={load.onRetry} retrying={load.retrying} dark={isDark} variant={variant} />
+        <LoadError widget={widget} failure={load.state.failure} onRetry={load.onRetry} retrying={load.retrying} variant={variant} />
       </div>
     ) : null;
 
   const refreshBlock =
     load.state.status === "ready" && load.state.refreshFailure ? (
       <div className="w-full p-2">
-        <LoadError widget={widget} failure={load.state.refreshFailure} onRetry={load.onRetry} retrying={load.retrying} dark={isDark} variant="compact" />
+        <LoadError widget={widget} failure={load.state.refreshFailure} onRetry={load.onRetry} retrying={load.retrying} variant="compact" />
       </div>
     ) : null;
 

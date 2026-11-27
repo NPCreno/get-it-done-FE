@@ -10,7 +10,6 @@ import Image from 'next/image';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/app/components/shadcn/dialog';
 import AssigneeChip from '@/app/components/tasks/AssigneeChip';
 import { canDeleteTask } from '@/app/components/tasks/assignee';
-import { useAppearance } from "@/hooks/useAppearance";
 interface ViewProjectModalProps {
   onClose: () => void;
   project: IProject;
@@ -43,7 +42,6 @@ export default function ViewProjectModal({
   canManageProject = true,
 }: ViewProjectModalProps) {
  
-  const { isDark } = useAppearance();
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -78,7 +76,6 @@ export default function ViewProjectModal({
               failure={tasksLoad.state.failure}
               onRetry={tasksLoad.onRetry}
               retrying={tasksLoad.retrying}
-              dark={isDark}
             />
           ) : tasks.length != 0 ? tasks.map((task, index) => (
             <TaskCard key={index} task={task} handleUpdateTask={handleUpdateTask} onStatusError={onStatusError} handleDeleteTask={handleDeleteTask} />
@@ -188,7 +185,7 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
               <h1
                 className={`text-sm font-bold font-ui flex-1 ${
                   task.status === "Complete"
-                    ? "line-through text-th-ink-done"
+                    ? "line-through text-th-done-ink"
                     : "text-th-ink"
                 }`}
               >

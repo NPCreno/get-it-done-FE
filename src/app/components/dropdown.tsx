@@ -10,7 +10,6 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/app/components/shadcn/dropdown-menu"
-import { useAppearance } from "@/hooks/useAppearance";
 
 interface CustomDropdownMenuProps {
   options: {
@@ -46,7 +45,6 @@ export function CustomDropdownMenu({
   errorId,
   invalid,
 }: CustomDropdownMenuProps) {
-  const { isDark } = useAppearance();
   const currentSelectedColor = options.find(option => option.name === selectedOption.name)?.color;
 
   return (
@@ -105,7 +103,6 @@ export function CustomDropdownMenu({
               <DropdownMenuRadioItem 
                 value={option.name} 
                 className="bg-th-card hover:bg-th-menu-hover"
-                dark={isDark}
               >
                 {option.name != "" ? (
                   <>

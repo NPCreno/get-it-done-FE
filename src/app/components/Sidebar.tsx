@@ -96,7 +96,7 @@ export default function Sidebar() {
           aria-controls={DESKTOP_SIDEBAR_ID}
           aria-label={isSidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
           title={isSidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
-          className="mt-auto flex items-center w-full h-[35px] flex-shrink-0 rounded-[10px] text-primary-default hover:bg-primary-default/10
+          className="mt-auto flex items-center w-full h-[35px] flex-shrink-0 rounded-[10px] text-th-acc-t hover:bg-primary-default/10
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
         >
           {/* » collapsed, « expanded */}

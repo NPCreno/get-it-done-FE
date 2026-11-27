@@ -225,7 +225,7 @@ export function TaskItem({
                   handleUpdateTask();
                 }}
                 className={`flex-1 font-ui text-4 text-start ${task.status === 'Complete'
-                ? 'line-through text-th-ink-faint'
+                ? 'line-through text-th-done-ink'
                 : 'text-th-task'}`}>
                 {task.title}
               </button>
@@ -322,7 +322,7 @@ export function TaskItem({
                 </div>
               </div>
               <span className={`text-sm ml-2 flex-1 text-start ${subtask.status === 'Complete'
-                ? 'line-through text-th-ink-faint'
+                ? 'line-through text-th-done-ink'
                 : 'text-th-task'}`}>
                 {subtask.title}
               </span>

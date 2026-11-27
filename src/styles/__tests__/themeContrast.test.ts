@@ -83,61 +83,83 @@ describe("theme token contrast", () => {
     "heat-4", "heat-5", "heat-top", "on-heat", "fire", "badge", "on-badge", "track", "tick", "hz-page", "hz-line",
     "pom-scrim", "hover", "brk", "brk-t", "brk-sub", "on-brk", "brk-wedge",
     // Plan 52-2: projects and chat
-    "txt-strong", "txt-body", "txt-done", "sep", "modal-edge", "row-edge", "row-bg", "field-bg", "ico-x", "overlay",
+    "txt-strong", "txt-body", "done-ink", "sep", "modal-edge", "row-edge", "row-bg", "field-bg", "ico-x", "overlay",
     "line-acc", "btn2-t", "btn2-t-alt", "btn2-hover", "ghost-b", "ghost-t", "acc-ink", "acc-soft", "acc-grad2-start",
     "acc-grad2-end", "pend-dot", "done-dot", "done-chip-bg", "done-chip-t", "date-chip-bg", "date-chip-t", "date-chip-b",
     "vprio-low-bg", "vprio-low-t", "vprio-med-bg", "vprio-med-t", "vprio-high-bg", "vprio-high-t", "bubble-me",
     "bubble-me-ink", "bubble-other", "bubble-other-ink", "ico-edit", "ico-edit-h",
+    // Plan 52-3: profile, notifications, modals, shared controls
+    "wait-bar", "sw-on", "sw-off", "sw-knob", "toast-bg", "toast-t", "toast-note", "dlg-note", "ico-date", "ico-close",
+    "ico-check", "dot-low", "dot-med", "dot-high", "dot-done", "ok-t", "err-t", "ncard-bg", "ncard-t", "ncard-t2", "code-bg", "acc-t-light",
   ];
   const HEX = /^#[0-9A-Fa-f]{6}$/;
   const COLOUR = /^(#[0-9A-Fa-f]{6}|transparent|rgba\(\d{1,3}, \d{1,3}, \d{1,3}, (0|1|0?\.\d+)\))$/;
 
-  /** [foreground, background, minimum, themes] — Classic's own values are exempt where they are today's (unchanged). */
-  const RD2_PAIRS: [string, string, number, string[]][] = [
-    // Plan 52-1: chart axis text against the card, in all six. Classic dark moved #737373 → #7E7E7E for this.
-    ["chart-axis", "card", 4.5, THEMES],
-    ["on-acc", "acc-grad-start", 4.5, THEMES],
-    ["on-acc", "acc-grad-end", 4.5, THEMES],
-    ["on-brk", "brk", 4.5, THEMES],
-    ["brk-t", "card", 4.5, THEMES],
-    ["prio-low", "card", 4.5, THEMES],
-    ["prio-med", "card", 4.5, THEMES],
-    ["prio-high", "card", 4.5, ["classic", "calm"]],
-    // The badge number on --badge: Classic's white on blue-500 is 3.68:1 today, so 3:1 (as --on-ok).
-    ["on-badge", "badge", 3, THEMES],
-    // Calm and Field notes map these onto --txt/--txt2; Classic keeps today's greys (gray-500 on the dark card is 3.9:1).
-    ["txt-hd", "card", 4.5, ["calm", "field"]],
-    ["txt-sub", "card", 4.5, ["calm", "field"]],
-    ["txt-dim", "card", 4.5, ["calm", "field"]],
-    ["txt-mid", "card", 4.5, ["calm", "field"]],
-    ["task-t", "card", 4.5, ["calm", "field"]],
-    ["stat-label", "card", 4.5, ["calm", "field"]],
-    ["chip-t", "chip-bg", 4.5, ["calm", "field"]],
-    // Plan 52-2. Chat bubbles in every theme: Classic's own bubble moved white → #333 on amber (white was 1.9:1).
-    ["bubble-me-ink", "bubble-me", 4.5, THEMES],
-    ["bubble-other-ink", "bubble-other", 4.5, THEMES],
-    ["on-acc", "acc-soft", 4.5, THEMES],
-    ["on-acc", "acc-grad2-end", 4.5, THEMES],
-    ["on-acc", "acc-grad2-start", 4.5, ["calm", "field"]],
-    ["txt-strong", "card", 4.5, THEMES],
-    ["txt-body", "card", 4.5, THEMES],
-    ["ghost-t", "card", 4.5, THEMES],
-    ["ico-x", "card", 3, THEMES],
-    // Classic keeps today's values (exempt, listed in the 52-2 report): amber text on white (secondary buttons,
-    // the "Owner" label, 1.9:1), #828282 done text (3.8:1), the project-view chips.
-    ["txt-done", "card", 4.5, ["calm", "field"]],
-    ["btn2-t", "card", 4.5, ["calm", "field"]],
-    ["btn2-t-alt", "card", 4.5, ["calm", "field"]],
-    ["acc-ink", "card", 4.5, ["calm", "field"]],
-    ["ico-edit", "card", 3, THEMES],
-    ["vprio-low-t", "vprio-low-bg", 4.5, ["calm", "field"]],
-    ["vprio-med-t", "vprio-med-bg", 4.5, ["calm", "field"]],
-    ["vprio-high-t", "vprio-high-bg", 4.5, ["calm", "field"]],
-    ["done-chip-t", "done-chip-bg", 4.5, ["calm", "field"]],
-    ["date-chip-t", "date-chip-bg", 4.5, ["calm", "field"]],
-    ["pend-dot", "row-bg", 3, ["calm", "field"]],
-    ["done-dot", "row-bg", 3, ["calm", "field"]],
+  /**
+   * [foreground, background, minimum] in all six themes. No exemptions (plan 52-3 §6): Classic's failures were fixed.
+   * Text is 4.5:1; icons and other graphics are 3:1 (WCAG 1.4.11). A translucent background is composited over --card.
+   */
+  const RD2_PAIRS: [string, string, number][] = [
+    ["chart-axis", "card", 4.5],
+    ["on-acc", "acc-grad-start", 4.5],
+    ["on-acc", "acc-grad-end", 4.5],
+    ["on-brk", "brk", 4.5],
+    ["brk-t", "card", 4.5],
+    ["prio-low", "card", 4.5],
+    ["prio-med", "card", 4.5],
+    // A high-priority chip's text on its own fill (Calm, Field notes), or on the card where it has none (Classic).
+    ["prio-high", "prio-high-bg", 4.5],
+    ["on-badge", "badge", 4.5],
+    ["txt-hd", "card", 4.5],
+    ["txt-sub", "card", 4.5],
+    ["txt-dim", "card", 4.5],
+    ["txt-mid", "card", 4.5],
+    ["task-t", "card", 4.5],
+    ["stat-label", "card", 4.5],
+    ["chip-t", "chip-bg", 4.5],
+    ["bubble-me-ink", "bubble-me", 4.5],
+    ["bubble-other-ink", "bubble-other", 4.5],
+    ["on-acc", "acc-soft", 4.5],
+    ["on-acc", "acc-grad2-end", 4.5],
+    ["on-acc", "acc-grad2-start", 4.5],
+    ["txt-strong", "card", 4.5],
+    ["txt-body", "card", 4.5],
+    ["ghost-t", "card", 4.5],
+    ["ico-x", "card", 3],
+    ["done-ink", "card", 4.5],
+    ["btn2-t", "card", 4.5],
+    ["btn2-t-alt", "card", 4.5],
+    ["acc-ink", "card", 4.5],
+    ["ico-edit", "card", 3],
+    ["vprio-low-t", "vprio-low-bg", 4.5],
+    ["vprio-med-t", "vprio-med-bg", 4.5],
+    ["vprio-high-t", "vprio-high-bg", 4.5],
+    ["done-chip-t", "done-chip-bg", 4.5],
+    ["date-chip-t", "date-chip-bg", 4.5],
+    // Plan 52-3
+    ["acc-t", "acc-sub", 4.5],
+    ["toast-t", "toast-bg", 4.5],
+    ["toast-note", "toast-bg", 4.5],
+    ["dlg-note", "card", 4.5],
+    ["ncard-t", "ncard-bg", 4.5],
+    ["ncard-t2", "ncard-bg", 4.5],
+    ["acc-t-light", "ncard-bg", 4.5],
+    ["ok-t", "card", 4.5],
+    ["err-t", "card", 4.5],
+    ["ico-date", "card", 3],
+    ["ico-close", "card", 3],
+    ["ico-check", "card", 3],
   ];
+  // Not checked: the project-view status dots (--pend-dot, --done-dot) are decorative; a task's status is also
+  // shown by the strike-through and named by its checkbox, so WCAG 1.4.11 does not apply to them.
+
+  /** An rgba() or transparent background, composited over the card it sits on. */
+  function solid(colour: string, card: string): string {
+    if (HEX.test(colour)) return colour;
+    const [r, g, b, a] = colour === "transparent" ? [0, 0, 0, 0] : (/rgba\(([^)]+)\)/.exec(colour)?.[1] ?? "").split(",").map(Number);
+    const base = [1, 3, 5].map((i) => parseInt(card.slice(i, i + 2), 16));
+    return "#" + [r, g, b].map((c, i) => Math.round(c * a + base[i] * (1 - a)).toString(16).padStart(2, "0")).join("");
+  }
 
   for (const theme of THEMES) {
     for (const mode of MODES) {
@@ -148,19 +170,11 @@ describe("theme token contrast", () => {
           for (const name of RD2_COLOURS) expect(t[name], `--${name}`).toMatch(COLOUR);
         });
 
-        for (const [fg, bg, min, themes] of RD2_PAIRS) {
-          if (!themes.includes(theme)) continue;
+        for (const [fg, bg, min] of RD2_PAIRS) {
           it(`--${fg} on --${bg} ≥ ${min}`, () => {
             expect(t[fg], `--${fg}`).toMatch(HEX);
-            expect(t[bg], `--${bg}`).toMatch(HEX);
-            expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(min);
-          });
-        }
-
-        // A high-priority chip with its own fill (Calm, Field notes): its text against that fill.
-        if (theme !== "classic") {
-          it("--prio-high on --prio-high-bg ≥ 4.5", () => {
-            expect(contrast(t["prio-high"], t["prio-high-bg"])).toBeGreaterThanOrEqual(4.5);
+            expect(t[bg], `--${bg}`).toMatch(COLOUR);
+            expect(contrast(t[fg], solid(t[bg], t.card))).toBeGreaterThanOrEqual(min);
           });
         }
       });
@@ -186,9 +200,26 @@ describe("theme token contrast", () => {
     expect([light["row-edge"], dark["row-edge"], dark["row-bg"]]).toEqual(["#E0E0E0", "#374151", "rgba(31, 41, 55, 0.5)"]);
   });
 
-  it("Classic's darker gradient start keeps #333 at ≥ 3.9:1 (was white at 3.2:1; listed in the 52-2 report)", () => {
-    expect(contrast(tokens("classic", "light")["on-acc"], tokens("classic", "light")["acc-grad2-start"])).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(tokens("classic", "dark")["on-acc"], tokens("classic", "dark")["acc-grad2-start"])).toBeGreaterThanOrEqual(3.9);
+  it("Classic's approved contrast fixes (plan 52-3 §6) hold their values", () => {
+    const light = tokens("classic", "light");
+    const dark = tokens("classic", "dark");
+    expect([light["done-ink"], light["btn2-t"], light["acc-ink"], light["chip-t"]]).toEqual(["#767676", "#7F5601", "#7F5601", "#7F5601"]);
+    expect([light["vprio-low-t"], light["vprio-med-t"], light["vprio-high-t"]]).toEqual(["#13596A", "#894114", "#8A211F"]);
+    expect([dark["acc-grad2-start"], dark["acc-grad2-end"]]).toEqual(["#E98006", "#EAB308"]);
+    // Amber stays amber in dark, where it passes on the dark card.
+    expect([dark["btn2-t"], dark["acc-t"]]).toEqual(["#E5E7EB", "#FEAD03"]);
+  });
+
+  it("shadcn variables are HSL triplets in every theme; Classic keeps today's :root values in both modes", () => {
+    const TRIPLET = /^\d+(\.\d+)? \d+(\.\d+)?% \d+(\.\d+)?%$/;
+    for (const theme of THEMES) for (const mode of MODES) {
+      const t = tokens(theme, mode);
+      for (const n of ["background", "foreground", "popover", "primary", "muted", "muted-foreground", "accent", "border", "input", "ring"]) expect(t[n], `${theme} ${mode} --${n}`).toMatch(TRIPLET);
+    }
+    for (const mode of MODES) {
+      const t = tokens("classic", mode);
+      expect([t.background, t.popover, t.primary, t.accent, t.border]).toEqual(["0 0% 100%", "0 0% 100%", "0 0% 9%", "0 0% 96.1%", "0 0% 89.8%"]);
+    }
   });
 
   it("defines type and shape for every theme", () => {

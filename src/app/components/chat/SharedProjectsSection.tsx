@@ -2,7 +2,6 @@
 import { useId, useRef, useState } from "react";
 import LoadError from "@/app/components/LoadError";
 import ConfirmationModal from "@/app/components/modals/confirmation";
-import { useAppearance } from "@/hooks/useAppearance";
 import type { SharedProject } from "@/app/contracts/responses";
 import type { ToastController } from "@/hooks/toastController";
 import { useChatUnread, useRemoveChatMember, useSharedProjects } from "@/lib/query/chat";
@@ -26,7 +25,6 @@ export default function SharedProjectsSection({
   toast: ToastController;
   onViewProject: (project: SharedProject) => void;
 }) {
-  const { isDark: dark } = useAppearance();
   const query = useSharedProjects();
   const state = loadStateOf(query, isEmptyList);
   const [chat, setChat] = useState<SharedProject | null>(null);
@@ -51,7 +49,6 @@ export default function SharedProjectsSection({
           failure={state.failure}
           onRetry={() => void query.refetch()}
           retrying={query.isFetching}
-          dark={dark}
         />
       ) : state.status === "empty" ? (
         <p className={`font-ui text-sm ${muted}`}>
@@ -65,7 +62,6 @@ export default function SharedProjectsSection({
               failure={state.refreshFailure}
               onRetry={() => void query.refetch()}
               retrying={query.isFetching}
-              dark={dark}
               variant="compact"
             />
           )}

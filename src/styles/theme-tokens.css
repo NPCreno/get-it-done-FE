@@ -161,7 +161,7 @@
   --prio-high-b: #F87171;
   --prio-high-bg: transparent;
   --chip-bg: #FEEAC0;
-  --chip-t: #FEAD03;
+  --chip-t:#7F5601;
 
   /* RD-2 charts (board 18: --line1, --d1, --d2, --fire, --badge). Axis text is held to 4.5:1 on --card */
   --chart-1: #53D86A;
@@ -188,7 +188,7 @@
 
   /* RD-2 streak (board 18 --fire, --badge, --h0) */
   --fire: #FB923C;
-  --badge: #3B82F6;
+  --badge:#1E6FF5;
   --on-badge: #FFFFFF;
   --track: #E5E7EB;
 
@@ -207,7 +207,7 @@
   /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
   --txt-strong: #111827;
   --txt-body: #4B5563;
-  --txt-done: #828282;
+  --done-ink:#767676;
   --sep: #F3F4F6;
   --modal-edge: #F3F4F6;
   --row-edge: #E0E0E0;
@@ -216,12 +216,12 @@
   --ico-x: #666666;
   --overlay: rgba(0, 0, 0, 0.4);
   --line-acc: #FED580;
-  --btn2-t: #FEAD03;
-  --btn2-t-alt: #FEAD03;
+  --btn2-t:#7F5601;
+  --btn2-t-alt:#7F5601;
   --btn2-hover: #F9FAFB;
   --ghost-b: #E5E7EB;
   --ghost-t: #333333;
-  --acc-ink: #FEAD03;
+  --acc-ink:#7F5601;
   --acc-soft: #FED580;
   --acc-grad2-start: #FEAD03;
   --acc-grad2-end: #FACC15;
@@ -234,17 +234,63 @@
   --date-chip-t: #1F2937;
   --date-chip-b: rgba(255, 255, 255, 0.3);
   --vprio-low-bg: #8FCEDD;
-  --vprio-low-t: #19768D;
+  --vprio-low-t:#13596A;
   --vprio-med-bg: #FFBC91;
-  --vprio-med-t: #BF5B1C;
+  --vprio-med-t:#894114;
   --vprio-high-bg: #FD9D9B;
-  --vprio-high-t: #BE2E2B;
+  --vprio-high-t:#8A211F;
   --bubble-me: #FEAD03;
   --bubble-me-ink: #333333;
   --bubble-other: #F3F4F6;
   --bubble-other-ink: #333333;
   --ico-edit: #4B5563;
   --ico-edit-h: #1F2937;
+
+  /* RD-2 profile, notifications, modals, shared controls (plan 52-3). Classic = today's colours, except the
+   * approved contrast fixes (52-3 §6). Calm/Field map onto their base tokens (boards 10, 11, 14, 02, D3). */
+  --wait-bar: #E4E4E4;
+  --sw-on: #333333;
+  --sw-off: #D1D5DB;
+  --sw-knob: #FFFFFF;
+  --toast-bg: #FFFFFF;
+  --toast-t: #333333;
+  --toast-note: #4B5563;
+  --dlg-note: #676767;
+  --ico-date: #333333;
+  --ico-close: #666666;
+  --ico-check: #000000;
+  --dot-low: #219EBC;
+  --dot-med: #FF7A25;
+  --dot-high: #FE6E6B;
+  --dot-done: #53D86A;
+  --ok-t: #296C35;
+  --err-t: #BE2E2B;
+  --ncard-bg: #FFFFFF;
+  --ncard-t: #000000;
+  --ncard-t2: #333333;
+  --code-bg: #F7F7F7;
+  --acc-t-light: #7F5601;
+
+  /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
+   * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.9%;
+  --card-foreground: 0 0% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 3.9%;
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96.1%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 45.1%;
+  --accent: 0 0% 96.1%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --ring: 0 0% 3.9%;
 }
 
 [data-theme="classic"][data-mode="dark"] {
@@ -268,8 +314,8 @@
   /* RD-2 text (Classic = today's dashboard greys; Calm/Field = their --txt/--txt2/--strong) */
   --txt-hd: #FFFFFF;
   --txt-sub: #9CA3AF;
-  --txt-dim: #6B7280;
-  --txt-mid: #4B5563;
+  --txt-dim:#767D8C;
+  --txt-mid:#707E93;
   --txt-faint: #9CA3AF;
   --txt-abs: #FFFFFF;
   --txt-note: #D1D5DB;
@@ -354,7 +400,7 @@
 
   /* RD-2 streak (board 18 --fire, --badge, --h0) */
   --fire: #FB923C;
-  --badge: #3B82F6;
+  --badge:#1E6FF5;
   --on-badge: #FFFFFF;
   --track: #1F2937;
 
@@ -373,7 +419,7 @@
   /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
   --txt-strong: #FFFFFF;
   --txt-body: #D1D5DB;
-  --txt-done: #9CA3AF;
+  --done-ink: #9CA3AF;
   --sep: #1F2937;
   --modal-edge: #374151;
   --row-edge: #374151;
@@ -389,7 +435,7 @@
   --ghost-t: #E5E7EB;
   --acc-ink: #FEAD03;
   --acc-soft: #FED580;
-  --acc-grad2-start: #D97706;
+  --acc-grad2-start:#E98006;
   --acc-grad2-end: #EAB308;
   --empty-title: linear-gradient(to right, #FBBF24, #EAB308);
   --pend-dot: rgba(234, 179, 8, 0.8);
@@ -411,6 +457,52 @@
   --bubble-other-ink: #FFFFFF;
   --ico-edit: #D1D5DB;
   --ico-edit-h: #FFFFFF;
+
+  /* RD-2 profile, notifications, modals, shared controls (plan 52-3). Classic = today's colours, except the
+   * approved contrast fixes (52-3 §6). Calm/Field map onto their base tokens (boards 10, 11, 14, 02, D3). */
+  --wait-bar: #242730;
+  --sw-on: #FEAD03;
+  --sw-off: #4B5563;
+  --sw-knob: #E5E7EB;
+  --toast-bg: #FFFFFF;
+  --toast-t: #333333;
+  --toast-note: #4B5563;
+  --dlg-note: #7D7D7D;
+  --ico-date: #616161;
+  --ico-close: #666666;
+  --ico-check: #FFFFFF;
+  --dot-low: #219EBC;
+  --dot-med: #FF7A25;
+  --dot-high: #FE6E6B;
+  --dot-done: #53D86A;
+  --ok-t: #7EE28F;
+  --err-t: #FE6E6B;
+  --ncard-bg: #FFFFFF;
+  --ncard-t: #000000;
+  --ncard-t2: #333333;
+  --code-bg: rgba(0, 0, 0, 0.3);
+  --acc-t-light: #7F5601;
+
+  /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
+   * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.9%;
+  --card-foreground: 0 0% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 3.9%;
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96.1%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 45.1%;
+  --accent: 0 0% 96.1%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --ring: 0 0% 3.9%;
 }
 
 [data-theme="calm"][data-mode="light"] {
@@ -520,7 +612,7 @@
 
   /* RD-2 streak (board 18 --fire, --badge, --h0) */
   --fire: #FEAD03;
-  --badge: #2B8A46;
+  --badge:#2A8744;
   --on-badge: #FFFFFF;
   --track: #F1EFEA;
 
@@ -539,7 +631,7 @@
   /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
   --txt-strong: #1C1A17;
   --txt-body: #5C574F;
-  --txt-done: #5C574F;
+  --done-ink: #5C574F;
   --sep: #E3E0D9;
   --modal-edge: #E3E0D9;
   --row-edge: #E3E0D9;
@@ -577,6 +669,52 @@
   --bubble-other-ink: #1C1A17;
   --ico-edit: #5C574F;
   --ico-edit-h: #1C1A17;
+
+  /* RD-2 profile, notifications, modals, shared controls (plan 52-3). Classic = today's colours, except the
+   * approved contrast fixes (52-3 §6). Calm/Field map onto their base tokens (boards 10, 11, 14, 02, D3). */
+  --wait-bar: #E3E0D9;
+  --sw-on: #FEAD03;
+  --sw-off: #8A847A;
+  --sw-knob: #FFFFFF;
+  --toast-bg: #FFFFFF;
+  --toast-t: #1C1A17;
+  --toast-note: #5C574F;
+  --dlg-note: #5C574F;
+  --ico-date: #5C574F;
+  --ico-close: #5C574F;
+  --ico-check: #1C1A17;
+  --dot-low:  #5C574F;
+  --dot-med:  #1C1A17;
+  --dot-high:  #8A5600;
+  --dot-done: #2B8A46;
+  --ok-t: #1E7A36;
+  --err-t: #C21F1B;
+  --ncard-bg: #FFFFFF;
+  --ncard-t: #1C1A17;
+  --ncard-t2: #5C574F;
+  --code-bg: #F8F7F4;
+  --acc-t-light: #8A5600;
+
+  /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
+   * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
+  --background: 0 0% 100%;
+  --foreground: 36 9.8% 10%;
+  --card-foreground: 36 9.8% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 36 9.8% 10%;
+  --primary: 40.6 99.2% 50.4%;
+  --primary-foreground: 36 9.8% 10%;
+  --secondary: 45 22.2% 96.5%;
+  --secondary-foreground: 36 9.8% 10%;
+  --muted: 45 22.2% 96.5%;
+  --muted-foreground: 36.9 7.6% 33.5%;
+  --accent: 44.3 100% 91%;
+  --accent-foreground: 36 9.8% 10%;
+  --destructive: 1.4 75.6% 43.3%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 42 15.2% 87.1%;
+  --input: 37.5 6.4% 51%;
+  --ring: 191.9 69.9% 32.5%;
 }
 
 [data-theme="calm"][data-mode="dark"] {
@@ -705,7 +843,7 @@
   /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
   --txt-strong: #F3F1EC;
   --txt-body: #ADA79B;
-  --txt-done: #ADA79B;
+  --done-ink: #ADA79B;
   --sep: #34312C;
   --modal-edge: #34312C;
   --row-edge: #34312C;
@@ -743,6 +881,52 @@
   --bubble-other-ink: #F3F1EC;
   --ico-edit: #ADA79B;
   --ico-edit-h: #F3F1EC;
+
+  /* RD-2 profile, notifications, modals, shared controls (plan 52-3). Classic = today's colours, except the
+   * approved contrast fixes (52-3 §6). Calm/Field map onto their base tokens (boards 10, 11, 14, 02, D3). */
+  --wait-bar: #34312C;
+  --sw-on: #FEAD03;
+  --sw-off: #6E695F;
+  --sw-knob: #FFFFFF;
+  --toast-bg: #1E1C19;
+  --toast-t: #F3F1EC;
+  --toast-note: #ADA79B;
+  --dlg-note: #ADA79B;
+  --ico-date: #ADA79B;
+  --ico-close: #ADA79B;
+  --ico-check: #F3F1EC;
+  --dot-low:  #ADA79B;
+  --dot-med:  #F3F1EC;
+  --dot-high:  #FEAD03;
+  --dot-done: #53D86A;
+  --ok-t: #53D86A;
+  --err-t: #FF6B67;
+  --ncard-bg: #1E1C19;
+  --ncard-t: #F3F1EC;
+  --ncard-t2: #ADA79B;
+  --code-bg: #141311;
+  --acc-t-light: #FEAD03;
+
+  /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
+   * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
+  --background: 36 9.1% 10.8%;
+  --foreground: 42.9 22.6% 93.9%;
+  --card-foreground: 42.9 22.6% 93.9%;
+  --popover: 36 9.1% 10.8%;
+  --popover-foreground: 42.9 22.6% 93.9%;
+  --primary: 40.6 99.2% 50.4%;
+  --primary-foreground: 36 9.8% 10%;
+  --secondary: 40 8.1% 7.3%;
+  --secondary-foreground: 42.9 22.6% 93.9%;
+  --muted: 40 8.1% 7.3%;
+  --muted-foreground: 40 9.9% 64.3%;
+  --accent: 42.9 56.8% 14.5%;
+  --accent-foreground: 42.9 22.6% 93.9%;
+  --destructive: 1.6 100% 70.2%;
+  --destructive-foreground: 40 8.1% 7.3%;
+  --border: 37.5 8.3% 18.8%;
+  --input: 40 7.3% 40.2%;
+  --ring: 191.8 69.9% 70%;
 }
 
 [data-theme="field"][data-mode="light"] {
@@ -871,7 +1055,7 @@
   /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
   --txt-strong: #14201A;
   --txt-body: #4F5E55;
-  --txt-done: #4F5E55;
+  --done-ink: #4F5E55;
   --sep: #D5DED3;
   --modal-edge: #D5DED3;
   --row-edge: #D5DED3;
@@ -909,6 +1093,52 @@
   --bubble-other-ink: #14201A;
   --ico-edit: #4F5E55;
   --ico-edit-h: #14201A;
+
+  /* RD-2 profile, notifications, modals, shared controls (plan 52-3). Classic = today's colours, except the
+   * approved contrast fixes (52-3 §6). Calm/Field map onto their base tokens (boards 10, 11, 14, 02, D3). */
+  --wait-bar: #D5DED3;
+  --sw-on: #1F5C46;
+  --sw-off: #7C8A80;
+  --sw-knob: #FFFFFF;
+  --toast-bg: #FFFFFF;
+  --toast-t: #14201A;
+  --toast-note: #4F5E55;
+  --dlg-note: #4F5E55;
+  --ico-date: #4F5E55;
+  --ico-close: #4F5E55;
+  --ico-check: #14201A;
+  --dot-low:  #4F5E55;
+  --dot-med:  #14201A;
+  --dot-high:  #F2B84B;
+  --dot-done: #1F5C46;
+  --ok-t: #1F5C46;
+  --err-t: #B3261E;
+  --ncard-bg: #FFFFFF;
+  --ncard-t: #14201A;
+  --ncard-t2: #4F5E55;
+  --code-bg: #F3F6F1;
+  --acc-t-light: #1F5C46;
+
+  /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
+   * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
+  --background: 0 0% 100%;
+  --foreground: 150 23.1% 10.2%;
+  --card-foreground: 150 23.1% 10.2%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 150 23.1% 10.2%;
+  --primary: 158.4 49.6% 24.1%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 96 21.7% 95.5%;
+  --secondary-foreground: 150 23.1% 10.2%;
+  --muted: 96 21.7% 95.5%;
+  --muted-foreground: 144 8.7% 33.9%;
+  --accent: 144.7 33.3% 90%;
+  --accent-foreground: 150 23.1% 10.2%;
+  --destructive: 3.2 71.3% 41%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 109.1 14.3% 84.9%;
+  --input: 137.1 5.6% 51.4%;
+  --ring: 158.4 49.6% 24.1%;
 }
 
 [data-theme="field"][data-mode="dark"] {
@@ -1037,7 +1267,7 @@
   /* RD-2 projects and chat (plan 52-2). Classic = today's projects/chat colours; Calm/Field = boards 08, 09, D3 */
   --txt-strong: #EEF3EE;
   --txt-body: #A3B2A8;
-  --txt-done: #A3B2A8;
+  --done-ink: #A3B2A8;
   --sep: #2A372F;
   --modal-edge: #2A372F;
   --row-edge: #2A372F;
@@ -1075,6 +1305,52 @@
   --bubble-other-ink: #EEF3EE;
   --ico-edit: #A3B2A8;
   --ico-edit-h: #EEF3EE;
+
+  /* RD-2 profile, notifications, modals, shared controls (plan 52-3). Classic = today's colours, except the
+   * approved contrast fixes (52-3 §6). Calm/Field map onto their base tokens (boards 10, 11, 14, 02, D3). */
+  --wait-bar: #2A372F;
+  --sw-on: #7FD1A8;
+  --sw-off: #6A7A70;
+  --sw-knob: #FFFFFF;
+  --toast-bg: #18211C;
+  --toast-t: #EEF3EE;
+  --toast-note: #A3B2A8;
+  --dlg-note: #A3B2A8;
+  --ico-date: #A3B2A8;
+  --ico-close: #A3B2A8;
+  --ico-check: #EEF3EE;
+  --dot-low:  #A3B2A8;
+  --dot-med:  #EEF3EE;
+  --dot-high:  #F2B84B;
+  --dot-done: #7FD1A8;
+  --ok-t: #7FD1A8;
+  --err-t: #FF8A80;
+  --ncard-bg: #18211C;
+  --ncard-t: #EEF3EE;
+  --ncard-t2: #A3B2A8;
+  --code-bg: #0F1512;
+  --acc-t-light: #7FD1A8;
+
+  /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
+   * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
+  --background: 146.7 15.8% 11.2%;
+  --foreground: 120 17.2% 94.3%;
+  --card-foreground: 120 17.2% 94.3%;
+  --popover: 146.7 15.8% 11.2%;
+  --popover-foreground: 120 17.2% 94.3%;
+  --primary: 150 47.1% 65.9%;
+  --primary-foreground: 150 16.7% 7.1%;
+  --secondary: 150 16.7% 7.1%;
+  --secondary-foreground: 120 17.2% 94.3%;
+  --muted: 150 16.7% 7.1%;
+  --muted-foreground: 140 8.9% 66.9%;
+  --accent: 153.1 33.3% 17.1%;
+  --accent-foreground: 120 17.2% 94.3%;
+  --destructive: 4.7 100% 75.1%;
+  --destructive-foreground: 150 16.7% 7.1%;
+  --border: 143.1 13.4% 19%;
+  --input: 142.5 7% 44.7%;
+  --ring: 150 47.1% 65.9%;
 }
 
 /* ---------------------------------------------------------------- project colour tints (plan 52-2)

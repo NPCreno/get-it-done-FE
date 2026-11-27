@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useState, type RefObject } from "react";
 import LoadError from "@/app/components/LoadError";
-import { useAppearance } from "@/hooks/useAppearance";
 import { TaskItem } from "@/app/components/taskItem";
 import type { ITask } from "@/app/interface/ITask";
 import type { DashboardData } from "./useDashboardData";
@@ -29,7 +28,6 @@ export default function TaskBoard({
 }: TaskBoardProps) {
   const { tasks, upcoming, upcomingState } = data;
   // Only LoadError (not converted in this batch) still takes the mode.
-  const { isDark: dark } = useAppearance();
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const [expandedTaskIds, setExpandedTaskIds] = useState<Set<string>>(new Set());
 
@@ -116,7 +114,6 @@ export default function TaskBoard({
                 failure={upcomingState.refreshFailure}
                 onRetry={() => void upcoming.refetch()}
                 retrying={upcoming.isFetching}
-                dark={dark}
                 variant="compact"
               />
             </div>
@@ -127,7 +124,6 @@ export default function TaskBoard({
               failure={upcomingState.failure}
               onRetry={() => void upcoming.refetch()}
               retrying={upcoming.isFetching}
-              dark={dark}
             />
           ) : upcomingState.status === "empty" ? (
             <div className="flex flex-col items-center justify-center text-center gap-3">

@@ -24,25 +24,25 @@ const MODE_ICONS: Record<Mode, typeof Sun> = { light: Sun, dark: Moon, system: M
  * form never reads. Calm and Field notes show "Coming soon" until they are in ENABLED_THEMES.
  */
 export default function AppearanceCard() {
-  const { isDark, resolvedMode } = useAppearance();
+  const { resolvedMode } = useAppearance();
   const { appearance, pick, status } = useSetAppearance();
   const shownTheme = enabledTheme(appearance.theme);
   const themeName = useId();
   const modeName = useId();
   const statusColour =
     status.kind === "saved"
-      ? isDark ? "text-success-300" : "text-success-600"
+      ? "text-th-ok-t"
       : status.kind === "failed"
-        ? isDark ? "text-error-300" : "text-error-500"
+        ? "text-th-err-t"
         : "text-th-ink2";
 
   return (
     <section
       aria-labelledby={`${themeName}-title`}
-      className={`flex flex-col gap-5 p-5 rounded-[10px] bg-th-card ${isDark ? "border border-th-line" : ""}`}
+      className={`flex flex-col gap-5 p-5 rounded-[10px] bg-th-card [border-width:var(--edge-w)] border-th-line`}
     >
       <div className="flex flex-col">
-        <h2 id={`${themeName}-title`} className="font-lato text-2xl text-primary-default fade-in-delay-1 select-none">
+        <h2 id={`${themeName}-title`} className="font-lato text-2xl text-th-acc-t fade-in-delay-1 select-none">
           Appearance
         </h2>
         <p className="font-lato text-[13px] text-th-ink fade-in-delay-1 select-none">
@@ -136,7 +136,7 @@ export default function AppearanceCard() {
 
       <div className="pt-4 border-t border-th-line">
         {/* FEAT-10: saves on change, apart from the Profile form. */}
-        <PomodoroStylePicker dark={isDark} />
+        <PomodoroStylePicker />
       </div>
     </section>
   );

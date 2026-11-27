@@ -184,7 +184,8 @@ const config: Config = {
   				// RD-2 (plan 52-2): projects and chat. Classic values equal today's palette.
   				'ink-strong': 'var(--txt-strong)',
   				'ink-body': 'var(--txt-body)',
-  				'ink-done': 'var(--txt-done)',
+  				// Plan 52-3 §6: done-task text at ≥ 4.5:1 (was --txt-done)
+  				'done-ink': 'var(--done-ink)',
   				sep: 'var(--sep)',
   				'modal-edge': 'var(--modal-edge)',
   				'row-edge': 'var(--row-edge)',
@@ -221,6 +222,25 @@ const config: Config = {
   				'bubble-other-ink': 'var(--bubble-other-ink)',
   				'ico-edit': 'var(--ico-edit)',
   				'ico-edit-h': 'var(--ico-edit-h)',
+  				// RD-2 (plan 52-3): profile, notifications, modals, shared controls.
+  				'wait-bar': 'var(--wait-bar)',
+  				'sw-on': 'var(--sw-on)',
+  				'sw-off': 'var(--sw-off)',
+  				'sw-knob': 'var(--sw-knob)',
+  				'toast-bg': 'var(--toast-bg)',
+  				'toast-t': 'var(--toast-t)',
+  				'toast-note': 'var(--toast-note)',
+  				'dlg-note': 'var(--dlg-note)',
+  				'ico-date': 'var(--ico-date)',
+  				'ico-close': 'var(--ico-close)',
+  				'ico-check': 'var(--ico-check)',
+  				'ok-t': 'var(--ok-t)',
+  				'err-t': 'var(--err-t)',
+  				'ncard-bg': 'var(--ncard-bg)',
+  				'ncard-t': 'var(--ncard-t)',
+  				'ncard-t2': 'var(--ncard-t2)',
+  				'code-bg': 'var(--code-bg)',
+  				'acc-t-light': 'var(--acc-t-light)',
   				// A project card's own tint (set per card from src/lib/projectColors.ts)
   				'pc-a': 'var(--pc-a)',
   				'pc-b': 'var(--pc-b)'
@@ -306,8 +326,9 @@ const config: Config = {
 				'light': '#ffffff',
 				'dark': '#111317'
 			},
+  			// --card is the theme token (a colour, not an HSL triplet), shared with shadcn's bg-card.
   			card: {
-  				DEFAULT: 'hsl(var(--card))',
+  				DEFAULT: 'var(--card)',
   				foreground: 'hsl(var(--card-foreground))'
   			},
   			popover: {

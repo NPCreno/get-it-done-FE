@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -59,6 +59,40 @@ const OWNED = [
   "chat/SharedProjectsSection.tsx",
   "chat/UnreadBadge.tsx",
   "../(routes)/projects/page.tsx",
+  // Batch 52-3: profile, notifications, modals, shared controls, shadcn. The task creator's option dots
+  // are var(--dot-*) tokens; weekdaySelector is the creator's repeat-days control (52-3 §6 touched it).
+  "../(routes)/profileSettings/page.tsx",
+  "appearance/AppearanceCard.tsx",
+  "pomodoro/PomodoroStylePicker.tsx",
+  "../(routes)/notifications/page.tsx",
+  "notificationCard.tsx",
+  "apiTokens/ApiTokensSection.tsx",
+  "apiTokens/ConnectedAppsList.tsx",
+  "apiTokens/CopyButton.tsx",
+  "apiTokens/CreateTokenDialog.tsx",
+  "apiTokens/DisconnectAppDialog.tsx",
+  "apiTokens/RevokeTokenDialog.tsx",
+  "apiTokens/TokenCreatedDialog.tsx",
+  "apiTokens/TokenDialogShell.tsx",
+  "modals/taskModal.tsx",
+  "tasks/TaskEditorDialog.tsx",
+  "modals/confirmation.tsx",
+  "toast.tsx",
+  "ToastHost.tsx",
+  "toggleSwitch.tsx",
+  "inputBox.tsx",
+  "datePicker.tsx",
+  "datePickerWithTime.tsx",
+  "weekdaySelector.tsx",
+  "LoadError.tsx",
+  "shadcn/dropdown-menu.tsx",
+  "shadcn/select.tsx",
+  "shadcn/popover.tsx",
+  "shadcn/dialog.tsx",
+  "shadcn/calendar.tsx",
+  "shadcn/card.tsx",
+  "shadcn/button.tsx",
+  "shadcn/scroll-area.tsx",
 ];
 
 /**
@@ -80,9 +114,26 @@ function offences(rel: string): string[] {
     });
 }
 
-describe("RD-2 batches 52-1 and 52-2: owned files are on theme tokens", () => {
+describe("RD-2 batches 52-1, 52-2 and 52-3: owned files are on theme tokens", () => {
   it("has no hex colours and no isDark colour ternaries", () => {
     expect(OWNED.flatMap(offences)).toEqual([]);
+  });
+
+  it("no `dark:` utility is left anywhere in the app (plan 52-3: <html> now carries the `dark` class)", () => {
+    const DARK = /(^|[\s'"`])dark:[a-z]/;
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+        e.isDirectory() ? (e.name === "__tests__" ? [] : walk(join(dir, e.name))) : /\.(tsx?|css)$/.test(e.name) ? [join(dir, e.name)] : []
+      );
+    const hits = walk(join(process.cwd(), "src/app")).flatMap((file) =>
+      readFileSync(file, "utf8")
+        .split("\n")
+        .filter((line) => DARK.test(line))
+        .map((line) => `${file}: ${line.trim()}`)
+    );
+    expect(hits).toEqual([]);
+    expect(DARK.test('className="p-4 dark:bg-red-200"')).toBe(true);
+    expect(DARK.test("dark: Moon")).toBe(false);
   });
 
   it("the gate itself catches both", () => {

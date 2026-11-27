@@ -1,7 +1,6 @@
 "use client";
 import { useId, useRef, useState } from "react";
 import LoadError from "@/app/components/LoadError";
-import { useAppearance } from "@/hooks/useAppearance";
 import { API_TOKEN_RULES } from "@/app/contracts/common";
 import type { ApiToken } from "@/app/contracts/responses";
 import type { ToastController } from "@/hooks/toastController";
@@ -32,7 +31,6 @@ const STATUS_CLASS: Record<ApiToken["status"], string> = {
  * (FEAT-07d), then the token list, create and revoke.
  */
 export default function ApiTokensSection({ toast }: { toast: ToastController }) {
-  const { isDark: dark } = useAppearance();
   const query = useApiTokens();
   const state = loadStateOf(query, isEmptyList);
   const revoke = useRevokeApiToken();
@@ -47,8 +45,8 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
 
   const tokens = state.status === "ready" ? state.data : [];
   const full = activeCount(tokens) >= API_TOKEN_RULES.maxActive;
-  const muted = dark ? "text-gray-300" : "text-[#676767]";
-  const border = dark ? "border-gray-800" : "border-gray-100";
+  const muted = "text-th-ink-note";
+  const border = "border-th-sep";
 
   const confirmRevoke = async (token: ApiToken) => {
     setRevoking(null);
@@ -62,13 +60,13 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
   return (
     <section
       aria-labelledby={headingId}
-      className={`flex flex-col gap-4 rounded-[10px] p-5 ${dark ? "bg-foreground-dark border border-gray-800 text-white" : "bg-white text-text"}`}
+      className={`flex flex-col gap-4 rounded-[10px] p-5 bg-th-card text-th-ink [border-width:var(--edge-w)] border-th-edge`}
     >
       <div className="flex flex-col gap-1">
-        <h2 ref={headingRef} tabIndex={-1} id={headingId} className="font-lato text-2xl text-primary-default outline-none">
+        <h2 ref={headingRef} tabIndex={-1} id={headingId} className="font-lato text-2xl text-th-acc-t outline-none">
           Connect an AI assistant
         </h2>
-        <p className={`font-lato text-[13px] ${dark ? "text-white" : "text-text"}`}>
+        <p className={`font-lato text-[13px] text-th-ink`}>
           Your AI assistant (Claude, Claude Code, Cursor and others) can read and manage your tasks and projects. Deletes
           can be recovered. Treat a token like a password: anyone who has it can use your account through an assistant.
         </p>
@@ -80,7 +78,7 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
             <label htmlFor={`${headingId}-url`} className="font-lato text-base">
               Server URL
             </label>
-            <CopyButton text={SERVER_URL} what="the server URL" target={urlRef} dark={dark} />
+            <CopyButton text={SERVER_URL} what="the server URL" target={urlRef} />
           </div>
           <input
             ref={urlRef}
@@ -88,7 +86,7 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
             readOnly
             value={SERVER_URL}
             onFocus={(e) => e.currentTarget.select()}
-            className={`w-full rounded-md border px-2 py-2 font-mono text-xs ${dark ? "border-gray-800 bg-black/30 text-white" : "border-[#E0E0E0] bg-[#F7F7F7] text-text"}`}
+            className={`w-full rounded-md border px-2 py-2 font-mono text-xs border-th-line bg-th-code-bg text-th-ink`}
           />
         </div>
       )}
@@ -108,7 +106,7 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
         </div>
       )}
 
-      <ConnectedAppsList toast={toast} dark={dark} />
+      <ConnectedAppsList toast={toast} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col">
@@ -120,7 +118,7 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
           type="button"
           onClick={() => setCreating(true)}
           disabled={full}
-          className="rounded-[5px] bg-primary-default px-4 py-2 font-lato text-sm font-bold text-white transition-colors hover:bg-primary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-[5px] bg-th-acc px-4 py-2 font-lato text-sm font-bold text-th-on-acc transition-colors hover:bg-th-acc-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           Create token
         </button>
@@ -137,7 +135,6 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
           failure={state.failure}
           onRetry={() => void query.refetch()}
           retrying={query.isFetching}
-          dark={dark}
         />
       ) : state.status === "empty" ? (
         <p className={`font-lato text-sm ${muted}`}>No tokens yet.</p>
@@ -149,7 +146,6 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
               failure={state.refreshFailure}
               onRetry={() => void query.refetch()}
               retrying={query.isFetching}
-              dark={dark}
               variant="compact"
             />
           )}
@@ -186,7 +182,7 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
                           type="button"
                           onClick={() => setRevoking(t)}
                           aria-label={`Revoke ${t.name}`}
-                          className="rounded-[5px] border border-error-default px-3 py-1 text-xs text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
+                          className="rounded-[5px] border border-error-default px-3 py-1 text-xs text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
                         >
                           Revoke
                         </button>
@@ -203,7 +199,6 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
 
       {creating && (
         <CreateTokenDialog
-          dark={dark}
           toast={toast}
           onClose={() => setCreating(false)}
           onCreated={(c) => {
@@ -218,13 +213,11 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
           serverUrl={SERVER_URL}
           onClose={() => setCreated(null)}
           returnFocus={createButtonRef}
-          dark={dark}
         />
       )}
       {revoking && (
         <RevokeTokenDialog
           token={revoking}
-          dark={dark}
           onCancel={() => setRevoking(null)}
           onConfirm={() => void confirmRevoke(revoking)}
         />

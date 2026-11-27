@@ -69,10 +69,10 @@ export default function WeekdaySelector({
               toggleDay(day.value)
             }
           }}
-          className={` rounded-full border w-[30px] h-[30px] border-primary-200 flex justify-center items-center text-primary-default ${
+          className={` rounded-full border w-[30px] h-[30px] border-th-acc-soft flex justify-center items-center ${
             selected.includes(day.value)
-              ? 'bg-primary-default text-white'
-              : ' text-primary-default'
+              ? 'bg-th-acc text-th-on-acc'
+              : 'text-th-acc-t'
           } ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`
         }
         >

@@ -10,18 +10,18 @@ import { useSetPomodoroStyle } from "@/lib/query/mutations";
  * labels, arrow keys move and select). Not part of the Profile form: it saves on change and never
  * makes the form dirty; the radios have no `name` the form reads.
  */
-export default function PomodoroStylePicker({ dark }: { dark: boolean }) {
+export default function PomodoroStylePicker() {
   const { style, pick, status } = useSetPomodoroStyle();
   const name = useId();
   const hintId = useId();
-  const txt = dark ? "text-white" : "text-text";
-  const txt2 = dark ? "text-gray-400" : "text-[#676767]";
-  const line = dark ? "border-gray-800" : "border-[#E0E0E0]";
+  const txt = "text-th-ink";
+  const txt2 = "text-th-ink2";
+  const line = "border-th-line";
   const statusColour =
     status.kind === "saved"
-      ? dark ? "text-success-300" : "text-success-600"
+      ? "text-th-ok-t"
       : status.kind === "failed"
-        ? dark ? "text-error-300" : "text-error-500"
+        ? "text-th-err-t"
         : txt2;
 
   return (
@@ -36,13 +36,9 @@ export default function PomodoroStylePicker({ dark }: { dark: boolean }) {
           return (
             <label
               key={s}
-              className={`grid grid-cols-[64px_minmax(0,1fr)_20px] items-center gap-3 min-h-[64px] rounded-xl cursor-pointer font-lato ${
-                dark
-                  ? "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-secondary-300 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-foreground-dark"
-                  : "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-secondary-500 has-[:focus-visible]:ring-offset-2"
-              } ${
+              className={`grid grid-cols-[64px_minmax(0,1fr)_20px] items-center gap-3 min-h-[64px] rounded-xl cursor-pointer font-lato has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-th-focus has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-[var(--card)] ${
                 on
-                  ? `border-2 py-[7px] pl-[7px] pr-[11px] ${dark ? "border-primary-default bg-primary-700" : "border-primary-600 bg-primary-100"}`
+                  ? `border-2 py-[7px] pl-[7px] pr-[11px] border-th-acc-t bg-th-acc-sub`
                   : `border py-2 pl-2 pr-3 ${line}`
               }`}
             >
@@ -56,9 +52,9 @@ export default function PomodoroStylePicker({ dark }: { dark: boolean }) {
               />
               <span
                 aria-hidden="true"
-                className={`grid place-items-center w-16 h-12 rounded-lg overflow-hidden ${dark ? "bg-background-dark" : "bg-background-light"}`}
+                className={`grid place-items-center w-16 h-12 rounded-lg overflow-hidden bg-th-page`}
               >
-                <Thumb style={s} dark={dark} />
+                <Thumb style={s} />
               </span>
               <span className="flex flex-col">
                 <span className={`text-[15px] font-bold leading-5 ${txt}`}>{POMODORO_STYLE_NAMES[s]}</span>
@@ -67,10 +63,10 @@ export default function PomodoroStylePicker({ dark }: { dark: boolean }) {
               <span
                 aria-hidden="true"
                 className={`grid place-items-center size-5 rounded-full border-2 ${
-                  on ? (dark ? "border-primary-default" : "border-primary-600") : dark ? "border-gray-400" : "border-[#676767]"
+                  on ? "border-th-acc-t" : "border-th-ink2"
                 }`}
               >
-                {on && <span className={`size-2.5 rounded-full ${dark ? "bg-primary-default" : "bg-primary-600"}`} />}
+                {on && <span className={`size-2.5 rounded-full bg-th-acc-t`} />}
               </span>
             </label>
           );
@@ -80,7 +76,7 @@ export default function PomodoroStylePicker({ dark }: { dark: boolean }) {
         {status.kind === "saving" && (
           <span
             aria-hidden="true"
-            className={`size-3 rounded-full border-2 motion-safe:animate-spin ${dark ? "border-gray-800 border-t-gray-400" : "border-[#E0E0E0] border-t-[#676767]"}`}
+            className={`size-3 rounded-full border-2 motion-safe:animate-spin border-th-line border-t-th-ink2`}
           />
         )}
         {status.kind === "saved" && <Check aria-hidden="true" className="size-3.5" strokeWidth={2.5} />}
@@ -92,15 +88,15 @@ export default function PomodoroStylePicker({ dark }: { dark: boolean }) {
 }
 
 /** Decorative drawings of each timer (board 17D). */
-function Thumb({ style, dark }: { style: PomodoroStyle; dark: boolean }) {
-  const card = dark ? "fill-foreground-dark" : "fill-white";
-  const line = dark ? "stroke-gray-800" : "stroke-[#E0E0E0]";
-  const txt = dark ? "fill-white" : "fill-text";
+function Thumb({ style }: { style: PomodoroStyle }) {
+  const card = "fill-th-card";
+  const line = "stroke-th-line";
+  const txt = "fill-th-ink";
   if (style === "dial") {
     return (
       <svg width="40" height="40" viewBox="0 0 40 40">
         <circle cx="20" cy="20" r="18" className={`${card} ${line}`} />
-        <path d="M20 20V5A15 15 0 0 1 33.5 26.5Z" className="fill-primary-default" />
+        <path d="M20 20V5A15 15 0 0 1 33.5 26.5Z" className="fill-th-acc" />
         <circle cx="20" cy="20" r="7" className={card} />
       </svg>
     );
@@ -109,11 +105,11 @@ function Thumb({ style, dark }: { style: PomodoroStyle; dark: boolean }) {
     return (
       <svg width="44" height="36" viewBox="0 0 44 36">
         <rect x="4" y="2" width="36" height="20" rx="4" className={card} />
-        <rect x="36" y="8" width="3" height="13" className="fill-primary-default" />
+        <rect x="36" y="8" width="3" height="13" className="fill-th-acc" />
         <rect x="9" y="7" width="20" height="7" rx="1" className={txt} />
-        <line x1="6" y1="24" x2="38" y2="24" className={dark ? "stroke-gray-400" : "stroke-[#676767]"} strokeDasharray="2 2" />
+        <line x1="6" y1="24" x2="38" y2="24" className="stroke-th-ink2" strokeDasharray="2 2" />
         <rect x="4" y="26" width="36" height="8" rx="3" className={card} />
-        <rect x="22" y="28" width="15" height="4" rx="2" className="fill-primary-default" />
+        <rect x="22" y="28" width="15" height="4" rx="2" className="fill-th-acc" />
       </svg>
     );
   }
@@ -121,8 +117,8 @@ function Thumb({ style, dark }: { style: PomodoroStyle; dark: boolean }) {
     <svg width="56" height="40" viewBox="0 0 56 40">
       <rect x="18" y="8" width="20" height="8" rx="1" className={txt} opacity=".85" />
       <line x1="0" y1="27" x2="56" y2="27" className={line} strokeWidth="2" />
-      <line x1="0" y1="27" x2="22" y2="27" className="stroke-primary-default" strokeWidth="2" />
-      <circle cx="22" cy="27" r="4" className="fill-primary-default" />
+      <line x1="0" y1="27" x2="22" y2="27" className="stroke-th-acc" strokeWidth="2" />
+      <circle cx="22" cy="27" r="4" className="fill-th-acc" />
     </svg>
   );
 }

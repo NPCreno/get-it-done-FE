@@ -95,14 +95,14 @@ export default function SignupForm({
   return (
     <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
       <div className="space-y-2 text-center">
-        <h2 className="text-3xl font-bold text-primary-default">Create an account</h2>
+        <h2 className="text-3xl font-bold text-th-acc-t-light">Create an account</h2>
         <p className="text-gray-600">
           Enter your information to create an account
         </p>
       </div>
       
       {error && (
-        <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800" role="alert">
+        <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
           {error}
         </div>
       )}
@@ -206,12 +206,12 @@ export default function SignupForm({
         </div>
       </form>
       
-      <div className="text-sm text-center text-gray-600 dark:text-gray-400">
+      <div className="text-sm text-center text-gray-600">
         Already have an account?{" "}
         <button
           type="button"
           onClick={() => onChangeView("login")}
-          className="font-medium text-primary-default hover:text-primary-hover transition-colors"
+          className="font-medium text-th-acc-t-light hover:text-primary-hover transition-colors"
           disabled={isLoading}
         >
           Sign in

@@ -4,7 +4,6 @@ import ProjectCard from "@/app/components/projectCard";
 import LoadError from "@/app/components/LoadError";
 import type { IProject } from "@/app/interface/IProject";
 import type { LoadState } from "@/lib/query/loadState";
-import { useAppearance } from "@/hooks/useAppearance";
 
 interface ProjectGridProps {
   projectsState: LoadState<IProject[]>;
@@ -34,7 +33,6 @@ export default function ProjectGrid({
   onDeleteProject,
 }: ProjectGridProps) {
   // Only LoadError (52-3) still takes the mode as a prop; colours here come from theme tokens.
-  const { isDark } = useAppearance();
   return (
     <>
       {(projectsState.status === "ready" || projectsState.status === "error") && (
@@ -96,7 +94,6 @@ export default function ProjectGrid({
                 failure={projectsState.refreshFailure}
                 onRetry={onRetry}
                 retrying={retrying}
-                dark={isDark}
                 variant="compact"
               />
             </div>
@@ -109,7 +106,6 @@ export default function ProjectGrid({
                   failure={projectsState.failure}
                   onRetry={onRetry}
                   retrying={retrying}
-                  dark={isDark}
                 />
               </div>
             ) : projectData.length > 0 ? (

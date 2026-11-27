@@ -28,7 +28,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 onClick={() => router.push('/signup')} 
-                className="bg-white text-primary-default hover:bg-primary-50 px-8 py-6 text-lg font-semibold"
+                className="bg-white text-th-acc-t-light hover:bg-primary-50 px-8 py-6 text-lg font-semibold"
               >
                 Get Started for Free
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -62,7 +62,7 @@ export default function Home() {
             {/* Feature 1 */}
             <div className="bg-gray-50 p-8 rounded-xl hover:shadow-lg transition-shadow">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-                <CheckCircle className="h-6 w-6 text-primary-default" />
+                <CheckCircle className="h-6 w-6 text-th-acc-t-light" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Task Management</h3>
               <p className="text-gray-600">
@@ -73,7 +73,7 @@ export default function Home() {
             {/* Feature 2 */}
             <div className="bg-gray-50 p-8 rounded-xl hover:shadow-lg transition-shadow">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-                <Target className="h-6 w-6 text-primary-default" />
+                <Target className="h-6 w-6 text-th-acc-t-light" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Goal Tracking</h3>
               <p className="text-gray-600">
@@ -84,7 +84,7 @@ export default function Home() {
             {/* Feature 3 */}
             <div className="bg-gray-50 p-8 rounded-xl hover:shadow-lg transition-shadow">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-                <TrendingUp className="h-6 w-6 text-primary-default" />
+                <TrendingUp className="h-6 w-6 text-th-acc-t-light" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Productivity Analytics</h3>
               <p className="text-gray-600">
