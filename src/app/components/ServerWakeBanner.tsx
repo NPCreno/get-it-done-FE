@@ -33,7 +33,7 @@ const COPY: Record<Shown, { title: string; body?: string }> = {
  * A (waking) → B (longer, from 45 s) → D (awake, green for 1.2 s, then folds away), or C (down,
  * after 3 minutes) with Try again. Only the two text lines are a live region.
  */
-export default function ServerWakeBanner({ dark }: { dark: boolean }) {
+export default function ServerWakeBanner() {
   const wake = useServerWake();
   const now = useTicker(wake.state === "waking" && !wake.gaveUp);
   const phase = bannerPhase({ ...wake, now });
@@ -71,15 +71,10 @@ export default function ServerWakeBanner({ dark }: { dark: boolean }) {
     serverWake.retry();
   };
 
-  const card = awake
-    ? dark
-      ? "bg-success-dark-100 border-success-dark-200"
-      : "bg-success-100 border-success-200"
-    : dark
-      ? "bg-primary-700 border-primary-600"
-      : "bg-primary-100 border-primary-200";
-  const titleColor = awake ? (dark ? "text-success-dark-700" : "text-success-600") : dark ? "text-white" : "text-text";
-  const bodyColor = dark ? "text-primary-200" : "text-primary-600";
+  // RD-2 (52-4): board 15's colours as tokens (amber while waking, green once awake).
+  const card = awake ? "bg-th-wake-ok-bg border-th-wake-ok-line" : "bg-th-acc-sub border-th-wake-line";
+  const titleColor = awake ? "text-th-ok-t" : "text-th-ink";
+  const bodyColor = "text-th-wake-b";
 
   // Transition duration and easing use arbitrary properties: tailwindcss-animate makes the
   // arbitrary-value duration and ease classes ambiguous, and Tailwind then skips them.
@@ -101,14 +96,12 @@ export default function ServerWakeBanner({ dark }: { dark: boolean }) {
           {awake ? (
             <span
               aria-hidden="true"
-              className={`grid place-items-center size-10 rounded-full transition-colors duration-200 motion-safe:animate-wake-pop ${
-                dark ? "bg-success-default text-success-dark-100" : "bg-success-600 text-white"
-              }`}
+              className="grid place-items-center size-10 rounded-full transition-colors duration-200 motion-safe:animate-wake-pop bg-th-wake-ok-ic text-th-on-wake-ok"
             >
               <Check size={20} strokeWidth={3} />
             </span>
           ) : (
-            <WakeIcon dark={dark} moving={moving} />
+            <WakeIcon moving={moving} />
           )}
 
           <div role="status" aria-live="polite" aria-atomic="true" className="min-w-0">
@@ -133,11 +126,7 @@ export default function ServerWakeBanner({ dark }: { dark: boolean }) {
             <button
               type="button"
               onClick={onRetry}
-              className={`col-span-2 md:col-span-1 inline-flex items-center justify-center gap-2 min-h-11 px-4 rounded-[5px] bg-primary-default text-text font-lato font-bold text-sm whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
-                dark
-                  ? "focus-visible:ring-secondary-300 focus-visible:ring-offset-primary-700"
-                  : "focus-visible:ring-secondary-500 focus-visible:ring-offset-primary-100"
-              }`}
+              className="col-span-2 md:col-span-1 inline-flex items-center justify-center gap-2 min-h-11 px-4 rounded-[5px] bg-th-acc text-th-on-acc font-lato font-bold text-sm whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-th-focus focus-visible:ring-offset-[var(--acc-sub)]"
             >
               <RotateCw size={16} aria-hidden="true" />
               Try again
@@ -146,7 +135,7 @@ export default function ServerWakeBanner({ dark }: { dark: boolean }) {
 
           {moving && (
             <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[3px] overflow-hidden motion-reduce:hidden">
-              <span className="absolute inset-y-0 w-[28%] rounded-full bg-primary-default motion-safe:animate-wake-sweep" />
+              <span className="absolute inset-y-0 w-[28%] rounded-full bg-th-acc motion-safe:animate-wake-sweep" />
             </span>
           )}
         </div>

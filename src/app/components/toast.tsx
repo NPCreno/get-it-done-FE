@@ -94,7 +94,7 @@ export function Toast({
         {(showCloseButton || showCloseButtonHover) && (
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-500 transition-colors"
+            className="text-th-ico-close hover:text-th-toast-t transition-colors"
             aria-label="Close"
           >
             <svg 

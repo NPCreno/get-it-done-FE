@@ -13,15 +13,13 @@ const TICKS = "M21.5624 11.2517L15.0075 18.7517L12.198 15.9392M11.247 18.7517L8.
  * tile alone, in the flow. It reads no context, so `/demo` can use it.
  */
 export default function LoadingPage({
-  dark = false,
   leaving = false,
   variant = "page",
 }: {
-  dark?: boolean;
   leaving?: boolean;
   variant?: LoaderVariant;
 }) {
-  const c = loaderClasses({ dark, leaving, variant });
+  const c = loaderClasses({ leaving, variant });
   // Mounted empty and filled a frame later, so screen readers announce it.
   const textReady = useNextFrame(true);
 

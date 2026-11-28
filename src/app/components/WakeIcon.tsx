@@ -6,21 +6,11 @@ const Z_BASE = "absolute font-lato font-black leading-none opacity-0 motion-safe
  * UX-03: the sleeping-moon circle shared by the wake banner and the login/signup hint.
  * Decorative (`aria-hidden`); `moving` rocks the moon and drifts the z's (never with reduced motion).
  */
-export default function WakeIcon({
-  dark,
-  moving,
-  small = false,
-}: {
-  dark: boolean;
-  moving: boolean;
-  small?: boolean;
-}) {
+export default function WakeIcon({ moving, small = false }: { moving: boolean; small?: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`relative grid place-items-center rounded-full ${small ? "size-7" : "size-10"} ${
-        dark ? "bg-black/30 text-primary-default" : "bg-white text-primary-600"
-      }`}
+      className={`relative grid place-items-center rounded-full bg-th-wake-ic-bg text-th-acc-t ${small ? "size-7" : "size-10"}`}
     >
       <Moon
         size={small ? 16 : 20}

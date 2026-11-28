@@ -11,7 +11,7 @@ import { useNotificationStream } from "@/lib/useNotificationStream";
 import { sidebarWrapperWidth } from "./sidebarWidths";
 import { MAIN_LAYOUT_ROOT_CLASS, MAIN_LAYOUT_SCROLL_CLASS } from "./mainLayoutClasses";
 import ServerWakeBanner from "./ServerWakeBanner";
-import { useAppearance, useAppearanceCookie } from "@/hooks/useAppearance";
+import { useAppearanceCookie } from "@/hooks/useAppearance";
 import { withCookieAppearance } from "@/lib/appearance";
 
 export default function MainLayout({
@@ -26,7 +26,6 @@ export default function MainLayout({
     closeMobileSidebar, 
     setUserData, 
   } = useFormState();
-  const { isDark } = useAppearance();
   const appearanceCookie = useAppearanceCookie();
   const [isMobile, setIsMobile] = useState(false);
 
@@ -118,7 +117,7 @@ export default function MainLayout({
         <div className={MAIN_LAYOUT_SCROLL_CLASS}>
           <div className="p-4 md:p-6 flex-1">
             {/* UX-03: in the flow above the page, inside the scroll box, so the sidebar never moves. */}
-            <ServerWakeBanner dark={isDark} />
+            <ServerWakeBanner />
             {children}
           </div>
         </div>

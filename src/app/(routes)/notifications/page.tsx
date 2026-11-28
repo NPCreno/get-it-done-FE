@@ -7,7 +7,6 @@ import LoadError, { useRecoveryFocus } from "@/app/components/LoadError";
 import LoadingPage from "@/app/components/loader";
 import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
 import ToastHost from "@/app/components/ToastHost";
-import { useAppearance } from "@/hooks/useAppearance";
 import { useToastController } from "@/hooks/useToastController";
 import { useFirstLoad, usePageIn, usePresence } from "@/hooks/usePresence";
 import {
@@ -47,7 +46,6 @@ export default function NotificationsPage() {
   const firstLoad = useFirstLoad(state.status === "loading");
   const loader = usePresence(firstLoad);
   const pageIn = usePageIn(loader.leaving);
-  const { isDark: dark } = useAppearance();
   const now = Date.now();
 
   const report = (r: Awaited<ReturnType<typeof settled>>) => {
@@ -105,7 +103,7 @@ export default function NotificationsPage() {
           </div>
 
           <div ref={regionRef} tabIndex={-1} className="outline-none">
-            {state.status === "loading" && !firstLoad && <LoadingPage variant="inline" dark={dark} />}
+            {state.status === "loading" && !firstLoad && <LoadingPage variant="inline" />}
 
             {state.status === "error" && (
               <LoadError
@@ -171,7 +169,7 @@ export default function NotificationsPage() {
       </div>
 
       {/* After the page, outside its root (see DashboardView). */}
-      {loader.mounted && <LoadingPage dark={dark} leaving={loader.leaving} />}
+      {loader.mounted && <LoadingPage leaving={loader.leaving} />}
 
       {confirmClear && (
         <ConfirmationModal

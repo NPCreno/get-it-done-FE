@@ -12,31 +12,22 @@ const classesOf = (s: string) => s.split(/\s+/).filter(Boolean);
 const all = (c: ReturnType<typeof loaderClasses>) =>
   [c.root, c.group, c.tile, c.mark, c.track, c.arc, c.ticks, c.word ?? ""].join(" ");
 
-describe("loaderClasses: tokens (UX-04 §1)", () => {
-  it("light", () => {
-    const c = loaderClasses({ dark: false });
-    expect(classesOf(c.root)).toEqual(expect.arrayContaining(["absolute", "inset-0", "z-0", "bg-background-light", "pb-[8%]"]));
-    expect(classesOf(c.tile)).toEqual(expect.arrayContaining(["bg-white", "border-[#E0E0E0]", "border", "size-16", "md:size-[72px]", "rounded-[18px]", "md:rounded-[20px]"]));
-    expect(classesOf(c.track)).toContain("stroke-primary-100");
-    expect(classesOf(c.word!)).toEqual(expect.arrayContaining(["font-rancho", "text-primary-600", "text-[30px]", "md:text-[36px]", "leading-none"]));
-    expect(all(c)).not.toMatch(/dark|gray-800|primary-700/);
+describe("loaderClasses: theme tokens (UX-04 §1, RD-2 52-4)", () => {
+  it("page, tile, ring and wordmark come from the theme tokens (board 16 in Classic), with no mode switch", () => {
+    const c = loaderClasses();
+    expect(classesOf(c.root)).toEqual(expect.arrayContaining(["absolute", "inset-0", "z-0", "bg-th-page", "pb-[8%]"]));
+    expect(classesOf(c.tile)).toEqual(expect.arrayContaining(["bg-th-card", "border-th-line", "border", "size-16", "md:size-[72px]", "rounded-[18px]", "md:rounded-[20px]"]));
+    expect(classesOf(c.track)).toContain("stroke-th-acc-sub");
+    expect(classesOf(c.word!)).toEqual(expect.arrayContaining(["font-rancho", "text-th-acc-t", "text-[30px]", "md:text-[36px]", "leading-none"]));
+    expect(all(c)).not.toMatch(/dark|gray-|primary-|background-|bg-white|#/);
   });
 
-  it("dark", () => {
-    const c = loaderClasses({ dark: true });
-    expect(classesOf(c.root)).toContain("bg-background-dark");
-    expect(classesOf(c.tile)).toEqual(expect.arrayContaining(["bg-foreground-dark", "border-gray-800"]));
-    expect(classesOf(c.track)).toContain("stroke-primary-700");
-    expect(classesOf(c.word!)).toContain("text-primary-default");
-    expect(all(c)).not.toMatch(/bg-white|#E0E0E0|primary-100|primary-600|background-light/);
-  });
-
-  it("the mark: arc and ticks in amber, the arc starts at the top and turns round the centre", () => {
+  it("the mark: arc and ticks in the accent, the arc starts at the top and turns round the centre", () => {
     const c = loaderClasses();
     expect(classesOf(c.arc)).toEqual(
-      expect.arrayContaining(["stroke-primary-default", "[transform-origin:15px_15px]", "[transform:rotate(-90deg)]"])
+      expect.arrayContaining(["stroke-th-acc", "[transform-origin:15px_15px]", "[transform:rotate(-90deg)]"])
     );
-    expect(classesOf(c.ticks)).toContain("stroke-primary-default");
+    expect(classesOf(c.ticks)).toContain("stroke-th-acc");
     expect(classesOf(c.mark)).toEqual(expect.arrayContaining(["size-[42px]", "md:size-12", "overflow-visible"]));
   });
 });
@@ -50,7 +41,7 @@ describe("loaderClasses: motion pairs (UX-04 §2)", () => {
 
   it("loop: the arc turns; with reduced motion no arc, a full amber ring and a breathing tile", () => {
     expect(classesOf(c.arc)).toEqual(expect.arrayContaining(["motion-safe:animate-loader-arc", "motion-reduce:hidden"]));
-    expect(classesOf(c.track)).toContain("motion-reduce:stroke-primary-default");
+    expect(classesOf(c.track)).toContain("motion-reduce:stroke-th-acc");
     expect(classesOf(c.tile)).toContain("motion-reduce:animate-loader-breathe");
   });
 

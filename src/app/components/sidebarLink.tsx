@@ -52,10 +52,10 @@ export default function SidebarLink({
       onClick={onClick}
       title={showText ? undefined : text}
       className={`flex items-center gap-2 rounded-[10px] h-[35px] w-full flex-shrink-0 justify-start linkbtn cursor-pointer
-        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2
         ${isActive
-          ? "bg-primary-default shadow-[0px_4px_10.9px_0px_rgba(0,_0,_0,0.25)]"
-          : "hover:bg-primary-default/10"
+          ? "bg-th-acc shadow-[0px_4px_10.9px_0px_rgba(0,_0,_0,0.25)]"
+          : "hover:bg-th-acc-wash"
         } ${className}`}
       aria-current={isActive ? "page" : undefined}
       aria-label={sidebarLinkLabel(text, badge, badgeLabel)}

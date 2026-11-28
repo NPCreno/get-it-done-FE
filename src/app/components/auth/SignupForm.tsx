@@ -93,16 +93,16 @@ export default function SignupForm({
 
 
   return (
-    <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+    <div className="w-full max-w-md p-8 space-y-6 bg-th-card rounded-lg shadow-md">
       <div className="space-y-2 text-center">
-        <h2 className="text-3xl font-bold text-th-acc-t-light">Create an account</h2>
-        <p className="text-gray-600">
+        <h2 className="text-3xl font-bold text-th-acc-t">Create an account</h2>
+        <p className="text-th-ink-body">
           Enter your information to create an account
         </p>
       </div>
       
       {error && (
-        <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+        <div className="p-4 text-sm text-th-alert-t bg-th-alert-bg rounded-lg" role="alert">
           {error}
         </div>
       )}
@@ -197,7 +197,7 @@ export default function SignupForm({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-default hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-default/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-th-on-acc bg-th-acc focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--card)] focus:ring-th-focus disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? "Creating account..." : "Create account"}
           </button>
@@ -206,12 +206,12 @@ export default function SignupForm({
         </div>
       </form>
       
-      <div className="text-sm text-center text-gray-600">
+      <div className="text-sm text-center text-th-ink-body">
         Already have an account?{" "}
         <button
           type="button"
           onClick={() => onChangeView("login")}
-          className="font-medium text-th-acc-t-light hover:text-primary-hover transition-colors"
+          className="font-medium text-th-acc-t transition-colors"
           disabled={isLoading}
         >
           Sign in

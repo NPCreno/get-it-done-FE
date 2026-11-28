@@ -271,6 +271,34 @@
   --code-bg: #F7F7F7;
   --acc-t-light: #7F5601;
 
+  /* RD-2 outside the app and the last contrast fixes (plan 52-4). Classic = today's colours, except the
+   * approved step-6 fixes (--danger/--info fills, --auth-ink on the amber panel). */
+  --out-bg: #FFFFFF;
+  --out-note: #737373;
+  --auth-a: #FEAD03;
+  --auth-b: #FEEAC0;
+  --auth-ink: #333333;
+  --wake-line: #FED580;
+  --wake-b: #7F5601;
+  --wake-ic-bg: #FFFFFF;
+  --wake-ok-bg: #D4F5D9;
+  --wake-ok-line: #A8EBB4;
+  --wake-ok-ic: #296C35;
+  --on-wake-ok: #FFFFFF;
+  --danger: #BE2E2B;
+  --danger-h: #7E1E1C;
+  --on-danger: #FFFFFF;
+  --info: #2563EB;
+  --info-h: #1D4ED8;
+  --on-info: #FFFFFF;
+  --acc-wash: rgba(254, 173, 3, 0.1);
+  /* Consent loopback note and auth/consent error boxes (Classic light = today's amber-50/300/900 and red-100/700) */
+  --note-bg: #FFFBEB;
+  --note-line: #FCD34D;
+  --note-t: #78350F;
+  --alert-bg: #FEE2E2;
+  --alert-t: #B91C1C;
+
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
   --background: 0 0% 100%;
@@ -482,6 +510,34 @@
   --ncard-t2: #333333;
   --code-bg: rgba(0, 0, 0, 0.3);
   --acc-t-light: #7F5601;
+
+  /* RD-2 outside the app and the last contrast fixes (plan 52-4). Classic = today's colours, except the
+   * approved step-6 fixes (--danger/--info fills, --auth-ink on the amber panel). */
+  --out-bg: #0D0E12;
+  --out-note: #9CA3AF;
+  --auth-a: #FEAD03;
+  --auth-b: #FEEAC0;
+  --auth-ink: #333333;
+  --wake-line: #7F5601;
+  --wake-b: #FED580;
+  --wake-ic-bg: rgba(0, 0, 0, 0.3);
+  --wake-ok-bg: #1A2E21;
+  --wake-ok-line: #245C3A;
+  --wake-ok-ic: #53D86A;
+  --on-wake-ok: #1A2E21;
+  --danger: #BE2E2B;
+  --danger-h: #7E1E1C;
+  --on-danger: #FFFFFF;
+  --info: #2563EB;
+  --info-h: #1D4ED8;
+  --on-info: #FFFFFF;
+  --acc-wash: rgba(254, 173, 3, 0.1);
+  /* Consent loopback note and auth/consent error boxes (Classic light = today's amber-50/300/900 and red-100/700) */
+  --note-bg: #3F2B01;
+  --note-line: #7F5601;
+  --note-t: #FED580;
+  --alert-bg: rgba(127, 29, 29, 0.3);
+  --alert-t: #FCA5A5;
 
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
@@ -695,6 +751,34 @@
   --code-bg: #F8F7F4;
   --acc-t-light: #8A5600;
 
+  /* RD-2 outside the app and the last contrast fixes (plan 52-4). Classic = today's colours, except the
+   * approved step-6 fixes (--danger/--info fills, --auth-ink on the amber panel). */
+  --out-bg: #F8F7F4;
+  --out-note: #5C574F;
+  --auth-a: #FFF3D1;
+  --auth-b: #FFF3D1;
+  --auth-ink: #1C1A17;
+  --wake-line: #FED580;
+  --wake-b: #8A5600;
+  --wake-ic-bg: #FFFFFF;
+  --wake-ok-bg: #E8F5EB;
+  --wake-ok-line: #A8D5B2;
+  --wake-ok-ic: #2B8A46;
+  --on-wake-ok: #FFFFFF;
+  --danger: #C21F1B;
+  --danger-h: #9C1915;
+  --on-danger: #FFFFFF;
+  --info: #19768D;
+  --info-h: #104F5E;
+  --on-info: #FFFFFF;
+  --acc-wash: rgba(254, 173, 3, 0.1);
+  /* Consent loopback note and auth/consent error boxes (Classic light = today's amber-50/300/900 and red-100/700) */
+  --note-bg: #FFF3D1;
+  --note-line: #FED580;
+  --note-t: #8A5600;
+  --alert-bg: #FDECEA;
+  --alert-t: #C21F1B;
+
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
   --background: 0 0% 100%;
@@ -906,6 +990,34 @@
   --ncard-t2: #ADA79B;
   --code-bg: #141311;
   --acc-t-light: #FEAD03;
+
+  /* RD-2 outside the app and the last contrast fixes (plan 52-4). Classic = today's colours, except the
+   * approved step-6 fixes (--danger/--info fills, --auth-ink on the amber panel). */
+  --out-bg: #141311;
+  --out-note: #ADA79B;
+  --auth-a: #3A2E10;
+  --auth-b: #3A2E10;
+  --auth-ink: #F3F1EC;
+  --wake-line: #6B5420;
+  --wake-b: #FED580;
+  --wake-ic-bg: rgba(0, 0, 0, 0.3);
+  --wake-ok-bg: #1A2E21;
+  --wake-ok-line: #245C3A;
+  --wake-ok-ic: #53D86A;
+  --on-wake-ok: #141311;
+  --danger: #FF6B67;
+  --danger-h: #FF8F8C;
+  --on-danger: #141311;
+  --info: #5CC2DD;
+  --info-h: #8FCEDD;
+  --on-info: #141311;
+  --acc-wash: rgba(254, 173, 3, 0.1);
+  /* Consent loopback note and auth/consent error boxes (Classic light = today's amber-50/300/900 and red-100/700) */
+  --note-bg: #3A2E10;
+  --note-line: #6B5420;
+  --note-t: #FED580;
+  --alert-bg: rgba(255, 107, 103, 0.12);
+  --alert-t: #FF6B67;
 
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
@@ -1119,6 +1231,34 @@
   --code-bg: #F3F6F1;
   --acc-t-light: #1F5C46;
 
+  /* RD-2 outside the app and the last contrast fixes (plan 52-4). Classic = today's colours, except the
+   * approved step-6 fixes (--danger/--info fills, --auth-ink on the amber panel). */
+  --out-bg: #F3F6F1;
+  --out-note: #4F5E55;
+  --auth-a: #1F5C46;
+  --auth-b: #1F5C46;
+  --auth-ink: #FFFFFF;
+  --wake-line: #B9D6C6;
+  --wake-b: #1F5C46;
+  --wake-ic-bg: #FFFFFF;
+  --wake-ok-bg: #CFE6DA;
+  --wake-ok-line: #9CC7B1;
+  --wake-ok-ic: #1F5C46;
+  --on-wake-ok: #FFFFFF;
+  --danger: #B3261E;
+  --danger-h: #8C1D17;
+  --on-danger: #FFFFFF;
+  --info: #1F5C46;
+  --info-h: #174634;
+  --on-info: #FFFFFF;
+  --acc-wash: rgba(31, 92, 70, 0.1);
+  /* Consent loopback note and auth/consent error boxes (Classic light = today's amber-50/300/900 and red-100/700) */
+  --note-bg: #FCEFD2;
+  --note-line: #F2B84B;
+  --note-t: #6B4700;
+  --alert-bg: #F9E3E1;
+  --alert-t: #B3261E;
+
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
   --background: 0 0% 100%;
@@ -1330,6 +1470,34 @@
   --ncard-t2: #A3B2A8;
   --code-bg: #0F1512;
   --acc-t-light: #7FD1A8;
+
+  /* RD-2 outside the app and the last contrast fixes (plan 52-4). Classic = today's colours, except the
+   * approved step-6 fixes (--danger/--info fills, --auth-ink on the amber panel). */
+  --out-bg: #0F1512;
+  --out-note: #A3B2A8;
+  --auth-a: #1D3A2D;
+  --auth-b: #1D3A2D;
+  --auth-ink: #EEF3EE;
+  --wake-line: #2F5A45;
+  --wake-b: #A3E0C1;
+  --wake-ic-bg: rgba(0, 0, 0, 0.3);
+  --wake-ok-bg: #24483A;
+  --wake-ok-line: #2F5A45;
+  --wake-ok-ic: #7FD1A8;
+  --on-wake-ok: #0F1512;
+  --danger: #FF8A80;
+  --danger-h: #FFA9A1;
+  --on-danger: #0F1512;
+  --info: #7FD1A8;
+  --info-h: #A3E0C1;
+  --on-info: #0F1512;
+  --acc-wash: rgba(127, 209, 168, 0.1);
+  /* Consent loopback note and auth/consent error boxes (Classic light = today's amber-50/300/900 and red-100/700) */
+  --note-bg: #3A2E10;
+  --note-line: #6B5420;
+  --note-t: #F2B84B;
+  --alert-bg: rgba(255, 138, 128, 0.12);
+  --alert-t: #FF8A80;
 
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */

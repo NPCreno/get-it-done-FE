@@ -15,7 +15,6 @@ import LoadingPage from "@/app/components/loader";
 import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
 import InputBox from "@/app/components/inputBox";
 import { useFormState } from "@/app/context/FormProvider";
-import { useAppearance } from "@/hooks/useAppearance";
 import ApiTokensSection from "@/app/components/apiTokens/ApiTokensSection";
 import AppearanceCard from "@/app/components/appearance/AppearanceCard";
 import ToastHost from "@/app/components/ToastHost";
@@ -31,7 +30,6 @@ interface profileSettingsFormValues {
 
 export default function ProfileSettingsPage() {
   const { userData } = useFormState();
-  const { isDark } = useAppearance();
   const updateProfile = useUpdateProfile();
   // FEAT-07: the tokens section reports through the shared controller; the form keeps its own toast for now.
   const tokensToast = useToastController();
@@ -426,7 +424,7 @@ export default function ProfileSettingsPage() {
 
               <button
                 type="button"
-                className="rounded-[10px] bg-error-300 flex flex-row justify-center items-center h-10 gap-5
+                className="rounded-[10px] bg-th-danger text-th-on-danger flex flex-row justify-center items-center h-10 gap-5
                 hover:shadow-[0px_4px_10.9px_0px_rgba(0,_0,_0,_0.25)] transition-all duration-300"
                 onClick={() => setIsLogoutModalOpen(true)}
               >
@@ -439,14 +437,14 @@ export default function ProfileSettingsPage() {
                 >
                   <path
                     d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9M16 17L21 12M21 12L16 7M21 12H9"
-                    stroke="white"
+                    stroke="currentColor"
                     stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                   />
                 </svg>
 
-                <span className="font-lato text-lg font-bold text-white ">
+                <span className="font-lato text-lg font-bold">
                   Log out
                 </span>
               </button>
@@ -458,7 +456,7 @@ export default function ProfileSettingsPage() {
       </div>
 
       {/* After the page, outside its root (see DashboardView). */}
-      {loader.mounted && <LoadingPage dark={isDark} leaving={loader.leaving} />}
+      {loader.mounted && <LoadingPage leaving={loader.leaving} />}
 
       {isLogoutModalOpen && (
        <ConfirmationModal

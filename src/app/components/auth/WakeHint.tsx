@@ -9,7 +9,7 @@ import WakeIcon from "../WakeIcon";
  * UX-03: under a disabled login/signup button, once the submit has been pending for SLOW_MS.
  * Stays until the request ends. Only the text is a live region; the timer is `aria-hidden`.
  */
-export default function WakeHint({ pending, dark = false }: { pending: boolean; dark?: boolean }) {
+export default function WakeHint({ pending }: { pending: boolean }) {
   const [startedAt, setStartedAt] = useState<number | null>(null);
   useEffect(() => {
     setStartedAt(pending ? Date.now() : null);
@@ -23,15 +23,13 @@ export default function WakeHint({ pending, dark = false }: { pending: boolean; 
   return (
     <div
       data-wake-hint
-      className={`grid grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[10px] border px-3 py-2.5 font-lato ${
-        dark ? "bg-primary-700 border-primary-600" : "bg-primary-100 border-primary-200"
-      }`}
+      className="grid grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[10px] border px-3 py-2.5 font-lato bg-th-acc-sub border-th-wake-line"
     >
-      <WakeIcon dark={dark} moving small />
-      <p role="status" className={`text-sm text-left ${dark ? "text-white" : "text-text"}`}>
+      <WakeIcon moving small />
+      <p role="status" className="text-sm text-left text-th-ink">
         {textReady ? "Waking up the server. This can take up to a minute." : ""}
       </p>
-      <span aria-hidden="true" className={`text-sm font-bold tabular-nums ${dark ? "text-primary-200" : "text-primary-600"}`}>
+      <span aria-hidden="true" className="text-sm font-bold tabular-nums text-th-wake-b">
         {formatElapsed(elapsed)}
       </span>
     </div>

@@ -29,17 +29,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-th-out-bg text-th-ink-abs">
       <main className="flex-1">
         <div className="relative min-h-screen w-full flex-col items-center justify-center grid lg:grid-cols-2">
           {/* Left side - Form */}
-          <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-default to-primary-100" />
+          <div className="relative hidden h-full flex-col bg-muted p-10 text-th-auth-ink lg:flex">
+            <div className="absolute inset-0 bg-gradient-to-br from-th-auth-a to-th-auth-b" />
             <div className="relative z-20 flex items-center text-lg font-medium gap-5">
               <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M26.2499 15.0029C26.2499 8.79199 21.2108 3.75293 14.9999 3.75293C8.78897 3.75293 3.74991 8.79199 3.74991 15.0029C3.74991 21.2139 8.78897 26.2529 14.9999 26.2529C21.2108 26.2529 26.2499 21.2139 26.2499 15.0029Z" stroke="white" stroke-width="2" stroke-miterlimit="10"/>
+              <path d="M26.2499 15.0029C26.2499 8.79199 21.2108 3.75293 14.9999 3.75293C8.78897 3.75293 3.74991 8.79199 3.74991 15.0029C3.74991 21.2139 8.78897 26.2529 14.9999 26.2529C21.2108 26.2529 26.2499 21.2139 26.2499 15.0029Z" stroke="currentColor" stroke-width="2" stroke-miterlimit="10"/>
               <g filter="url(#filter0_d_959_1658)">
-              <path d="M21.5624 11.2515L15.0075 18.7515L12.198 15.939M11.247 18.7515L8.43741 15.939M17.9126 11.2515L14.8921 14.7085" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" shape-rendering="crispEdges"/>
+              <path d="M21.5624 11.2515L15.0075 18.7515L12.198 15.939M11.247 18.7515L8.43741 15.939M17.9126 11.2515L14.8921 14.7085" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" shape-rendering="crispEdges"/>
               </g>
               <defs>
               <filter id="filter0_d_959_1658" x="3.43741" y="10.2515" width="23.125" height="17.5" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
@@ -56,7 +56,7 @@ export default function LoginPage() {
               </svg>
 
               <h1
-                className={`text-2xl text-white font-rancho transition-opacity duration-300 `}
+                className="text-2xl font-rancho transition-opacity duration-300"
               >
                 Get it Done!
               </h1>
@@ -75,25 +75,25 @@ export default function LoginPage() {
           <div className="lg:p-8">
             <div className="mx-auto flex w-full flex-col justify-center items-center space-y-6 sm:w-[350px]">
               <LoginForm onChangeView={handleViewChange} />
-              <p className="text-center text-sm text-muted-foreground">
+              <p className="text-center text-sm text-th-out-note">
                 Just looking around?{" "}
-                <Link href="/demo" className="underline underline-offset-4 hover:text-primary">
+                <Link href="/demo" className="underline underline-offset-4 hover:text-th-ink-abs">
                   Try the demo
                 </Link>
               </p>
               
-              <p className="px-8 text-center text-sm text-muted-foreground">
+              <p className="px-8 text-center text-sm text-th-out-note">
                 By clicking continue, you agree to our{" "}
                 <a
                   href="/terms"
-                  className="underline underline-offset-4 hover:text-primary"
+                  className="underline underline-offset-4 hover:text-th-ink-abs"
                 >
                   Terms of Service
                 </a>{" "}
                 and{" "}
                 <a
                   href="/privacy"
-                  className="underline underline-offset-4 hover:text-primary"
+                  className="underline underline-offset-4 hover:text-th-ink-abs"
                 >
                   Privacy Policy
                 </a>

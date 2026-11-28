@@ -36,7 +36,7 @@ export default function DisconnectAppDialog({ grant, onCancel, onConfirm }: Disc
         <button
           type="button"
           onClick={onConfirm}
-          className="rounded-[5px] bg-error-default px-4 py-2 font-lato text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2"
+          className="rounded-[5px] bg-th-danger px-4 py-2 font-lato text-sm font-bold text-th-on-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2"
         >
           Disconnect
         </button>
