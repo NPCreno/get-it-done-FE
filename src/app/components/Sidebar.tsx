@@ -2,6 +2,8 @@
 
 import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
+import ThemeWordmark from "./brand/ThemeWordmark";
+import { DashboardIcon, NotificationsIcon, ProfileIcon, ProjectsIcon } from "./icons/AppIcons";
 import { useUnreadCount } from "@/lib/query/notifications";
 import { useChatUnread } from "@/lib/query/chat";
 import { sidebarPanelWidth } from "./sidebarWidths";
@@ -47,41 +49,38 @@ export default function Sidebar() {
           </defs>
           </svg>
 
-          <h1
-            className={`text-2xl text-th-acc font-rancho whitespace-nowrap transition-opacity duration-150 ${motion}
+          {/* RD-3: the wordmark follows the theme; the ring logo stays in every theme (and collapsed). */}
+          <ThemeWordmark
+            place="sidebar"
+            as="h1"
+            className={`whitespace-nowrap transition-opacity duration-150 ${motion}
             ${isSidebarExpanded ? "opacity-100 delay-100" : "opacity-0"}`}
-          >
-            Get it Done!
-          </h1>
+          />
         </div>
 
         {/* The logo row is in the flow now (30 px), so 30 px here keeps the icons where they were. */}
         <nav aria-label="Main navigation" className="flex flex-col gap-5 mt-[30px] w-full">
           <SidebarLink
             href="/dashboard"
-            icon="/svgs/dashboard-yellow.svg"
-            iconHover="/svgs/dashboard-white.svg"
+            icon={DashboardIcon}
             text="Dashboard"
           />
           <SidebarLink
             href="/projects"
-            icon="/svgs/projects-yellow.svg"
-            iconHover="/svgs/projects-white.svg"
+            icon={ProjectsIcon}
             text="Projects"
           badge={chatUnread}
           badgeLabel="unread chat messages"
           />
           <SidebarLink
             href="/notifications"
-            icon="/svgs/notifs-yellow.svg"
-            iconHover="/svgs/notifs-white.svg"
+            icon={NotificationsIcon}
             text="Notifications"
           badge={unreadCount}
           />
           <SidebarLink
             href="/profileSettings"
-            icon="/svgs/profile-yellow.svg"
-            iconHover="/svgs/profile-white.svg"
+            icon={ProfileIcon}
             text="Profile"
           />
         </nav>

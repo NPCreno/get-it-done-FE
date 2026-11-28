@@ -56,7 +56,7 @@ export default function AssigneeSelect({ projectId, value, onChange, isRecurring
         {!known && <option value={value}>{members.isPending ? "Loading…" : "Current assignee"}</option>}
       </select>
       {members.isError && (
-        <p id={`${id}-error`} className="font-ui text-xs text-error-default">
+        <p id={`${id}-error`} className="font-ui text-xs text-th-danger-t">
           Couldn&apos;t load the project&apos;s members.
         </p>
       )}

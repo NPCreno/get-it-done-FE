@@ -139,7 +139,7 @@ export default function ProjectCard({
           
           <button 
             onClick={(e)=>handleDeleteClick(e)}
-            className="ml-1 action-button bg-white/10 hover:bg-white/20 transition-colors duration-200 text-red-400 hover:text-red-300 z-10"
+            className="ml-1 action-button bg-white/10 hover:bg-white/20 transition-colors duration-200 text-th-danger-t hover:opacity-80 z-10"
             aria-label="Delete project"
           >
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -212,11 +212,11 @@ export default function ProjectCard({
             <div 
               className={`flex items-center text-xs px-3 py-1.5 rounded-xl border shadow-sm ${
                 isOverdue || daysUntilDue === 0
-                  ? 'bg-error-100 text-error-700 border-error-200' 
+                  ? 'bg-th-due-hot-bg text-th-due-hot-t border-th-due-hot-b' 
                   : daysUntilDue === 1
-                    ? 'bg-error-100 text-error-700 border-error-200'
+                    ? 'bg-th-due-hot-bg text-th-due-hot-t border-th-due-hot-b'
                     : daysUntilDue === 3
-                      ? 'bg-accent-100 text-accent-700 border-accent-200'
+                      ? 'bg-th-due-warn-bg text-th-due-warn-t border-th-due-warn-b'
                       : 'bg-th-date-chip-bg text-th-date-chip-t border-th-date-chip-b'
               }`}
             >

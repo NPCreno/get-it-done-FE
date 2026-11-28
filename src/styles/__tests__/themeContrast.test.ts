@@ -90,11 +90,18 @@ describe("theme token contrast", () => {
     "bubble-me-ink", "bubble-other", "bubble-other-ink", "ico-edit", "ico-edit-h",
     // Plan 52-3: profile, notifications, modals, shared controls
     "wait-bar", "sw-on", "sw-off", "sw-knob", "toast-bg", "toast-t", "toast-note", "dlg-note", "ico-date", "ico-close",
-    "ico-check", "dot-low", "dot-med", "dot-high", "dot-done", "ok-t", "err-t", "ncard-bg", "ncard-t", "ncard-t2", "code-bg", "acc-t-light",
+    "ico-check", "dot-low", "dot-med", "dot-high", "dot-done", "ok-t", "ncard-bg", "ncard-t", "ncard-t2", "code-bg", "acc-t-light",
     // Plan 52-4: outside the app (auth, consent, demo), the wake banner, the step-6 button fills, the sidebar hover
     "out-bg", "out-note", "auth-a", "auth-b", "auth-ink", "wake-line", "wake-b", "wake-ic-bg", "wake-ok-bg", "wake-ok-line",
     "wake-ok-ic", "on-wake-ok", "danger", "danger-h", "on-danger", "info", "info-h", "on-info", "acc-wash",
     "note-bg", "note-line", "note-t", "alert-bg", "alert-t",
+    // Plan 53b §1 (RD-3): red text, status colours, stat-card icons, the check disc
+    "danger-t", "warn-t", "badge-unread", "on-badge-unread", "streak-hot", "on-streak-hot", "streak-fire",
+    "toast-ok-bg", "toast-ok-line", "toast-ok-t", "toast-err-bg", "toast-err-line", "toast-err-t",
+    "toast-warn-bg", "toast-warn-line", "toast-warn-t", "toast-info-bg", "toast-info-line", "toast-info-t",
+    "tag-ok-bg", "tag-ok-t", "tag-off-bg", "tag-off-t", "tag-err-bg", "tag-err-t",
+    "due-hot-bg", "due-hot-t", "due-hot-b", "due-warn-bg", "due-warn-t", "due-warn-b", "unread-bar", "drawer-scrim",
+    "stat-ico-all", "stat-ico-todo", "stat-ico-proj", "stat-ico-done", "stat-ico-hand", "check-fill",
   ];
   const HEX = /^#[0-9A-Fa-f]{6}$/;
   const COLOUR = /^(#[0-9A-Fa-f]{6}|transparent|rgba\(\d{1,3}, \d{1,3}, \d{1,3}, (0|1|0?\.\d+)\))$/;
@@ -149,7 +156,7 @@ describe("theme token contrast", () => {
     ["ncard-t2", "ncard-bg", 4.5],
     ["acc-t-light", "ncard-bg", 4.5],
     ["ok-t", "card", 4.5],
-    ["err-t", "card", 4.5],
+    ["danger-t", "card", 4.5],
     ["ico-date", "card", 3],
     ["ico-close", "card", 3],
     ["ico-check", "card", 3],
@@ -170,6 +177,27 @@ describe("theme token contrast", () => {
     ["ico-close", "toast-bg", 3],
     ["note-t", "note-bg", 4.5],
     ["alert-t", "alert-bg", 4.5],
+    // Plan 53b §1 (RD-3): red text and outline borders on both surfaces; status colours with their text
+    ["danger-t", "page", 4.5],
+    ["warn-t", "card", 4.5],
+    ["on-badge-unread", "badge-unread", 4.5],
+    ["on-streak-hot", "streak-hot", 4.5],
+    ["toast-ok-t", "toast-ok-bg", 4.5],
+    ["toast-err-t", "toast-err-bg", 4.5],
+    ["toast-warn-t", "toast-warn-bg", 4.5],
+    ["toast-info-t", "toast-info-bg", 4.5],
+    ["toast-note", "toast-ok-bg", 4.5],
+    ["toast-note", "toast-err-bg", 4.5],
+    ["toast-note", "toast-warn-bg", 4.5],
+    ["toast-note", "toast-info-bg", 4.5],
+    ["tag-ok-t", "tag-ok-bg", 4.5],
+    ["tag-off-t", "tag-off-bg", 4.5],
+    ["tag-err-t", "tag-err-bg", 4.5],
+    ["due-hot-t", "due-hot-bg", 4.5],
+    ["due-warn-t", "due-warn-bg", 4.5],
+    ["ok-t", "tag-ok-bg", 3],
+    ["acc-t", "card", 3],
+    ["on-acc", "acc", 3],
   ];
   // Not checked: the project-view status dots (--pend-dot, --done-dot) are decorative; a task's status is also
   // shown by the strike-through and named by its checkbox, so WCAG 1.4.11 does not apply to them.
@@ -201,6 +229,35 @@ describe("theme token contrast", () => {
       });
     }
   }
+
+  /**
+   * Plan 53b §1.2: the stat-card icons are visible on their tile (3:1, WCAG 1.4.11), in every theme and mode, so
+   * the "All tasks" icon is no longer #333 on the dark tile. One named exception: Classic light keeps today's
+   * pixels (amber timer on the white tile, 1.9:1); the card's label "TO DO" names it.
+   */
+  const STAT_ICON_EXCEPTIONS = [{ block: "classic/light", token: "stat-ico-todo" }];
+  it("stat-card icons are ≥ 3:1 on their tile (one named Classic-light exception)", () => {
+    for (const theme of THEMES) for (const mode of MODES) {
+      const t = tokens(theme, mode);
+      for (const tok of ["stat-ico-all", "stat-ico-todo", "stat-ico-proj", "stat-ico-done"]) {
+        const exempt = STAT_ICON_EXCEPTIONS.some((e) => e.block === `${theme}/${mode}` && e.token === tok);
+        const ratio = contrast(t[tok], t["tile-bg"]);
+        if (exempt) expect(ratio, `${theme} ${mode} --${tok} (still the exception)`).toBeLessThan(3);
+        else expect(ratio, `${theme} ${mode} --${tok}`).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+
+  it("Classic's RD-3 values: red text #BE2E2B in light (dark unchanged), icons keep today's colours", () => {
+    const light = tokens("classic", "light");
+    const dark = tokens("classic", "dark");
+    expect([light["danger-t"], dark["danger-t"]]).toEqual(["#BE2E2B", "#FD3D39"]);
+    expect([light["stat-ico-all"], light["stat-ico-todo"], light["stat-ico-proj"], light["stat-ico-done"], light["stat-ico-hand"]]).toEqual(["#333333", "#FEAD03", "#2196F3", "#3EA24F", "#666666"]);
+    expect([dark["stat-ico-todo"], dark["stat-ico-proj"], dark["stat-ico-done"]]).toEqual(["#FEAD03", "#2196F3", "#3EA24F"]);
+    expect([light["check-fill"], dark["check-fill"], light["unread-bar"]]).toEqual(["#53D86A", "#53D86A", "#219EBC"]);
+    // Toast variant boxes keep today's light palette in Classic light (green/red/amber/blue-50, -200, -700).
+    expect([light["toast-ok-bg"], light["toast-ok-line"], light["toast-ok-t"]]).toEqual(["#F0FDF4", "#BBF7D0", "#15803D"]);
+  });
 
   it("Classic's chart and heat-map colours are today's (no visible change)", () => {
     expect(tokens("classic", "light")["chart-1"]).toBe("#53D86A");

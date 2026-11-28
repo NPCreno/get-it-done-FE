@@ -67,7 +67,7 @@ export default function InputBox({
   const labelId = `${id}-label`;
   const errorId = `${id}-error`;
   const isNativeControl = type === "text" || type === "password" || type === "email" || type === "textarea";
-  const labelClass = `text-base font-normal font-lato ${error ? "text-error-default" : isLanding ? "text-th-acc-t" : "text-th-ink"}`;
+  const labelClass = `text-base font-normal font-lato ${error ? "text-th-danger-t" : isLanding ? "text-th-acc-t" : "text-th-ink"}`;
   const describedBy = error ? errorId : undefined;
   return (
     <div className="w-full">
@@ -97,7 +97,7 @@ export default function InputBox({
           onBlur={onBlur}
           className={`rounded-md border w-full h-[40px] py-2 px-2
             outline-none transition-all duration-200 bg-th-card border-th-line ${isLanding ? "text-th-acc-t" : "text-th-ink"}
-            ${error ? "focus:ring-error" : "focus:ring-th-focus focus:ring-2"}
+            ${error ? "focus:ring-th-danger-t" : "focus:ring-th-focus focus:ring-2"}
             disabled:opacity-50 disabled:cursor-not-allowed ${customClass}`}
           placeholder={placeholder}
           disabled={disabled}
@@ -116,7 +116,7 @@ export default function InputBox({
           onBlur={onBlur}
           className={`resize-y rounded-md border w-full min-h-[70px] max-h-[200px] py-2 px-2
             outline-none transition-all duration-200 bg-th-card text-th-ink border-th-line
-            ${error ? "focus:ring-error" : "focus:ring-th-focus focus:ring-2"}
+            ${error ? "focus:ring-th-danger-t" : "focus:ring-th-focus focus:ring-2"}
             disabled:opacity-50 disabled:cursor-not-allowed ${customClass}`}
           placeholder={placeholder}
           disabled={disabled}
@@ -183,7 +183,7 @@ export default function InputBox({
       )}
 
       {error && (
-        <span id={errorId} className="text-error-default font-lato text-xs">{error}</span>
+        <span id={errorId} className="text-th-danger-t font-lato text-xs">{error}</span>
       )}
     </div>
   );

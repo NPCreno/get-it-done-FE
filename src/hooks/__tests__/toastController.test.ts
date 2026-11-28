@@ -126,7 +126,7 @@ describe("toast controller", () => {
   it("success() shows the fixed client copy", () => {
     const t = createToastController();
     t.success("Task Created", "fallback");
-    expect(t.getSnapshot().toast).toEqual({ title: "Task Created", description: "fallback", className: "text-green-600" });
+    expect(t.getSnapshot().toast).toEqual({ title: "Task Created", description: "fallback", className: "text-th-ok-t" });
   });
 
   it("failure() shows fixed copy for user-facing kinds and nothing for aborted/unauthorized", () => {
@@ -135,13 +135,13 @@ describe("toast controller", () => {
     t.failure(fail("unauthorized"));
     expect(t.getSnapshot().toast).toBeNull();
     t.failure(fail("network"));
-    expect(t.getSnapshot().toast?.className).toBe("text-error-default");
+    expect(t.getSnapshot().toast?.className).toBe("text-th-danger-t");
   });
 
   it("unexpected() uses the error message or a fixed fallback", () => {
     const t = createToastController();
     t.unexpected(new Error("boom"));
-    expect(t.getSnapshot().toast).toEqual({ title: "Something Went Wrong", description: "boom", className: "text-error-default" });
+    expect(t.getSnapshot().toast).toEqual({ title: "Something Went Wrong", description: "boom", className: "text-th-danger-t" });
     t.unexpected("x");
     expect(t.getSnapshot().toast?.description).toBe("An unknown error occurred");
   });
@@ -149,6 +149,6 @@ describe("toast controller", () => {
   it("error() keeps the caller's copy", () => {
     const t = createToastController();
     t.error("Something Went Wrong", "status failed");
-    expect(t.getSnapshot().toast).toEqual({ title: "Something Went Wrong", description: "status failed", className: "text-error-default" });
+    expect(t.getSnapshot().toast).toEqual({ title: "Something Went Wrong", description: "status failed", className: "text-th-danger-t" });
   });
 });

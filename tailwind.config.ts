@@ -29,6 +29,9 @@ const config: Config = {
 			'loader-fade-out': 'loaderFadeOut 60ms linear both',
 			'page-in': 'pageIn 120ms cubic-bezier(.2,.8,.2,1) 40ms both',
 			'page-fade-in': 'loaderFadeIn 80ms linear both',
+			// RD-3 theme loaders (board 20): Calm's ripple, Field notes' pen sweep
+			'calm-ripple': 'calmRipple 1.6s cubic-bezier(.2,.8,.2,1) infinite',
+			'field-sweep': 'fieldSweep 1.8s cubic-bezier(.65,0,.35,1) infinite',
 		  },
 		  keyframes: {
 			fillText: {
@@ -86,6 +89,14 @@ const config: Config = {
 			pageIn: {
 			  '0%': { opacity: '0', transform: 'translateY(8px)' },
 			  '100%': { opacity: '1', transform: 'translateY(0)' },
+			},
+			calmRipple: {
+			  '0%': { transform: 'scale(1)', opacity: '.55' },
+			  '100%': { transform: 'scale(1.9)', opacity: '0' },
+			},
+			fieldSweep: {
+			  '0%': { left: '-30%' },
+			  '100%': { left: '100%' },
 			},
 		  },
   		colors: {
@@ -235,7 +246,6 @@ const config: Config = {
   				'ico-close': 'var(--ico-close)',
   				'ico-check': 'var(--ico-check)',
   				'ok-t': 'var(--ok-t)',
-  				'err-t': 'var(--err-t)',
   				'ncard-bg': 'var(--ncard-bg)',
   				'ncard-t': 'var(--ncard-t)',
   				'ncard-t2': 'var(--ncard-t2)',
@@ -266,6 +276,46 @@ const config: Config = {
   				'note-t': 'var(--note-t)',
   				'alert-bg': 'var(--alert-bg)',
   				'alert-t': 'var(--alert-t)',
+  				// RD-3 (plan 53b §1): red text, status colours, stat-card icons.
+  				'danger-t': 'var(--danger-t)',
+  				'warn-t': 'var(--warn-t)',
+  				'badge-unread': 'var(--badge-unread)',
+  				'on-badge-unread': 'var(--on-badge-unread)',
+  				'streak-hot': 'var(--streak-hot)',
+  				'on-streak-hot': 'var(--on-streak-hot)',
+  				'streak-fire': 'var(--streak-fire)',
+  				'toast-ok-bg': 'var(--toast-ok-bg)',
+  				'toast-ok-line': 'var(--toast-ok-line)',
+  				'toast-ok-t': 'var(--toast-ok-t)',
+  				'toast-err-bg': 'var(--toast-err-bg)',
+  				'toast-err-line': 'var(--toast-err-line)',
+  				'toast-err-t': 'var(--toast-err-t)',
+  				'toast-warn-bg': 'var(--toast-warn-bg)',
+  				'toast-warn-line': 'var(--toast-warn-line)',
+  				'toast-warn-t': 'var(--toast-warn-t)',
+  				'toast-info-bg': 'var(--toast-info-bg)',
+  				'toast-info-line': 'var(--toast-info-line)',
+  				'toast-info-t': 'var(--toast-info-t)',
+  				'tag-ok-bg': 'var(--tag-ok-bg)',
+  				'tag-ok-t': 'var(--tag-ok-t)',
+  				'tag-off-bg': 'var(--tag-off-bg)',
+  				'tag-off-t': 'var(--tag-off-t)',
+  				'tag-err-bg': 'var(--tag-err-bg)',
+  				'tag-err-t': 'var(--tag-err-t)',
+  				'due-hot-bg': 'var(--due-hot-bg)',
+  				'due-hot-t': 'var(--due-hot-t)',
+  				'due-hot-b': 'var(--due-hot-b)',
+  				'due-warn-bg': 'var(--due-warn-bg)',
+  				'due-warn-t': 'var(--due-warn-t)',
+  				'due-warn-b': 'var(--due-warn-b)',
+  				'unread-bar': 'var(--unread-bar)',
+  				'drawer-scrim': 'var(--drawer-scrim)',
+  				'stat-ico-all': 'var(--stat-ico-all)',
+  				'stat-ico-todo': 'var(--stat-ico-todo)',
+  				'stat-ico-proj': 'var(--stat-ico-proj)',
+  				'stat-ico-done': 'var(--stat-ico-done)',
+  				'stat-ico-hand': 'var(--stat-ico-hand)',
+  				'check-fill': 'var(--check-fill)',
   				// A project card's own tint (set per card from src/lib/projectColors.ts)
   				'pc-a': 'var(--pc-a)',
   				'pc-b': 'var(--pc-b)'
@@ -384,6 +434,8 @@ const config: Config = {
   			lato: ['var(--font-lato)', 'Lato', 'sans-serif'],
   			rancho: ['var(--font-rancho)', 'Rancho', 'cursive'],
   			poppins: ['var(--font-poppins)', 'Poppins', 'sans-serif'],
+  			// RD-3: Field notes' wordmark
+  			manrope: ['var(--font-manrope)', 'Manrope', 'sans-serif'],
   			// RD-1 theme tokens (src/styles/theme-tokens.css)
   			head: 'var(--f-head)',
   			body: 'var(--f-body)',

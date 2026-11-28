@@ -98,7 +98,7 @@ export default function ProfileSettingsPage() {
         setToastMessage({
           title: "Profile Settings Saved",
           description: "Your preferences have been saved",
-          className: "text-green-600",
+          className: "text-th-ok-t",
         });
 
         setTimeout(() => {
@@ -109,7 +109,7 @@ export default function ProfileSettingsPage() {
       } else if (isUserFacing(response.failure)) {
         setToastMessage({
           ...describeFailure(response.failure),
-          className: "text-error-default",
+          className: "text-th-danger-t",
         });
         setShowToast(true);
         setIsExitingToast(false);
@@ -123,13 +123,13 @@ export default function ProfileSettingsPage() {
         setToastMessage({
           title: "Something Went Wrong",
           description: error.message,
-          className: "text-error-default",
+          className: "text-th-danger-t",
         });
       } else {
         setToastMessage({
           title: "Something Went Wrong",
           description: "An unknown error occurred",
-          className: "text-error-default",
+          className: "text-th-danger-t",
         });
       }
       setShowToast(true);

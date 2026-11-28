@@ -64,7 +64,7 @@ export default function CopyButton({ text, what, target }: CopyButtonProps) {
         onClick={() => void copy()}
         aria-label={copied ? `${what} copied` : `Copy ${what}`}
         className={`rounded-[5px] border px-3 py-1 font-lato text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 ${
-          copied ? "border-green-600 text-green-600" : `border-th-acc-soft text-th-acc-t bg-th-card`
+          copied ? "border-th-ok-t text-th-ok-t" : `border-th-acc-soft text-th-acc-t bg-th-card`
         }`}
       >
         {copied ? "Copied" : "Copy"}

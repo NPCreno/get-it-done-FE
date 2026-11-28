@@ -48,9 +48,9 @@ describe("showToast", () => {
   it("routes each intent to the page's controller with the existing shapes", () => {
     const c = createToastController();
     showToast(c, { kind: "success", title: "Task Created", fallback: "fb" });
-    expect(c.getSnapshot().toast).toMatchObject({ title: "Task Created", description: "fb", className: "text-green-600" });
+    expect(c.getSnapshot().toast).toMatchObject({ title: "Task Created", description: "fb", className: "text-th-ok-t" });
     showToast(c, { kind: "failure", failure: failure("http") });
-    expect(c.getSnapshot().toast).toMatchObject({ className: "text-error-default" });
+    expect(c.getSnapshot().toast).toMatchObject({ className: "text-th-danger-t" });
     showToast(c, { kind: "unexpected", error: new Error("x") });
     expect(c.getSnapshot().toast).toMatchObject({ title: "Something Went Wrong", description: "x" });
     const id = c.getSnapshot().id;

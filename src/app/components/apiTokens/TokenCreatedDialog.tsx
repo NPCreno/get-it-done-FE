@@ -39,7 +39,7 @@ export default function TokenCreatedDialog({ created, serverUrl, onClose, return
         returnFocus.current?.focus();
       }}
     >
-      <p id={warningId} role="alert" className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 font-lato text-sm font-bold text-amber-900">
+      <p id={warningId} role="alert" className="rounded-md border border-th-note-line bg-th-note-bg px-3 py-2 font-lato text-sm font-bold text-th-note-t">
         Copy it now. You won&apos;t see it again.
       </p>
 

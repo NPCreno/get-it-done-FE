@@ -38,7 +38,7 @@ export default function LoadError({ widget, failure, onRetry, retrying, variant 
       data-load-error
       className={`flex ${compact ? "flex-row items-center gap-3 px-3 py-2 text-xs" : "flex-col items-center justify-center gap-3 p-6 text-sm text-center"} w-full rounded-[10px] border font-lato border-th-row-edge bg-th-row-bg text-th-ink`}
     >
-      <AlertTriangle aria-hidden="true" className={`${compact ? "h-4 w-4" : "h-6 w-6"} shrink-0 text-error-default`} />
+      <AlertTriangle aria-hidden="true" className={`${compact ? "h-4 w-4" : "h-6 w-6"} shrink-0 text-th-danger-t`} />
       <p id={msgId} role="status" aria-live="polite" aria-atomic="true">
         {text}
       </p>

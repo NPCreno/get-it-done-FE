@@ -1,4 +1,5 @@
 "use client";
+import ThemeWordmark from "@/app/components/brand/ThemeWordmark";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -36,10 +37,10 @@ export default function SignupPage() {
     return (
       <div className="flex flex-col min-h-screen items-center justify-center p-4 bg-th-out-bg text-th-ink-abs">
         <div className="w-full max-w-md p-8 space-y-4 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-th-tag-ok-bg">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-10 w-10 text-green-600"
+              className="h-10 w-10 text-th-ok-t"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -90,11 +91,7 @@ export default function SignupPage() {
               </defs>
               </svg>
 
-              <h1
-                className="text-2xl font-rancho transition-opacity duration-300"
-              >
-                Get it Done!
-              </h1>
+              <ThemeWordmark place="auth" as="h1" className="transition-opacity duration-300" />
             </div>
             <div className="relative z-20 mt-auto">
               <blockquote className="space-y-2">

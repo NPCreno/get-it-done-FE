@@ -118,7 +118,7 @@ export default function CreateTokenDialog({ onClose, onCreated, toast }: CreateT
         </fieldset>
 
         {formError && (
-          <p id={formErrorId} role="alert" className="font-lato text-sm text-error-default">
+          <p id={formErrorId} role="alert" className="font-lato text-sm text-th-danger-t">
             {formError}
           </p>
         )}

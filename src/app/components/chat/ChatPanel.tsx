@@ -215,7 +215,7 @@ function MessageLog({ messages, me, isOwner, empty, hasOlder, loadingOlder, onLo
                     type="button"
                     onClick={() => onDelete(m)}
                     aria-label={`Delete message from ${mine ? "you" : m.username}`}
-                    className="rounded px-1 underline hover:text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
+                    className="rounded px-1 underline hover:text-th-danger-t focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
                   >
                     Delete
                   </button>
@@ -294,7 +294,7 @@ function Composer({ projectId, toast }: { projectId: string; toast: ToastControl
         className="w-full resize-none rounded-card border p-2 font-ui text-sm focus:outline-none focus:ring-2 focus:ring-th-focus border-th-row-edge bg-th-field-bg text-th-ink"
       />
       <div className="flex items-center justify-between">
-        <span id={counterId} className={`font-ui text-xs ${over ? "text-error-default" : "text-th-ink-note"}`}>
+        <span id={counterId} className={`font-ui text-xs ${over ? "text-th-danger-t" : "text-th-ink-note"}`}>
           {draft.length} / {LIMITS.chatMessageMax}
         </span>
         <button

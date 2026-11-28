@@ -10,6 +10,7 @@ vi.mock("@/app/context/FormProvider", () => ({
 }));
 
 import SidebarLink, { sidebarLinkLabel } from "../sidebarLink";
+import { DashboardIcon } from "../icons/AppIcons";
 import {
   cancelDelete,
   confirmDelete,
@@ -72,7 +73,7 @@ describe("BUG-05 §1: deleting a task asks first", () => {
 describe("BUG-05 §2: sidebar items are real links with one name", () => {
   const render = (props: Partial<Parameters<typeof SidebarLink>[0]> = {}) =>
     renderToStaticMarkup(
-      createElement(SidebarLink, { href: "/dashboard", icon: "/a.svg", iconHover: "/b.svg", text: "Dashboard", ...props })
+      createElement(SidebarLink, { href: "/dashboard", icon: DashboardIcon, text: "Dashboard", ...props })
     );
 
   it("renders an <a href> with no menuitem role and decorative icons", () => {
@@ -81,8 +82,10 @@ describe("BUG-05 §2: sidebar items are real links with one name", () => {
     expect(html).not.toContain("menuitem");
     expect(html).not.toMatch(/role=/);
     expect(html).not.toMatch(/tabindex/i);
-    const alts = [...html.matchAll(/<img [^>]*alt="([^"]*)"/g)].map((m) => m[1]);
-    expect(alts).toEqual(["", ""]);
+    // RD-3: one inline SVG icon, hidden from screen readers, painted in currentColor (no <img>).
+    expect(html).not.toContain("<img");
+    expect([...html.matchAll(/<svg [^>]*aria-hidden="true"/g)]).toHaveLength(1);
+    expect(html).toContain('fill="currentColor"');
   });
 
   it("its name is exactly the label (no aria-label without a badge); the active page is marked", () => {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClientIp } from "@/app/utils/clientIp";
+import { APPEARANCE_COOKIE, APPEARANCE_COOKIE_MAX_AGE, appearanceFromLogin, cookieValue } from "@/lib/appearance";
 import { BACKEND_COLD_START_MS, backendAuthHeaders, parseSessionTokens, setSessionCookies } from "../session";
 
 /** UX-03: the backend may take up to a minute to wake; let the function run that long. */
@@ -72,5 +73,16 @@ export async function POST(req: NextRequest) {
 
   const response = NextResponse.json({ success: true });
   setSessionCookies(response, tokens);
+  // RD-3: the user's appearance (BE 53a), so the first page after login is in their theme. The same cookie
+  // AppearanceSync writes (`appearanceCookieString`): readable by the page, a year, SameSite=Lax.
+  const appearance = appearanceFromLogin(result.data);
+  if (appearance) {
+    response.cookies.set(APPEARANCE_COOKIE, cookieValue(appearance), {
+      path: "/",
+      maxAge: APPEARANCE_COOKIE_MAX_AGE,
+      sameSite: "lax",
+      httpOnly: false,
+    });
+  }
   return response;
 }

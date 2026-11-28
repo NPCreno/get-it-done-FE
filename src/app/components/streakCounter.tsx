@@ -55,9 +55,9 @@ export default function StreakCounter({ streakCount, header }: StreakCounterProp
       }, [streakCount]);
 
     return (
-      // RD-2: --edge-w is 0 in Classic light (no border there). "On fire" keeps its status orange.
+      // RD-2: --edge-w is 0 in Classic light (no border there). RD-3: "on fire" colours are status tokens (--streak-*).
       <div className={`flex flex-col h-full p-4 text-center rounded-card shadow-[0px_2px_5.1px_-1px_rgba(0,0,0,0.25)] bg-th-card
-        ${isOnFirePlus ? 'border border-orange-500 animate-fire-glow' : '[border-width:var(--edge-w)] border-th-edge'}`}
+        ${isOnFirePlus ? 'border border-th-streak-fire animate-fire-glow' : '[border-width:var(--edge-w)] border-th-edge'}`}
       >
         <div className="flex w-full items-start">
         <CardTitle className="text-th-ink-abs">
@@ -69,7 +69,7 @@ export default function StreakCounter({ streakCount, header }: StreakCounterProp
           {isOnFirePlus ? (
             <div id="fire-animation-container" className="relative w-16 h-16">
               <canvas id="fire-animation-canvas" className="w-full h-full" />
-              <div className="absolute -bottom-2 -right-2 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold z-10">
+              <div className="absolute -bottom-2 -right-2 bg-th-streak-hot text-th-on-streak-hot rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold z-10">
                 {streakCount}
               </div>
             </div>
@@ -91,7 +91,7 @@ export default function StreakCounter({ streakCount, header }: StreakCounterProp
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
                     viewBox="0 0 448 512"
-                    className={`w-16 h-16 ${isOnFire ? 'text-orange-500' : 'text-th-fire'}`}
+                    className={`w-16 h-16 ${isOnFire ? 'text-th-streak-fire' : 'text-th-fire'}`}
                   >
                     <path 
                       fill="currentColor" 
@@ -104,7 +104,7 @@ export default function StreakCounter({ streakCount, header }: StreakCounterProp
           )}
           {!isInactive && !isOnFirePlus && (
             <div className={`absolute -top-2 -right-2 ${
-              isOnFire ? 'bg-red-500 text-white' : 'bg-th-badge text-th-on-badge'
+              isOnFire ? 'bg-th-streak-hot text-th-on-streak-hot' : 'bg-th-badge text-th-on-badge'
             } rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold`}>
               {streakCount}
             </div>
@@ -116,7 +116,7 @@ export default function StreakCounter({ streakCount, header }: StreakCounterProp
           <>
             <div className="w-full rounded-full h-2.5 bg-th-track">
               <div 
-                className={`h-2.5 rounded-full ${isOnFire || isOnFirePlus ? 'bg-red-500' : 'bg-th-fire'}`}
+                className={`h-2.5 rounded-full ${isOnFire || isOnFirePlus ? 'bg-th-streak-hot' : 'bg-th-fire'}`}
                 style={{ width: `${progressWidth}%` }}
               ></div>
               </div>

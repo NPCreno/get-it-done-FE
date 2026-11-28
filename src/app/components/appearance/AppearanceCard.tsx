@@ -19,9 +19,9 @@ const MODE_ICONS: Record<Mode, typeof Sun> = { light: Sun, dark: Moon, system: M
 
 /**
  * RD-1 Profile → Appearance (canvas board 20). Two real radio groups (native radios: arrow keys
- * move and select; a disabled theme is skipped), then the Pomodoro timer picker (FEAT-10).
+ * move and select), then the Pomodoro timer picker (FEAT-10).
  * Saves on change with `useSetAppearance`, apart from the Profile form: the radios have names the
- * form never reads. Calm and Field notes show "Coming soon" until they are in ENABLED_THEMES.
+ * form never reads. RD-3: every theme in ENABLED_THEMES (all three) is selectable.
  */
 export default function AppearanceCard() {
   const { resolvedMode } = useAppearance();
@@ -33,11 +33,12 @@ export default function AppearanceCard() {
     status.kind === "saved"
       ? "text-th-ok-t"
       : status.kind === "failed"
-        ? "text-th-err-t"
+        ? "text-th-danger-t"
         : "text-th-ink2";
 
   return (
     <section
+      id="appearance"
       aria-labelledby={`${themeName}-title`}
       className={`flex flex-col gap-5 p-5 rounded-[10px] bg-th-card [border-width:var(--edge-w)] border-th-line`}
     >
@@ -79,7 +80,6 @@ export default function AppearanceCard() {
                   <span className={`text-sm font-black leading-[18px] ${enabled ? "text-th-ink" : "text-th-ink2"}`}>
                     {APP_THEME_NAMES[t]}
                   </span>
-                  {!enabled && <span className="text-xs leading-4 text-th-ink2">Coming soon</span>}
                 </span>
                 {/* The radio dot sits on the preview's corner: the tiles are narrow in the Profile column. */}
                 {enabled && (

@@ -21,9 +21,9 @@ import { CONNECTOR_STEPS, LIMIT_REACHED_COPY, STATUS_LABEL, tokenDate, WAKE_UP_R
 const SERVER_URL = mcpServerUrl(process.env.NEXT_PUBLIC_API_URL);
 
 const STATUS_CLASS: Record<ApiToken["status"], string> = {
-  active: "bg-green-100 text-green-800",
-  expired: "bg-gray-200 text-gray-700",
-  revoked: "bg-red-100 text-red-800",
+  active: "bg-th-tag-ok-bg text-th-tag-ok-t",
+  expired: "bg-th-tag-off-bg text-th-tag-off-t",
+  revoked: "bg-th-tag-err-bg text-th-tag-err-t",
 };
 
 /**
@@ -182,7 +182,7 @@ export default function ApiTokensSection({ toast }: { toast: ToastController }) 
                           type="button"
                           onClick={() => setRevoking(t)}
                           aria-label={`Revoke ${t.name}`}
-                          className="rounded-[5px] border border-error-default px-3 py-1 text-xs text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
+                          className="rounded-[5px] border border-th-danger-t px-3 py-1 text-xs text-th-danger-t focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
                         >
                           Revoke
                         </button>

@@ -88,3 +88,40 @@ describe("RD-2 Phase 2 done: the whole src/app tree is on theme tokens", () => {
     expect(TERNARY.test('dark={isDark}')).toBe(false);
   });
 });
+
+/**
+ * RD-3 (plan 53b §1.2): icons are inline SVG in `currentColor` (components/icons/AppIcons.tsx), coloured by
+ * tokens. No component may point at a `/svgs/` image again. The two pictures left are multi-colour and are
+ * not icons a theme colours: the notification type badges and the chart card's "Coming soon" illustration.
+ */
+const SVG_IMAGE_EXEMPT: Record<string, string> = {
+  "components/notificationCard.tsx": "notification type badges (multi-colour pictures)",
+  "components/chartCard.tsx": "chart placeholder illustration",
+};
+
+describe("RD-3: no image icons", () => {
+  const files = appFiles();
+  const SVG_REF = /["'`]\/svgs\//;
+
+  it("no file under src/app references a /svgs/ image, outside the named pictures", () => {
+    const hits = files
+      .filter((f) => !(f in SVG_IMAGE_EXEMPT))
+      .flatMap((f) =>
+        readFileSync(join(APP, f), "utf8")
+          .split("\n")
+          .flatMap((line, i) => (SVG_REF.test(line) ? [`${f}:${i + 1}: ${line.trim()}`] : []))
+      );
+    expect(hits).toEqual([]);
+    expect(SVG_REF.test('icon="/svgs/dashboard-yellow.svg"')).toBe(true);
+  });
+
+  it("every exemption still uses its picture (remove it when the file stops)", () => {
+    for (const f of Object.keys(SVG_IMAGE_EXEMPT)) expect(readFileSync(join(APP, f), "utf8")).toMatch(SVG_REF);
+  });
+
+  it("the sidebar, drawer, stat cards and task rows use the icon components", () => {
+    for (const f of ["components/Sidebar.tsx", "components/MobileSidebar.tsx", "components/dashboard/StatsRow.tsx", "components/taskItem.tsx", "components/modals/viewProject.tsx"]) {
+      expect(readFileSync(join(APP, f), "utf8"), f).toMatch(/icons\/AppIcons/);
+    }
+  });
+});

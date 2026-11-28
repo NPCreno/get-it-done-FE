@@ -55,3 +55,31 @@ export function loaderClasses({ leaving = false, variant = "page" }: LoaderClass
       : null,
   };
 }
+
+// ---------------------------------------------------------------- RD-3 theme loaders (plan 53b §2, board 20)
+
+/**
+ * Calm: a green check disc (`--ok`, `--on-ok` check) with two rings rippling out, 0.8 s apart. With reduced
+ * motion the rings are gone and the disc breathes.
+ */
+export const CALM_LOADER = {
+  mark: "relative size-16",
+  ripple: "absolute inset-0 rounded-full border-2 border-th-ok opacity-0 motion-safe:animate-calm-ripple motion-reduce:hidden",
+  /** The second ring starts half a loop later. */
+  rippleLate: "[animation-delay:800ms]",
+  core: "absolute inset-0 grid place-items-center rounded-full bg-th-ok text-th-on-ok motion-reduce:animate-loader-breathe",
+  check: "size-7",
+} as const;
+
+/**
+ * Field notes: the lowercase wordmark with a 200 × 4 px pen stroke under it (`--acc-sub` track, `--acc` stroke,
+ * `--hi` tip) sweeping left to right. With reduced motion the stroke is parked under the word and the word
+ * breathes (the inline variant, which has no word, breathes the track).
+ */
+export const FIELD_LOADER = {
+  track: "relative block w-[200px] h-1 rounded-full bg-th-acc-sub overflow-hidden",
+  trackInline: "motion-reduce:animate-loader-breathe",
+  stroke: "absolute inset-y-0 left-[35%] w-[30%] rounded-full bg-th-acc motion-safe:animate-field-sweep",
+  tip: "absolute -right-0.5 -top-px size-1.5 rounded-full bg-th-hi",
+  word: "motion-reduce:animate-loader-breathe",
+} as const;
