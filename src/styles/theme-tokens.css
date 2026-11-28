@@ -264,7 +264,6 @@
   --dot-high: #FE6E6B;
   --dot-done: #53D86A;
   --ok-t: #296C35;
-  --err-t: #BE2E2B;
   --ncard-bg: #FFFFFF;
   --ncard-t: #000000;
   --ncard-t2: #333333;
@@ -298,6 +297,49 @@
   --note-t: #78350F;
   --alert-bg: #FEE2E2;
   --alert-t: #B91C1C;
+
+  /* RD-3 (plan 53b §1): red text, status colours and the stat-card icons. Classic = today's colours, except
+   * the approved fixes: red text #BE2E2B in light, unread badges and the "on fire" streak at ≥ 4.5:1, the toast
+   * variants and status tags dark in dark, the "All tasks" icon visible on the dark tile. */
+  --danger-t: #BE2E2B;
+  --warn-t: #B45309;
+  --badge-unread: #BE2E2B;
+  --on-badge-unread: #FFFFFF;
+  --streak-hot: #DC2626;
+  --on-streak-hot: #FFFFFF;
+  --streak-fire: #F97316;
+  --toast-ok-bg: #F0FDF4;
+  --toast-ok-line: #BBF7D0;
+  --toast-ok-t: #15803D;
+  --toast-err-bg: #FEF2F2;
+  --toast-err-line: #FECACA;
+  --toast-err-t: #B91C1C;
+  --toast-warn-bg: #FFFBEB;
+  --toast-warn-line: #FDE68A;
+  --toast-warn-t: #B45309;
+  --toast-info-bg: #EFF6FF;
+  --toast-info-line: #BFDBFE;
+  --toast-info-t: #1D4ED8;
+  --tag-ok-bg: #DCFCE7;
+  --tag-ok-t: #166534;
+  --tag-off-bg: #E5E7EB;
+  --tag-off-t: #374151;
+  --tag-err-bg: #FEE2E2;
+  --tag-err-t: #991B1B;
+  --due-hot-bg: #FECECD;
+  --due-hot-t: #3F0F0E;
+  --due-hot-b: #FD9D9B;
+  --due-warn-bg: #FFDDC8;
+  --due-warn-t: #401E09;
+  --due-warn-b: #FFBC91;
+  --unread-bar: #219EBC;
+  --drawer-scrim: rgba(0, 0, 0, 0.5);
+  --stat-ico-all: #333333;
+  --stat-ico-todo: #FEAD03;
+  --stat-ico-proj: #2196F3;
+  --stat-ico-done: #3EA24F;
+  --stat-ico-hand: #666666;
+  --check-fill: #53D86A;
 
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
@@ -504,7 +546,6 @@
   --dot-high: #FE6E6B;
   --dot-done: #53D86A;
   --ok-t: #7EE28F;
-  --err-t: #FE6E6B;
   --ncard-bg: #FFFFFF;
   --ncard-t: #000000;
   --ncard-t2: #333333;
@@ -538,6 +579,49 @@
   --note-t: #FED580;
   --alert-bg: rgba(127, 29, 29, 0.3);
   --alert-t: #FCA5A5;
+
+  /* RD-3 (plan 53b §1): red text, status colours and the stat-card icons. Classic = today's colours, except
+   * the approved fixes: red text #BE2E2B in light, unread badges and the "on fire" streak at ≥ 4.5:1, the toast
+   * status tags dark in dark (Classic toasts stay white in both modes, as its default toast), the "All tasks" icon visible on the dark tile. */
+  --danger-t: #FD3D39;
+  --warn-t: #FBBF24;
+  --badge-unread: #BE2E2B;
+  --on-badge-unread: #FFFFFF;
+  --streak-hot: #DC2626;
+  --on-streak-hot: #FFFFFF;
+  --streak-fire: #F97316;
+  --toast-ok-bg: #F0FDF4;
+  --toast-ok-line: #BBF7D0;
+  --toast-ok-t: #15803D;
+  --toast-err-bg: #FEF2F2;
+  --toast-err-line: #FECACA;
+  --toast-err-t: #B91C1C;
+  --toast-warn-bg: #FFFBEB;
+  --toast-warn-line: #FDE68A;
+  --toast-warn-t: #B45309;
+  --toast-info-bg: #EFF6FF;
+  --toast-info-line: #BFDBFE;
+  --toast-info-t: #1D4ED8;
+  --tag-ok-bg: #052E16;
+  --tag-ok-t: #86EFAC;
+  --tag-off-bg: #1F2937;
+  --tag-off-t: #D1D5DB;
+  --tag-err-bg: #450A0A;
+  --tag-err-t: #FCA5A5;
+  --due-hot-bg: #FECECD;
+  --due-hot-t: #3F0F0E;
+  --due-hot-b: #FD9D9B;
+  --due-warn-bg: #FFDDC8;
+  --due-warn-t: #401E09;
+  --due-warn-b: #FFBC91;
+  --unread-bar: #219EBC;
+  --drawer-scrim: rgba(0, 0, 0, 0.5);
+  --stat-ico-all: #D1D5DB;
+  --stat-ico-todo: #FEAD03;
+  --stat-ico-proj: #2196F3;
+  --stat-ico-done: #3EA24F;
+  --stat-ico-hand: #9CA3AF;
+  --check-fill: #53D86A;
 
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
@@ -744,7 +828,6 @@
   --dot-high:  #8A5600;
   --dot-done: #2B8A46;
   --ok-t: #1E7A36;
-  --err-t: #C21F1B;
   --ncard-bg: #FFFFFF;
   --ncard-t: #1C1A17;
   --ncard-t2: #5C574F;
@@ -778,6 +861,49 @@
   --note-t: #8A5600;
   --alert-bg: #FDECEA;
   --alert-t: #C21F1B;
+
+  /* RD-3 (plan 53b §1): red text, status colours and the stat-card icons. Classic = today's colours, except
+   * the approved fixes: red text #BE2E2B in light, unread badges and the "on fire" streak at ≥ 4.5:1, the toast
+   * variants and status tags dark in dark, the "All tasks" icon visible on the dark tile. */
+  --danger-t: #C21F1B;
+  --warn-t: #8A5600;
+  --badge-unread: #C21F1B;
+  --on-badge-unread: #FFFFFF;
+  --streak-hot: #2A8744;
+  --on-streak-hot: #FFFFFF;
+  --streak-fire: #FEAD03;
+  --toast-ok-bg: #E7F3EA;
+  --toast-ok-line: #A9D8B3;
+  --toast-ok-t: #1E7A36;
+  --toast-err-bg: #FBE9E8;
+  --toast-err-line: #F1B5B3;
+  --toast-err-t: #C21F1B;
+  --toast-warn-bg: #FFF3D1;
+  --toast-warn-line: #FED580;
+  --toast-warn-t: #8A5600;
+  --toast-info-bg: #E3F1F5;
+  --toast-info-line: #A8D5E2;
+  --toast-info-t: #19768D;
+  --tag-ok-bg: #E7F3EA;
+  --tag-ok-t: #1E7A36;
+  --tag-off-bg: #F1EFEA;
+  --tag-off-t: #5C574F;
+  --tag-err-bg: #FBE9E8;
+  --tag-err-t: #C21F1B;
+  --due-hot-bg: #FBE9E8;
+  --due-hot-t: #C21F1B;
+  --due-hot-b: #F1B5B3;
+  --due-warn-bg: #FFF3D1;
+  --due-warn-t: #8A5600;
+  --due-warn-b: #FED580;
+  --unread-bar: #FEAD03;
+  --drawer-scrim: rgba(0, 0, 0, 0.5);
+  --stat-ico-all: #8A5600;
+  --stat-ico-todo: #8A5600;
+  --stat-ico-proj: #8A5600;
+  --stat-ico-done: #8A5600;
+  --stat-ico-hand: #8A5600;
+  --check-fill: #2B8A46;
 
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
@@ -984,7 +1110,6 @@
   --dot-high:  #FEAD03;
   --dot-done: #53D86A;
   --ok-t: #53D86A;
-  --err-t: #FF6B67;
   --ncard-bg: #1E1C19;
   --ncard-t: #F3F1EC;
   --ncard-t2: #ADA79B;
@@ -1018,6 +1143,49 @@
   --note-t: #FED580;
   --alert-bg: rgba(255, 107, 103, 0.12);
   --alert-t: #FF6B67;
+
+  /* RD-3 (plan 53b §1): red text, status colours and the stat-card icons. Classic = today's colours, except
+   * the approved fixes: red text #BE2E2B in light, unread badges and the "on fire" streak at ≥ 4.5:1, the toast
+   * variants and status tags dark in dark, the "All tasks" icon visible on the dark tile. */
+  --danger-t: #FF6B67;
+  --warn-t: #FEAD03;
+  --badge-unread: #FF6B67;
+  --on-badge-unread: #141311;
+  --streak-hot: #53D86A;
+  --on-streak-hot: #141311;
+  --streak-fire: #FEAD03;
+  --toast-ok-bg: #1F3326;
+  --toast-ok-line: #2A5636;
+  --toast-ok-t: #53D86A;
+  --toast-err-bg: #3A1A18;
+  --toast-err-line: #6B2A27;
+  --toast-err-t: #FF6B67;
+  --toast-warn-bg: #3A2E10;
+  --toast-warn-line: #6B5418;
+  --toast-warn-t: #FEAD03;
+  --toast-info-bg: #12303A;
+  --toast-info-line: #1E5566;
+  --toast-info-t: #7DD3E8;
+  --tag-ok-bg: #1F3326;
+  --tag-ok-t: #53D86A;
+  --tag-off-bg: #26241F;
+  --tag-off-t: #ADA79B;
+  --tag-err-bg: #3A1A18;
+  --tag-err-t: #FF6B67;
+  --due-hot-bg: #3A1A18;
+  --due-hot-t: #FF6B67;
+  --due-hot-b: #6B2A27;
+  --due-warn-bg: #3A2E10;
+  --due-warn-t: #FEAD03;
+  --due-warn-b: #6B5418;
+  --unread-bar: #FEAD03;
+  --drawer-scrim: rgba(0, 0, 0, 0.6);
+  --stat-ico-all: #FEAD03;
+  --stat-ico-todo: #FEAD03;
+  --stat-ico-proj: #FEAD03;
+  --stat-ico-done: #FEAD03;
+  --stat-ico-hand: #FEAD03;
+  --check-fill: #53D86A;
 
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
@@ -1224,7 +1392,6 @@
   --dot-high:  #F2B84B;
   --dot-done: #1F5C46;
   --ok-t: #1F5C46;
-  --err-t: #B3261E;
   --ncard-bg: #FFFFFF;
   --ncard-t: #14201A;
   --ncard-t2: #4F5E55;
@@ -1258,6 +1425,49 @@
   --note-t: #6B4700;
   --alert-bg: #F9E3E1;
   --alert-t: #B3261E;
+
+  /* RD-3 (plan 53b §1): red text, status colours and the stat-card icons. Classic = today's colours, except
+   * the approved fixes: red text #BE2E2B in light, unread badges and the "on fire" streak at ≥ 4.5:1, the toast
+   * variants and status tags dark in dark, the "All tasks" icon visible on the dark tile. */
+  --danger-t: #B3261E;
+  --warn-t: #7A5200;
+  --badge-unread: #B3261E;
+  --on-badge-unread: #FFFFFF;
+  --streak-hot: #F2B84B;
+  --on-streak-hot: #14201A;
+  --streak-fire: #F2B84B;
+  --toast-ok-bg: #DDEEE4;
+  --toast-ok-line: #94C6A8;
+  --toast-ok-t: #1F5C46;
+  --toast-err-bg: #F9E6E4;
+  --toast-err-line: #E8B4AF;
+  --toast-err-t: #B3261E;
+  --toast-warn-bg: #FCEFD2;
+  --toast-warn-line: #F2B84B;
+  --toast-warn-t: #6B4A00;
+  --toast-info-bg: #E3EEF3;
+  --toast-info-line: #A9C7D4;
+  --toast-info-t: #1F4E66;
+  --tag-ok-bg: #DDEEE4;
+  --tag-ok-t: #1F5C46;
+  --tag-off-bg: #E8EEE6;
+  --tag-off-t: #4F5E55;
+  --tag-err-bg: #F9E6E4;
+  --tag-err-t: #B3261E;
+  --due-hot-bg: #F9E6E4;
+  --due-hot-t: #B3261E;
+  --due-hot-b: #E8B4AF;
+  --due-warn-bg: #FCEFD2;
+  --due-warn-t: #6B4A00;
+  --due-warn-b: #F2B84B;
+  --unread-bar: #1F5C46;
+  --drawer-scrim: rgba(20, 32, 26, 0.45);
+  --stat-ico-all: #1F5C46;
+  --stat-ico-todo: #1F5C46;
+  --stat-ico-proj: #1F5C46;
+  --stat-ico-done: #1F5C46;
+  --stat-ico-hand: #1F5C46;
+  --check-fill: #1F5C46;
 
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */
@@ -1464,7 +1674,6 @@
   --dot-high:  #F2B84B;
   --dot-done: #7FD1A8;
   --ok-t: #7FD1A8;
-  --err-t: #FF8A80;
   --ncard-bg: #18211C;
   --ncard-t: #EEF3EE;
   --ncard-t2: #A3B2A8;
@@ -1498,6 +1707,49 @@
   --note-t: #F2B84B;
   --alert-bg: rgba(255, 138, 128, 0.12);
   --alert-t: #FF8A80;
+
+  /* RD-3 (plan 53b §1): red text, status colours and the stat-card icons. Classic = today's colours, except
+   * the approved fixes: red text #BE2E2B in light, unread badges and the "on fire" streak at ≥ 4.5:1, the toast
+   * variants and status tags dark in dark, the "All tasks" icon visible on the dark tile. */
+  --danger-t: #FF8A80;
+  --warn-t: #F2B84B;
+  --badge-unread: #FF8A80;
+  --on-badge-unread: #0F1512;
+  --streak-hot: #F2B84B;
+  --on-streak-hot: #14201A;
+  --streak-fire: #F2B84B;
+  --toast-ok-bg: #1D3A2D;
+  --toast-ok-line: #2C5C45;
+  --toast-ok-t: #7FD1A8;
+  --toast-err-bg: #3A1C1A;
+  --toast-err-line: #6B2D28;
+  --toast-err-t: #FF8A80;
+  --toast-warn-bg: #3A2E10;
+  --toast-warn-line: #6B5418;
+  --toast-warn-t: #F2B84B;
+  --toast-info-bg: #16303A;
+  --toast-info-line: #28505F;
+  --toast-info-t: #8CC8E0;
+  --tag-ok-bg: #1D3A2D;
+  --tag-ok-t: #7FD1A8;
+  --tag-off-bg: #1A241F;
+  --tag-off-t: #A3B2A8;
+  --tag-err-bg: #3A1C1A;
+  --tag-err-t: #FF8A80;
+  --due-hot-bg: #3A1C1A;
+  --due-hot-t: #FF8A80;
+  --due-hot-b: #6B2D28;
+  --due-warn-bg: #3A2E10;
+  --due-warn-t: #F2B84B;
+  --due-warn-b: #6B5418;
+  --unread-bar: #7FD1A8;
+  --drawer-scrim: rgba(0, 0, 0, 0.6);
+  --stat-ico-all: #7FD1A8;
+  --stat-ico-todo: #7FD1A8;
+  --stat-ico-proj: #7FD1A8;
+  --stat-ico-done: #7FD1A8;
+  --stat-ico-hand: #7FD1A8;
+  --check-fill: #7FD1A8;
 
   /* shadcn/ui variables (plan 52-3 §2), HSL triplets for Tailwind's hsl(var(--x) / alpha). Classic = the values
    * globals.css had under :root, in both modes (`.dark` was never set). Calm/Field = their base tokens. */

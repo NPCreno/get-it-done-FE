@@ -32,7 +32,7 @@ export default function NotificationCard({ notification, time, onMarkRead, pendi
       className={`border-[2px] border-border p-[10px] h-[auto] rounded-[10px] bg-th-ncard-bg flex justify-between items-start w-full ${unread ? "cursor-pointer" : ""}`}
     >
       <div className="flex flex-row gap-[10px]">
-        <div className={`min-w-[5px] min-h-full rounded ${unread ? "bg-secondary-default" : "bg-th-ncard-bg"}`}></div>
+        <div className={`min-w-[5px] min-h-full rounded ${unread ? "bg-th-unread-bar" : "bg-th-ncard-bg"}`}></div>
 
         <div className="flex items-start">
           <Image src={ICONS[type]} width={40} height={40} alt="" aria-hidden="true" />

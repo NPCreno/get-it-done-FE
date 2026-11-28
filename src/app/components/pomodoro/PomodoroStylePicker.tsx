@@ -21,7 +21,7 @@ export default function PomodoroStylePicker() {
     status.kind === "saved"
       ? "text-th-ok-t"
       : status.kind === "failed"
-        ? "text-th-err-t"
+        ? "text-th-danger-t"
         : txt2;
 
   return (

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
-import Image from 'next/image';
+import { CheckCircleIcon, TrashIcon } from './icons/AppIcons';
 import { isUserFacing } from "@/lib/apiClient";
 import { focusFallback } from "@/lib/focusFallback";
 import { useCreateSubTask, useDeleteSubTask, useSetSubTaskStatus, useSetTaskStatus } from "@/lib/query/mutations";
@@ -203,12 +203,7 @@ export function TaskItem({
             />
             <div className="absolute inset-0 rounded-full border-[2px] border-solid border-th-check-ring peer-checked:border-0 group-hover:border-0 pointer-events-none" />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
-              <Image
-                src="/svgs/checkmark-circle-green.svg"
-                alt="Check"
-                width={26}
-                height={26}
-              />
+              <CheckCircleIcon size={26} className="text-th-check-fill" />
             </div>
           </div>
         </div>
@@ -260,12 +255,7 @@ export function TaskItem({
                   }}
                   title="Delete task"
                 >
-                  <Image 
-                    src="/svgs/trash-outline.svg" 
-                    alt=""
-                    width={20} 
-                    height={20} 
-                  />
+                  <TrashIcon size={20} className="text-th-danger-t" />
                 </button>
               )}
               <div className="flex items-center space-x-2 ml-2">
@@ -313,12 +303,7 @@ export function TaskItem({
                 />
                 <div className="absolute inset-0 rounded-full border-[2px] border-solid border-th-check-ring peer-checked:border-0 group-hover:border-0 pointer-events-none" />
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
-                  <Image
-                    src="/svgs/checkmark-circle-green.svg"
-                    alt="Check"
-                    width={26}
-                    height={26}
-                  />
+                  <CheckCircleIcon size={26} className="text-th-check-fill" />
                 </div>
               </div>
               <span className={`text-sm ml-2 flex-1 text-start ${subtask.status === 'Complete'

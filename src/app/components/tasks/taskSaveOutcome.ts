@@ -53,7 +53,7 @@ export function outcomeOfException(error: unknown): SaveOutcome {
 export function showToast(toast: ToastController, intent: ToastIntent | null): void {
   if (!intent) return;
   if (intent.kind === "success") toast.success(intent.title, intent.fallback);
-  else if (intent.kind === "warning") toast.show({ title: intent.title, description: intent.message, className: "text-warning-default" });
+  else if (intent.kind === "warning") toast.show({ title: intent.title, description: intent.message, className: "text-th-warn-t" });
   else if (intent.kind === "failure") toast.failure(intent.failure);
   else toast.unexpected(intent.error);
 }

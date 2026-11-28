@@ -85,7 +85,7 @@ export default function ConnectedAppsList({ toast }: ConnectedAppsListProps) {
                   type="button"
                   onClick={() => setDisconnecting(g)}
                   aria-label={`Disconnect ${g.client_name}`}
-                  className="rounded-[5px] border border-error-default px-3 py-1 text-xs text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
+                  className="rounded-[5px] border border-th-danger-t px-3 py-1 text-xs text-th-danger-t focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
                 >
                   Disconnect
                 </button>

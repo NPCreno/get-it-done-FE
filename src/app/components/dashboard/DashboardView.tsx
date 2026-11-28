@@ -46,12 +46,12 @@ export default function DashboardView() {
         title: type === "error" ? "Something Went Wrong" : "Task update",
         description: message,
         className: type === "success"
-          ? "text-success-default"
+          ? "text-th-ok-t"
           : type === "error"
-            ? "text-error-default"
+            ? "text-th-danger-t"
             : type === "warning"
-              ? "text-warning-default"
-              : "text-accent-default",
+              ? "text-th-warn-t"
+              : "text-th-acc-t",
       },
       { displayMs: 3000 }
     );

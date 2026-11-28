@@ -20,8 +20,8 @@ export interface ToastOptions {
   exitMs?: number;
 }
 
-const SUCCESS = "text-green-600";
-const ERROR = "text-error-default";
+const SUCCESS = "text-th-ok-t";
+const ERROR = "text-th-danger-t";
 
 /**
  * Framework-independent toast state with ONE timer pair. It is not pure: it owns timers and

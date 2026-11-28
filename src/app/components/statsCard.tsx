@@ -1,9 +1,10 @@
-import Image from "next/image";
+import type { ComponentType } from "react";
 import { motion } from "framer-motion";
 import { statCardTransition, STAT_VALUE_TRANSITION } from "./statsCardMotion";
 
 interface StatsCardProps {
-  icon: string;
+  /** An inline SVG icon (`components/icons/AppIcons`), coloured by the card's `--stat-ico-*` token. */
+  icon: ComponentType<{ size?: number; className?: string }>;
   header: string;
   content: string;
   delay: string;
@@ -11,23 +12,24 @@ interface StatsCardProps {
 }
 
 export default function StatsCard({
-  icon,
+  icon: Icon,
   header,
   content,
   delay,
   className = ''
 }: StatsCardProps) {
-  // Determine icon color based on header
+  // RD-3: the icon's colour per card. Classic keeps each card's own colour; Calm and Field notes use their
+  // accent text (board 18). Every value is visible on its tile in both modes.
   const getIconColor = () => {
     switch (header.toLowerCase()) {
       case 'to do':
-        return 'text-amber-500';
+        return 'text-th-stat-ico-todo';
       case 'all projects':
-        return 'text-blue-500';
+        return 'text-th-stat-ico-proj';
       case 'complete':
-        return 'text-green-500';
+        return 'text-th-stat-ico-done';
       default:
-        return 'text-primary-default';
+        return 'text-th-stat-ico-all';
     }
   };
 
@@ -61,13 +63,7 @@ export default function StatsCard({
           whileTap={{ scale: 0.95 }}
           className="relative w-10 h-10 flex items-center justify-center"
         >
-          <Image 
-            src={icon} 
-            alt={header} 
-            width={24} 
-            height={24} 
-            className="transition-transform duration-300 group-hover:scale-110"
-          />
+          <Icon size={24} className="transition-transform duration-300 group-hover:scale-110" />
         </motion.div>
       </div>
       

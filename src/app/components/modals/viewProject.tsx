@@ -6,7 +6,7 @@ import { failureOf } from '@/lib/query/unwrap';
 import { isUserFacing } from '@/lib/apiClient';
 import LoadError from '../LoadError';
 import type { LoadState } from '@/lib/query/loadState';
-import Image from 'next/image';
+import { CheckCircleIcon, TrashIcon } from '../icons/AppIcons';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/app/components/shadcn/dialog';
 import AssigneeChip from '@/app/components/tasks/AssigneeChip';
 import { canDeleteTask } from '@/app/components/tasks/assignee';
@@ -233,12 +233,7 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
                 handleDeleteTask(task.task_id, task.title);
               }}
             >
-              <Image 
-                src="/svgs/trash-outline.svg" 
-                alt="" 
-                width={20} 
-                height={20} 
-              />
+              <TrashIcon size={20} className="text-th-danger-t" />
             </button>
           )}
           <div className="group min-w-5 h-5 relative">
@@ -257,12 +252,7 @@ const TaskCard = ({ task, handleUpdateTask, onStatusError, handleDeleteTask }: T
               className="absolute inset-0 rounded-[10px] border-[2px] border-solid border-th-line-acc peer-checked:border-0 group-hover:border-0 pointer-events-none"
             />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 peer-checked:opacity-100 pointer-events-none">
-              <Image 
-                src="/svgs/checkmark-circle-yellow.svg" 
-                alt="Check" 
-                width={20} 
-                height={20} 
-              />
+              <CheckCircleIcon size={20} className="text-th-acc" />
             </div>
           </div>
         </div>

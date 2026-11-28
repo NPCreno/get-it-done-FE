@@ -17,18 +17,18 @@ interface ToastProps {
 const variantStyles: Record<ToastVariant, string> = {
   // The default toast is white in both Classic modes (today's look): its own tokens.
   default: 'bg-th-toast-bg',
-  success: 'bg-green-50 border-green-200',
-  error: 'bg-red-50 border-red-200',
-  warning: 'bg-amber-50 border-amber-200',
-  info: 'bg-blue-50 border-blue-200',
+  success: 'bg-th-toast-ok-bg border-th-toast-ok-line',
+  error: 'bg-th-toast-err-bg border-th-toast-err-line',
+  warning: 'bg-th-toast-warn-bg border-th-toast-warn-line',
+  info: 'bg-th-toast-info-bg border-th-toast-info-line',
 };
 
 const variantTextColors: Record<ToastVariant, string> = {
   default: 'text-th-toast-t',
-  success: 'text-green-700',
-  error: 'text-red-700',
-  warning: 'text-amber-700',
-  info: 'text-blue-700',
+  success: 'text-th-toast-ok-t',
+  error: 'text-th-toast-err-t',
+  warning: 'text-th-toast-warn-t',
+  info: 'text-th-toast-info-t',
 };
 
 export function Toast({

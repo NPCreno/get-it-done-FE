@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
+import { DashboardIcon, NotificationsIcon, ProfileIcon, ProjectsIcon } from "./icons/AppIcons";
 import { useUnreadCount } from "@/lib/query/notifications";
 import { useChatUnread } from "@/lib/query/chat";
 
@@ -86,7 +87,7 @@ export default function MobileSidebar() {
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-150 ${
+        className={`fixed inset-0 bg-th-drawer-scrim z-40 transition-opacity duration-150 ${
           isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={handleBackdropClick}
@@ -149,16 +150,14 @@ export default function MobileSidebar() {
           <nav aria-label="Main navigation" className="flex-1 flex flex-col gap-4 mt-8 px-2">
             <SidebarLink
               href="/dashboard"
-              icon="/svgs/dashboard-yellow.svg"
-              iconHover="/svgs/dashboard-white.svg"
+              icon={DashboardIcon}
               text="Dashboard"
               onClick={closeMobileSidebar}
               forceShowText={true}
             />
             <SidebarLink
               href="/projects"
-              icon="/svgs/projects-yellow.svg"
-              iconHover="/svgs/projects-white.svg"
+              icon={ProjectsIcon}
               text="Projects"
               badge={chatUnread}
               badgeLabel="unread chat messages"
@@ -167,8 +166,7 @@ export default function MobileSidebar() {
             />
             <SidebarLink
               href="/notifications"
-              icon="/svgs/notifs-yellow.svg"
-              iconHover="/svgs/notifs-white.svg"
+              icon={NotificationsIcon}
               text="Notifications"
               badge={unreadCount}
               onClick={closeMobileSidebar}
@@ -176,8 +174,7 @@ export default function MobileSidebar() {
             />
             <SidebarLink
               href="/profileSettings"
-              icon="/svgs/profile-yellow.svg"
-              iconHover="/svgs/profile-white.svg"
+              icon={ProfileIcon}
               text="Profile"
               onClick={closeMobileSidebar}
               forceShowText={true}

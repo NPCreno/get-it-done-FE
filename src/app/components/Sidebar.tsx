@@ -2,6 +2,7 @@
 
 import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
+import { DashboardIcon, NotificationsIcon, ProfileIcon, ProjectsIcon } from "./icons/AppIcons";
 import { useUnreadCount } from "@/lib/query/notifications";
 import { useChatUnread } from "@/lib/query/chat";
 import { sidebarPanelWidth } from "./sidebarWidths";
@@ -59,29 +60,25 @@ export default function Sidebar() {
         <nav aria-label="Main navigation" className="flex flex-col gap-5 mt-[30px] w-full">
           <SidebarLink
             href="/dashboard"
-            icon="/svgs/dashboard-yellow.svg"
-            iconHover="/svgs/dashboard-white.svg"
+            icon={DashboardIcon}
             text="Dashboard"
           />
           <SidebarLink
             href="/projects"
-            icon="/svgs/projects-yellow.svg"
-            iconHover="/svgs/projects-white.svg"
+            icon={ProjectsIcon}
             text="Projects"
           badge={chatUnread}
           badgeLabel="unread chat messages"
           />
           <SidebarLink
             href="/notifications"
-            icon="/svgs/notifs-yellow.svg"
-            iconHover="/svgs/notifs-white.svg"
+            icon={NotificationsIcon}
             text="Notifications"
           badge={unreadCount}
           />
           <SidebarLink
             href="/profileSettings"
-            icon="/svgs/profile-yellow.svg"
-            iconHover="/svgs/profile-white.svg"
+            icon={ProfileIcon}
             text="Profile"
           />
         </nav>

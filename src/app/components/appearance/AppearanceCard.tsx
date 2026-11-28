@@ -33,7 +33,7 @@ export default function AppearanceCard() {
     status.kind === "saved"
       ? "text-th-ok-t"
       : status.kind === "failed"
-        ? "text-th-err-t"
+        ? "text-th-danger-t"
         : "text-th-ink2";
 
   return (

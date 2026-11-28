@@ -155,7 +155,7 @@ export default function MembersDialog({ projectId, projectTitle, onClose, toast 
                       onClick={() => void removeMember(m)}
                       aria-disabled={remove.isPending}
                       aria-label={`Remove ${m.username}`}
-                      className="rounded-btn border border-error-default px-3 py-1 font-ui text-xs text-error-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus aria-disabled:opacity-60"
+                      className="rounded-btn border border-th-danger-t px-3 py-1 font-ui text-xs text-th-danger-t focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus aria-disabled:opacity-60"
                     >
                       Remove
                     </button>

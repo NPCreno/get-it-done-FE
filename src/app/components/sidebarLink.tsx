@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import type { ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useFormState } from "../context/FormProvider";
@@ -14,12 +14,12 @@ export function sidebarLinkLabel(text: string, badge: number, badgeLabel: string
 
 /**
  * One sidebar item (BUG-05): a real Next `<Link>`, so Enter, middle-click and "open in new tab"
- * work natively. The icons are decorative (`alt=""`), so the name is read once.
+ * work natively. The icon is decorative (`aria-hidden`), so the name is read once. RD-3: it is inline SVG in
+ * `currentColor`: the accent text token at rest, `--on-acc` on the active pill.
  */
 export default function SidebarLink({
   href,
-  icon,
-  iconHover,
+  icon: Icon,
   text,
   onClick,
   forceShowText = false,
@@ -28,8 +28,7 @@ export default function SidebarLink({
   badgeLabel = "unread",
 }: {
   href: string;
-  icon: string;
-  iconHover: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
   text: string;
   /** Runs before navigation (the mobile drawer closes itself). */
   onClick?: () => void;
@@ -64,24 +63,14 @@ export default function SidebarLink({
         {badge > 0 && (
           <span
             aria-hidden="true"
-            className="absolute -top-2 -right-2 z-10 min-w-[16px] h-4 px-1 rounded-full bg-error-default text-white text-[10px] leading-4 text-center font-bold"
+            className="absolute -top-2 -right-2 z-10 min-w-[16px] h-4 px-1 rounded-full bg-th-badge-unread text-th-on-badge-unread text-[10px] leading-4 text-center font-bold"
           >
             {badge > 99 ? "99+" : badge}
           </span>
         )}
-        <Image
-          src={icon}
-          alt=""
-          width={20}
-          height={20}
-          className={`absolute transition-opacity duration-300 ${isActive ? "opacity-0" : "opacity-100"}`}
-        />
-        <Image
-          src={iconHover}
-          alt=""
-          width={20}
-          height={20}
-          className={`absolute transition-opacity duration-300 ${isActive ? "opacity-100" : "opacity-0"}`}
+        <Icon
+          size={20}
+          className={`absolute transition-colors duration-300 ${isActive ? "text-th-on-acc" : "text-th-acc-t"}`}
         />
       </span>
       {/* Always rendered (clipped by the collapsed panel, never display:none), so the link keeps
