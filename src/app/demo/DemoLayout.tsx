@@ -20,7 +20,7 @@ export default function DemoLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-th-out-bg text-th-ink-abs">
       <header className="flex items-center justify-between border-b px-4 py-3">
         <Link href="/" className="font-rancho text-2xl">
           Get it Done!
@@ -29,24 +29,24 @@ export default function DemoLayout({ children }: { children: ReactNode }) {
           <Link href="/login" className="underline underline-offset-4">
             Log in
           </Link>
-          <Link href="/signup" className="rounded-md bg-primary-default px-3 py-1.5 text-white">
+          <Link href="/signup" className="rounded-md bg-th-acc px-3 py-1.5 text-th-on-acc">
             Sign up free
           </Link>
         </nav>
       </header>
-      <div role="status" className="flex flex-wrap items-center justify-between gap-2 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+      <div role="status" className="flex flex-wrap items-center justify-between gap-2 bg-th-acc-sub px-4 py-2 text-sm text-th-acc-t">
         <span>You&apos;re exploring a demo. Changes stay in this tab and reset on reload.</span>
         <button
           type="button"
           onClick={reset}
           disabled={resetting}
           aria-label="Reset demo"
-          className="rounded-md border border-amber-300 px-3 py-1 disabled:opacity-60"
+          className="rounded-md border border-th-line-acc px-3 py-1 disabled:opacity-60"
         >
           Reset demo
         </button>
       </div>
-      <main className="relative flex-1 bg-background-light p-4 md:p-6">{children}</main>
+      <main className="relative flex-1 bg-th-page p-4 md:p-6">{children}</main>
     </div>
   );
 }

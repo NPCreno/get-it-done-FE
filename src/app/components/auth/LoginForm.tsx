@@ -85,16 +85,16 @@ export default function LoginForm({
   };
 
   return (
-    <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+    <div className="w-full max-w-md p-8 space-y-6 bg-th-card rounded-lg shadow-md">
       <div className="space-y-2 text-center">
-        <h2 className="text-3xl font-bold text-th-acc-t-light">Welcome Back</h2>
-        <p className="text-gray-600">
+        <h2 className="text-3xl font-bold text-th-acc-t">Welcome Back</h2>
+        <p className="text-th-ink-body">
           Enter your credentials to access your account
         </p>
       </div>
       
       {error && (
-        <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+        <div className="p-4 text-sm text-th-alert-t bg-th-alert-bg rounded-lg" role="alert">
           {error}
         </div>
       )}
@@ -120,7 +120,7 @@ export default function LoginForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             {/* Visual heading only: the password field carries its own (screen-reader) label. */}
-            <span aria-hidden="true" className="block text-sm font-medium text-gray-700">
+            <span aria-hidden="true" className="block text-sm font-medium text-th-task">
               Password
             </span>
 
@@ -149,11 +149,11 @@ export default function LoginForm({
                 checked={formik.values.rememberMe}
                 onChange={handleCheckboxChange}
                 disabled={isLoading}
-                className="h-4 w-4 text-primary-default focus:ring-primary-default border-gray-300 rounded"
+                className="h-4 w-4 text-th-acc focus:ring-th-focus border-th-check-ring rounded"
               />
               <label
                 htmlFor="rememberMe"
-                className="text-sm font-medium text-gray-700 cursor-pointer"
+                className="text-sm font-medium text-th-task cursor-pointer"
               >
                 Remember me
               </label>
@@ -163,10 +163,10 @@ export default function LoginForm({
         
         <button 
           type="submit"
-          className="relative w-full px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-sm h-10 font-lato font-medium text-white 
-          bg-gradient-to-r from-primary-default to-primary-200 shadow-md hover:shadow-lg
+          className="relative w-full px-6 py-2.5 flex flex-row gap-2 items-center justify-center rounded-sm h-10 font-lato font-medium text-th-on-acc 
+          bg-gradient-to-r from-th-acc to-th-acc-soft shadow-md hover:shadow-lg
           transform transition-all duration-300 hover:translate-y-[-1px] active:translate-y-0 active:scale-95 overflow-hidden group
-          before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary-200 before:to-primary-default
+          before:absolute before:inset-0 before:bg-gradient-to-r before:from-th-acc-soft before:to-th-acc
           before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
           disabled:opacity-70 disabled:cursor-not-allowed"
           disabled={isLoading}
@@ -179,7 +179,7 @@ export default function LoginForm({
           {isLoading ? (
             <>
               <div className="relative z-10 flex items-center justify-center">
-                <Loader2 className="h-4 w-4 animate-spin text-white" />
+                <Loader2 className="h-4 w-4 animate-spin text-th-on-acc" />
               </div>
               <span className="relative z-10 text-base font-medium tracking-wide">
                 Signing in...
@@ -198,12 +198,12 @@ export default function LoginForm({
         <WakeHint pending={isLoading} />
       </form>
       
-      <div className="text-sm text-center text-gray-600">
+      <div className="text-sm text-center text-th-ink-body">
         Don&apos;t have an account?{" "}
         <button
           type="button"
           onClick={() => onChangeView("signup")}
-          className="font-medium text-th-acc-t-light hover:text-primary-hover transition-colors"
+          className="font-medium text-th-acc-t transition-colors"
         >
           Sign up
         </button>

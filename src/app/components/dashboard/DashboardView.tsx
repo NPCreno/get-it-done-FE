@@ -1,6 +1,5 @@
 "use client";
 import { useRef, useState } from "react";
-import { useAppearance } from "@/hooks/useAppearance";
 import ToastHost from "@/app/components/ToastHost";
 import LoadingPage from "@/app/components/loader";
 import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
@@ -24,7 +23,6 @@ import { useDashboardData } from "./useDashboardData";
  * reads): the lint override in `.eslintrc.json` enforces that for this folder.
  */
 export default function DashboardView() {
-  const { isDark } = useAppearance();
 
   // One toast controller for the page: the host and every handler below share it.
   const toast = useToastController();
@@ -94,7 +92,7 @@ export default function DashboardView() {
 
       {/* After the page in the DOM, so it paints over it; outside the root, whose page-in transform
           would otherwise become the overlay's containing block. */}
-      {loader.mounted && <LoadingPage dark={isDark} leaving={loader.leaving} />}
+      {loader.mounted && <LoadingPage leaving={loader.leaving} />}
 
       <TaskEditorDialog editor={editor} projects={data.projectOptions} />
 

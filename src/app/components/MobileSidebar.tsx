@@ -3,13 +3,11 @@ import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
 import { useUnreadCount } from "@/lib/query/notifications";
 import { useChatUnread } from "@/lib/query/chat";
-import { useAppearance } from "@/hooks/useAppearance";
 
 export default function MobileSidebar() {
   const unreadCount = useUnreadCount();
   const chatUnread = useChatUnread().total;
   const { isMobileSidebarOpen, closeMobileSidebar } = useFormState();
-  const { theme } = useAppearance();
 
   // Close on escape key
   useEffect(() => {
@@ -106,12 +104,9 @@ export default function MobileSidebar() {
       
       {/* Mobile Sidebar: a modal drawer (focus trap, Esc, backdrop). Closed, it is inert, so
           screen readers and Tab never find a hidden dialog. */}
-      {/* RD-1 tokens. The drawer has always been white, also in dark mode; it stays light (its own
-          data-mode scope) so Classic looks the same until Phase 2 decides. */}
+      {/* RD-2 (52-4): the drawer follows the theme and mode (it was always white, also in dark mode). */}
       <div
         id="mobile-navigation"
-        data-theme={theme}
-        data-mode="light"
         className={`mobile-sidebar fixed inset-y-0 left-0 w-64 bg-th-card z-50 transform transition-transform duration-150 ease-in-out ${
           isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
@@ -128,9 +123,9 @@ export default function MobileSidebar() {
           {/* Logo and Title */}
           <div className="flex items-center mb-10 px-2">
             <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M26.2499 15.0027C26.2499 8.79175 21.2108 3.75269 14.9999 3.75269C8.78897 3.75269 3.7499 8.79175 3.7499 15.0027C3.7499 21.2136 8.78897 26.2527 14.9999 26.2527C21.2108 26.2527 26.2499 21.2136 26.2499 15.0027Z" stroke="#FEAD03" strokeWidth="2" strokeMiterlimit="10"/>
+              <path d="M26.2499 15.0027C26.2499 8.79175 21.2108 3.75269 14.9999 3.75269C8.78897 3.75269 3.7499 8.79175 3.7499 15.0027C3.7499 21.2136 8.78897 26.2527 14.9999 26.2527C21.2108 26.2527 26.2499 21.2136 26.2499 15.0027Z" className="stroke-th-acc" strokeWidth="2" strokeMiterlimit="10"/>
               <g filter="url(#filter0_d_628_413)">
-                <path d="M21.5624 11.2517L15.0075 18.7517L12.198 15.9392M11.247 18.7517L8.4374 15.9392M17.9126 11.2517L14.8921 14.7087" stroke="#FEAD03" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" shapeRendering="crispEdges"/>
+                <path d="M21.5624 11.2517L15.0075 18.7517L12.198 15.9392M11.247 18.7517L8.4374 15.9392M17.9126 11.2517L14.8921 14.7087" className="stroke-th-acc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" shapeRendering="crispEdges"/>
               </g>
               <defs>
                 <filter id="filter0_d_628_413" x="3.4374" y="10.2517" width="23.125" height="17.5" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
@@ -145,7 +140,7 @@ export default function MobileSidebar() {
                 </filter>
               </defs>
             </svg>
-            <h1 className="ml-3 text-2xl text-primary-default font-rancho">
+            <h1 className="ml-3 text-2xl text-th-acc font-rancho">
               Get it Done!
             </h1>
           </div>

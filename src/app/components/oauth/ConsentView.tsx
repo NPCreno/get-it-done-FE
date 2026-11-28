@@ -25,11 +25,11 @@ export const INVALID_REQUEST_COPY =
 
 const LOOPBACK_WARNING = "This is an app running on your own computer. Only continue if you started it.";
 
-/** The login page's card, centered on the brand gradient. No sidebar. */
+/** The login page's card, centered on the auth panel's gradient (theme tokens). No sidebar. */
 function Frame({ children }: { children: ReactNode }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-default to-primary-100 p-4">
-      <div className="w-full max-w-md space-y-6 rounded-lg bg-white p-8 font-lato text-text shadow-md">{children}</div>
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-th-auth-a to-th-auth-b p-4">
+      <div className="w-full max-w-md space-y-6 rounded-lg bg-th-card p-8 font-lato text-th-ink shadow-md">{children}</div>
     </main>
   );
 }
@@ -37,8 +37,8 @@ function Frame({ children }: { children: ReactNode }) {
 function InvalidRequest() {
   return (
     <Frame>
-      <h1 className="text-center text-2xl font-bold text-th-acc-t-light">Can&apos;t connect this app</h1>
-      <p role="alert" className="text-center text-gray-600">
+      <h1 className="text-center text-2xl font-bold text-th-acc-t">Can&apos;t connect this app</h1>
+      <p role="alert" className="text-center text-th-ink-body">
         {INVALID_REQUEST_COPY}
       </p>
     </Frame>
@@ -48,8 +48,8 @@ function InvalidRequest() {
 function Busy({ text }: { text: string }) {
   return (
     <Frame>
-      <div role="status" className="flex flex-col items-center gap-3 text-center text-gray-600">
-        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-th-acc-t-light" />
+      <div role="status" className="flex flex-col items-center gap-3 text-center text-th-ink-body">
+        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-th-acc-t" />
         <p>{text}</p>
       </div>
     </Frame>
@@ -174,45 +174,45 @@ function ConsentScreen({ app, username, pending, pendingChoice, sendError, onDec
   return (
     <Frame>
       <div className="space-y-1 text-center">
-        <h1 className="text-2xl font-bold text-th-acc-t-light">
+        <h1 className="text-2xl font-bold text-th-acc-t">
           <span className="break-words">{app.client_name}</span> wants to access your Get It Done account
         </h1>
-        <p className="text-xs text-gray-500">The app name is provided by the app.</p>
+        <p className="text-xs text-th-ink-dim">The app name is provided by the app.</p>
       </div>
 
-      <p className="text-sm text-gray-700">
+      <p className="text-sm text-th-task">
         You&apos;ll be sent back to <strong className="break-all">{app.redirect_host}</strong>
       </p>
 
       {app.loopback_only && (
-        <p role="note" className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+        <p role="note" className="rounded-md border border-th-note-line bg-th-note-bg p-3 text-sm text-th-note-t">
           {LOOPBACK_WARNING}
         </p>
       )}
 
       <div className="space-y-2">
-        <h2 className="text-sm font-bold text-gray-800">It will be able to:</h2>
-        <ul className="list-disc space-y-1 pl-5 text-sm text-gray-700">
+        <h2 className="text-sm font-bold text-th-ink-hd">It will be able to:</h2>
+        <ul className="list-disc space-y-1 pl-5 text-sm text-th-task">
           {CONSENT_CAPABILITIES.map((c) => (
             <li key={c}>{c}</li>
           ))}
         </ul>
       </div>
 
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-th-ink-body">
         Signed in as <strong>{username ?? "…"}</strong>.{" "}
         <button
           type="button"
           onClick={onSignOut}
           disabled={pending}
-          className="font-medium text-th-acc-t-light underline underline-offset-4 hover:text-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default disabled:opacity-60"
+          className="font-medium text-th-acc-t underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus disabled:opacity-60"
         >
           Not you? Sign out
         </button>
       </p>
 
       {sendError && (
-        <p role="alert" className="rounded-lg bg-red-100 p-3 text-sm text-red-700">
+        <p role="alert" className="rounded-lg bg-th-alert-bg p-3 text-sm text-th-alert-t">
           {sendError}
         </p>
       )}
@@ -222,7 +222,7 @@ function ConsentScreen({ app, username, pending, pendingChoice, sendError, onDec
           type="button"
           onClick={() => onDecide("deny")}
           disabled={pending}
-          className="h-10 flex-1 rounded-sm border border-[#E0E0E0] font-medium text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-10 flex-1 rounded-sm border border-th-line font-medium text-th-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending && pendingChoice === "deny" ? "Denying…" : "Deny"}
         </button>
@@ -230,7 +230,7 @@ function ConsentScreen({ app, username, pending, pendingChoice, sendError, onDec
           type="button"
           onClick={() => onDecide("allow")}
           disabled={pending}
-          className="h-10 flex-1 rounded-sm bg-gradient-to-r from-primary-default to-primary-200 font-medium text-white shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+          className="h-10 flex-1 rounded-sm bg-gradient-to-r from-th-acc to-th-acc-soft font-medium text-th-on-acc shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {pending && pendingChoice === "allow" ? "Allowing…" : "Allow"}
         </button>

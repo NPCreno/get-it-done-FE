@@ -91,6 +91,10 @@ describe("theme token contrast", () => {
     // Plan 52-3: profile, notifications, modals, shared controls
     "wait-bar", "sw-on", "sw-off", "sw-knob", "toast-bg", "toast-t", "toast-note", "dlg-note", "ico-date", "ico-close",
     "ico-check", "dot-low", "dot-med", "dot-high", "dot-done", "ok-t", "err-t", "ncard-bg", "ncard-t", "ncard-t2", "code-bg", "acc-t-light",
+    // Plan 52-4: outside the app (auth, consent, demo), the wake banner, the step-6 button fills, the sidebar hover
+    "out-bg", "out-note", "auth-a", "auth-b", "auth-ink", "wake-line", "wake-b", "wake-ic-bg", "wake-ok-bg", "wake-ok-line",
+    "wake-ok-ic", "on-wake-ok", "danger", "danger-h", "on-danger", "info", "info-h", "on-info", "acc-wash",
+    "note-bg", "note-line", "note-t", "alert-bg", "alert-t",
   ];
   const HEX = /^#[0-9A-Fa-f]{6}$/;
   const COLOUR = /^(#[0-9A-Fa-f]{6}|transparent|rgba\(\d{1,3}, \d{1,3}, \d{1,3}, (0|1|0?\.\d+)\))$/;
@@ -149,6 +153,23 @@ describe("theme token contrast", () => {
     ["ico-date", "card", 3],
     ["ico-close", "card", 3],
     ["ico-check", "card", 3],
+    // Plan 52-4
+    ["txt-abs", "out-bg", 4.5],
+    ["out-note", "out-bg", 4.5],
+    ["auth-ink", "auth-a", 4.5],
+    ["auth-ink", "auth-b", 4.5],
+    ["txt", "acc-sub", 4.5],
+    ["wake-b", "acc-sub", 4.5],
+    ["acc-t", "wake-ic-bg", 3],
+    ["ok-t", "wake-ok-bg", 4.5],
+    ["on-wake-ok", "wake-ok-ic", 3],
+    ["on-danger", "danger", 4.5],
+    ["on-danger", "danger-h", 4.5],
+    ["on-info", "info", 4.5],
+    ["on-info", "info-h", 4.5],
+    ["ico-close", "toast-bg", 3],
+    ["note-t", "note-bg", 4.5],
+    ["alert-t", "alert-bg", 4.5],
   ];
   // Not checked: the project-view status dots (--pend-dot, --done-dot) are decorative; a task's status is also
   // shown by the strike-through and named by its checkbox, so WCAG 1.4.11 does not apply to them.
@@ -208,6 +229,39 @@ describe("theme token contrast", () => {
     expect([dark["acc-grad2-start"], dark["acc-grad2-end"]]).toEqual(["#E98006", "#EAB308"]);
     // Amber stays amber in dark, where it passes on the dark card.
     expect([dark["btn2-t"], dark["acc-t"]]).toEqual(["#E5E7EB", "#FEAD03"]);
+  });
+
+  it("Classic's step-6 fixes (plan 52-4) hold their values; everything else outside the app is today's colour", () => {
+    for (const mode of MODES) {
+      const t = tokens("classic", mode);
+      // White on #BE2E2B (5.8:1) and #2563EB (5.2:1), was white on #FD3D39 / #FE6E6B / #EF4444 / #3B82F6 (3.0–3.8:1).
+      expect([t.danger, t["on-danger"], t.info, t["on-info"]]).toEqual(["#BE2E2B", "#FFFFFF", "#2563EB", "#FFFFFF"]);
+      // The auth panel keeps its amber gradient; its text is #333 like every label on amber (was white, 1.9:1).
+      expect([t["auth-a"], t["auth-b"], t["auth-ink"]]).toEqual(["#FEAD03", "#FEEAC0", "#333333"]);
+    }
+    const light = tokens("classic", "light");
+    const dark = tokens("classic", "dark");
+    // Board 15 (UX-03 wake banner) and today's white auth and demo canvas in light.
+    expect([light["wake-line"], light["wake-b"], light["wake-ok-bg"], light["wake-ok-ic"]]).toEqual(["#FED580", "#7F5601", "#D4F5D9", "#296C35"]);
+    expect([dark["wake-line"], dark["wake-b"], dark["wake-ok-bg"], dark["wake-ok-ic"]]).toEqual(["#7F5601", "#FED580", "#1A2E21", "#53D86A"]);
+    expect([light["out-bg"], light["out-note"]]).toEqual(["#FFFFFF", "#737373"]);
+    // Consent loopback note (amber-50/300/900) and error boxes (red-100/700) keep today's light colours.
+    expect([light["note-bg"], light["note-line"], light["note-t"], light["alert-bg"], light["alert-t"]]).toEqual(["#FFFBEB", "#FCD34D", "#78350F", "#FEE2E2", "#B91C1C"]);
+  });
+
+  /**
+   * The ONE contrast exception left after Phase 2 (plan 52-4, approved): the landing page hero, white and
+   * cream text on the amber gradient (src/app/page.tsx, `from-primary-default to-primary-100 text-white`).
+   * The page is not on theme tokens: Phase 6 rewrites it. Remove this entry then; the test below fails as
+   * soon as the hero stops using these colours, so the exception can't outlive the problem.
+   */
+  const EXCEPTIONS = [{ where: "landing hero (src/app/page.tsx), Phase 6", fg: "#FFFFFF", bg: "#FEAD03" }];
+
+  it("only the landing hero is exempt, and it is still the failing pair it names", () => {
+    expect(EXCEPTIONS).toHaveLength(1);
+    const page = readFileSync(join(process.cwd(), "src/app/page.tsx"), "utf8");
+    expect(page).toContain("from-primary-default to-primary-100 text-white");
+    for (const e of EXCEPTIONS) expect(contrast(e.fg, e.bg)).toBeLessThan(4.5);
   });
 
   it("shadcn variables are HSL triplets in every theme; Classic keeps today's :root values in both modes", () => {

@@ -83,11 +83,11 @@ export default function ConfirmationModal({
                 px-4 py-2 rounded-md
                 ${
                   action.variant === 'primary' 
-                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                    ? 'bg-th-info text-th-on-info hover:bg-th-info-h' 
                     : action.variant === 'secondary'
                     ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                     : action.variant === 'danger'
-                    ? 'bg-red-500 text-white hover:bg-red-600'
+                    ? 'bg-th-danger text-th-on-danger hover:bg-th-danger-h'
                     : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }
                 ${action.className || ''}

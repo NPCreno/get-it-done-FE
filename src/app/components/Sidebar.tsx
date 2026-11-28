@@ -5,7 +5,6 @@ import SidebarLink from "./sidebarLink";
 import { useUnreadCount } from "@/lib/query/notifications";
 import { useChatUnread } from "@/lib/query/chat";
 import { sidebarPanelWidth } from "./sidebarWidths";
-import { useAppearance } from "@/hooks/useAppearance";
 
 export const DESKTOP_SIDEBAR_ID = "desktop-sidebar";
 
@@ -13,28 +12,26 @@ export default function Sidebar() {
   const unreadCount = useUnreadCount();
   const chatUnread = useChatUnread().total;
   const { isSidebarExpanded, toggleSidebar, sidebarAnimated } = useFormState();
-  const { isDark } = useAppearance();
   const motion = sidebarAnimated ? "motion-reduce:transition-none" : "!transition-none";
 
   return (
     <>
       {/* Sidebar for large screens: plain navigation, never a dialog (BUG-04). Only the panel's
           width animates; its contents are always rendered and the widening edge uncovers them (UX-02).
-          RD-1 tokens. In light the border keeps today's default colour (#E5E5E5, not --line #E0E0E0)
-          so Classic looks the same; Phase 2 moves it to border-th-line. */}
+          RD-2 (52-4): the border is --line in both modes (Classic light is one step darker than before). */}
       <div
         id={DESKTOP_SIDEBAR_ID}
         className={`flex flex-col h-full py-5 px-[10px] rounded-[10px] items-start overflow-hidden border
         transition-[width] duration-150 ease-out ${motion}
-        bg-th-card text-th-ink ${isDark ? "border-th-line" : ""}`
+        bg-th-card text-th-ink border-th-line`
       }
         style={{ width: `${sidebarPanelWidth(isSidebarExpanded)}px` }}
       >
         <div className="flex flex-row flex-shrink-0 gap-[10px] max-h-[30px] ml-1">
           <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M26.2499 15.0027C26.2499 8.79175 21.2108 3.75269 14.9999 3.75269C8.78897 3.75269 3.7499 8.79175 3.7499 15.0027C3.7499 21.2136 8.78897 26.2527 14.9999 26.2527C21.2108 26.2527 26.2499 21.2136 26.2499 15.0027Z" stroke="#FEAD03" strokeWidth="2" strokeMiterlimit="10"/>
+          <path d="M26.2499 15.0027C26.2499 8.79175 21.2108 3.75269 14.9999 3.75269C8.78897 3.75269 3.7499 8.79175 3.7499 15.0027C3.7499 21.2136 8.78897 26.2527 14.9999 26.2527C21.2108 26.2527 26.2499 21.2136 26.2499 15.0027Z" className="stroke-th-acc" strokeWidth="2" strokeMiterlimit="10"/>
           <g filter="url(#filter0_d_628_413)">
-          <path d="M21.5624 11.2517L15.0075 18.7517L12.198 15.9392M11.247 18.7517L8.4374 15.9392M17.9126 11.2517L14.8921 14.7087" stroke="#FEAD03" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" shapeRendering="crispEdges"/>
+          <path d="M21.5624 11.2517L15.0075 18.7517L12.198 15.9392M11.247 18.7517L8.4374 15.9392M17.9126 11.2517L14.8921 14.7087" className="stroke-th-acc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" shapeRendering="crispEdges"/>
           </g>
           <defs>
           <filter id="filter0_d_628_413" x="3.4374" y="10.2517" width="23.125" height="17.5" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
@@ -51,7 +48,7 @@ export default function Sidebar() {
           </svg>
 
           <h1
-            className={`text-2xl text-primary-default font-rancho whitespace-nowrap transition-opacity duration-150 ${motion}
+            className={`text-2xl text-th-acc font-rancho whitespace-nowrap transition-opacity duration-150 ${motion}
             ${isSidebarExpanded ? "opacity-100 delay-100" : "opacity-0"}`}
           >
             Get it Done!
@@ -96,8 +93,8 @@ export default function Sidebar() {
           aria-controls={DESKTOP_SIDEBAR_ID}
           aria-label={isSidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
           title={isSidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
-          className="mt-auto flex items-center w-full h-[35px] flex-shrink-0 rounded-[10px] text-th-acc-t hover:bg-primary-default/10
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default"
+          className="mt-auto flex items-center w-full h-[35px] flex-shrink-0 rounded-[10px] text-th-acc-t hover:bg-th-acc-wash
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-th-focus"
         >
           {/* » collapsed, « expanded */}
           <svg
