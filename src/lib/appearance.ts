@@ -20,10 +20,11 @@ export const DEFAULT_APPEARANCE: Appearance = { theme: "classic", mode: "light" 
 export const DEMO_APPEARANCE: Appearance = { theme: "classic", mode: "system" };
 
 /**
- * The themes a user can pick. RD-3 (plan 53b §4): all three are live since roadmap Phase 3; the list stays so a
- * future theme can ship hidden first (a theme not in it shows as Classic).
+ * The themes a user can pick. Classic only (decided 2026-11-29): Calm and Field notes stay "Coming soon" until
+ * plan 54 rebuilds the canvas screens. A theme not in this list shows as Classic; its loader and wordmark
+ * (`ThemeLoaderMark`, `ThemeWordmark`) are built and show only through the development preview.
  */
-export const ENABLED_THEMES: readonly AppTheme[] = ["classic", "calm", "field"];
+export const ENABLED_THEMES: readonly AppTheme[] = ["classic"];
 
 export const APP_THEME_NAMES: Record<AppTheme, string> = {
   classic: "Classic",

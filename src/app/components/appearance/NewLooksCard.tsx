@@ -2,7 +2,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { isDemoPath } from "@/lib/appearance";
+import { ENABLED_THEMES, isDemoPath } from "@/lib/appearance";
 import { markNewLooksSeen, takeNewLooksTurn } from "@/lib/newLooks";
 
 function browserStorage() {
@@ -15,7 +15,8 @@ function browserStorage() {
 
 /**
  * RD-3 (plan 53b §4): a dismissible card on the dashboard announcing the themes, shown once per device
- * (`src/lib/newLooks.ts`) and never in /demo. A card in the page, not a modal; colours are tokens.
+ * (`src/lib/newLooks.ts`), never in /demo, and only once at least two themes are enabled (not before plan 54).
+ * A card in the page, not a modal; colours are tokens.
  */
 export default function NewLooksCard() {
   const demo = isDemoPath(usePathname());
@@ -27,7 +28,7 @@ export default function NewLooksCard() {
   useEffect(() => {
     if (decided.current) return;
     decided.current = true;
-    if (takeNewLooksTurn(browserStorage(), demo)) setShow(true);
+    if (takeNewLooksTurn(browserStorage(), demo, ENABLED_THEMES.length)) setShow(true);
   }, [demo]);
 
   if (!show) return null;
