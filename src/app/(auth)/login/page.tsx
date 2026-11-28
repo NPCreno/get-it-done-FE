@@ -1,4 +1,5 @@
 "use client";
+import ThemeWordmark from "@/app/components/brand/ThemeWordmark";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import LoginForm from "@/app/components/auth/LoginForm";
@@ -55,11 +56,7 @@ export default function LoginPage() {
               </defs>
               </svg>
 
-              <h1
-                className="text-2xl font-rancho transition-opacity duration-300"
-              >
-                Get it Done!
-              </h1>
+              <ThemeWordmark place="auth" as="h1" className="transition-opacity duration-300" />
             </div>
             <div className="relative z-20 mt-auto">
               <blockquote className="space-y-2">

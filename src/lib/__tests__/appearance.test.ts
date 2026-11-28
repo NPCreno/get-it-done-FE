@@ -51,11 +51,18 @@ describe("resolveMode", () => {
 });
 
 describe("ENABLED_THEMES", () => {
-  it("only Classic is enabled in Phase 1; a disabled theme falls back to Classic", () => {
-    expect([...ENABLED_THEMES]).toEqual(["classic"]);
+  it("RD-3 (plan 53b §4): all three themes are live; none falls back to Classic", () => {
+    expect([...ENABLED_THEMES]).toEqual(["classic", "calm", "field"]);
     expect(enabledTheme("classic")).toBe("classic");
-    expect(enabledTheme("calm")).toBe("classic");
-    expect(enabledTheme("field")).toBe("classic");
+    expect(enabledTheme("calm")).toBe("calm");
+    expect(enabledTheme("field")).toBe("field");
+  });
+
+  it("appearanceOf passes Calm and Field notes through; only a missing or unknown theme gives Classic", () => {
+    expect(appearanceOf({ theme: "dark", appTheme: "field" })).toEqual({ theme: "field", mode: "dark" });
+    expect(appearanceOf({ theme: "system", appTheme: "calm" })).toEqual({ theme: "calm", mode: "system" });
+    expect(appearanceOf({ theme: null, appTheme: null })).toEqual({ theme: "classic", mode: "light" });
+    expect(appearanceOf({ theme: "dark", appTheme: "neon" })).toEqual({ theme: "classic", mode: "dark" });
   });
 });
 
@@ -77,8 +84,9 @@ describe("currentAppearance", () => {
     expect(currentAppearance({ ...base, user: { theme: "system" }, prefersDark: false }).isDark).toBe(false);
   });
 
-  it("a disabled theme shows as Classic but keeps the chosen mode", () => {
-    expect(currentAppearance({ ...base, user: { theme: "dark", appTheme: "field" } })).toMatchObject({ theme: "classic", mode: "dark" });
+  it("the chosen theme shows with its mode (all three are live)", () => {
+    expect(currentAppearance({ ...base, user: { theme: "dark", appTheme: "field" } })).toMatchObject({ theme: "field", mode: "dark", isDark: true });
+    expect(currentAppearance({ ...base, user: { theme: "light", appTheme: "calm" } })).toMatchObject({ theme: "calm", mode: "light" });
   });
 
   it("/demo is always Classic + System, whoever is signed in", () => {
@@ -136,10 +144,11 @@ describe("the gid_appearance cookie", () => {
     expect(clearAppearanceCookieString()).toContain("Max-Age=0");
   });
 
-  it("htmlAttributes: the server renders light for System (the script corrects it) and Classic for a disabled theme", () => {
+  it("htmlAttributes: the server renders light for System (the script corrects it) and the chosen theme", () => {
     expect(htmlAttributes(DEFAULT_APPEARANCE)).toEqual({ "data-theme": "classic", "data-mode": "light", "data-pref": "light" });
     expect(htmlAttributes({ theme: "classic", mode: "dark" })).toMatchObject({ "data-mode": "dark" });
-    expect(htmlAttributes({ theme: "calm", mode: "system" })).toEqual({ "data-theme": "classic", "data-mode": "light", "data-pref": "system" });
+    expect(htmlAttributes({ theme: "calm", mode: "system" })).toEqual({ "data-theme": "calm", "data-mode": "light", "data-pref": "system" });
+    expect(htmlAttributes({ theme: "field", mode: "dark" })).toEqual({ "data-theme": "field", "data-mode": "dark", "data-pref": "dark" });
   });
 });
 

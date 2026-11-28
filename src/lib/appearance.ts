@@ -20,10 +20,10 @@ export const DEFAULT_APPEARANCE: Appearance = { theme: "classic", mode: "light" 
 export const DEMO_APPEARANCE: Appearance = { theme: "classic", mode: "system" };
 
 /**
- * The themes a user can pick today. Calm and Field notes stay "Coming soon" until roadmap
- * Phase 3, because most screens move to tokens only in Phase 2.
+ * The themes a user can pick. RD-3 (plan 53b §4): all three are live since roadmap Phase 3; the list stays so a
+ * future theme can ship hidden first (a theme not in it shows as Classic).
  */
-export const ENABLED_THEMES: readonly AppTheme[] = ["classic"];
+export const ENABLED_THEMES: readonly AppTheme[] = ["classic", "calm", "field"];
 
 export const APP_THEME_NAMES: Record<AppTheme, string> = {
   classic: "Classic",
@@ -237,6 +237,23 @@ export function appearanceCookieString(a: Appearance): string {
 
 export function clearAppearanceCookieString(): string {
   return `${APPEARANCE_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
+}
+
+/**
+ * RD-3 (plan 53b §5): the appearance in a login response (`data.appearance`, BE plan 53a), for the
+ * `gid_appearance` cookie, so the first page after login is already in the user's theme. Each value must be
+ * one of THEMES / APP_THEMES, or null ("never chosen": the defaults, as `appearanceOf`). Anything else (a
+ * missing field from an older backend, an unknown value, a wrong type) gives null: no cookie is set.
+ */
+export function appearanceFromLogin(data: unknown): Appearance | null {
+  if (typeof data !== "object" || data === null) return null;
+  const a = (data as { appearance?: unknown }).appearance;
+  if (typeof a !== "object" || a === null) return null;
+  const { theme, appTheme } = a as { theme?: unknown; appTheme?: unknown };
+  const modeOk = theme === null || narrow(THEMES, theme) !== undefined;
+  const themeOk = appTheme === null || narrow(APP_THEMES, appTheme) !== undefined;
+  if (!modeOk || !themeOk) return null;
+  return appearanceOf({ theme: theme as string | null, appTheme: appTheme as string | null });
 }
 
 /**

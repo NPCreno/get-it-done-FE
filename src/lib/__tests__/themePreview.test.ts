@@ -95,8 +95,8 @@ describe("currentAppearance with a preview", () => {
     expect(currentAppearance({ ...base, preview: { mode: "dark" } })).toMatchObject({ theme: "classic", isDark: true });
   });
 
-  it("without a preview, disabled themes still fall back to Classic", () => {
-    expect(currentAppearance({ ...base, user: { theme: "light", appTheme: "calm" }, preview: null }).theme).toBe("classic");
+  it("without a preview, the account's theme shows (all three are live since RD-3)", () => {
+    expect(currentAppearance({ ...base, user: { theme: "light", appTheme: "calm" }, preview: null }).theme).toBe("calm");
   });
 
   it("labels the chip from what is on screen", () => {

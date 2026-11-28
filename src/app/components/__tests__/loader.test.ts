@@ -4,8 +4,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import tailwindConfig from "../../../../tailwind.config";
-import LoadingPage from "../loader";
-import { LOADER_ENTER, LOADER_LEAVE, PAGE_IN_CLASS, loaderClasses } from "../loaderClasses";
+import { LoaderView, ThemeLoaderMark } from "../loader";
+import { CALM_LOADER, FIELD_LOADER, LOADER_ENTER, LOADER_LEAVE, PAGE_IN_CLASS, loaderClasses } from "../loaderClasses";
 
 const read = (rel: string) => readFileSync(path.resolve(__dirname, "../../../..", rel), "utf8");
 const classesOf = (s: string) => s.split(/\s+/).filter(Boolean);
@@ -76,7 +76,8 @@ describe("loaderClasses: leaving and variants", () => {
 });
 
 describe("LoadingPage markup", () => {
-  const html = (props: Parameters<typeof LoadingPage>[0] = {}) => renderToStaticMarkup(createElement(LoadingPage, props));
+  const html = (props: Partial<Parameters<typeof LoaderView>[0]> = {}) =>
+    renderToStaticMarkup(createElement(LoaderView, { theme: "classic", ...props }));
 
   it("is one status region; the tile and wordmark are hidden from screen readers", () => {
     const out = html();
@@ -150,5 +151,95 @@ describe("no leftovers", () => {
   it("the wake banner sits above the overlay, and the demo's <main> contains it", () => {
     expect(read("src/app/components/ServerWakeBanner.tsx")).toMatch(/data-server-wake-banner\s+className=\{`relative z-10 /);
     expect(read("src/app/demo/DemoLayout.tsx")).toMatch(/<main className="relative /);
+  });
+});
+
+// ------------------------------------------------------------------ RD-3 theme loaders (plan 53b §2, §6)
+
+describe("ThemeLoaderMark: one mark per theme (board 20)", () => {
+  const mark = (theme: "classic" | "calm" | "field", variant: "page" | "inline" = "page") =>
+    renderToStaticMarkup(createElement(ThemeLoaderMark, { theme, variant }));
+
+  it("Classic is UX-04's tile, arc and Rancho wordmark, unchanged", () => {
+    const out = mark("classic");
+    expect(out).toContain('stroke-dasharray="18 70.69"');
+    expect(out).toContain("Get it Done!");
+    expect(out).not.toMatch(/calm-ripple|field-sweep/);
+  });
+
+  it("Calm is a green check disc with two ripples, then Calm's wordmark", () => {
+    const out = mark("calm");
+    expect(out.match(/motion-safe:animate-calm-ripple/g)).toHaveLength(2);
+    expect(out).toContain("[animation-delay:800ms]");
+    expect(out).toContain("bg-th-ok text-th-on-ok");
+    expect(out).toContain('d="M20 6 9 17l-5-5"');
+    expect(out).toMatch(/Get It <span class="font-rancho[^"]*text-th-acc-t">Done<\/span>/);
+    expect(out).not.toContain("stroke-dasharray");
+  });
+
+  it("Field notes is the lowercase wordmark over a pen stroke with a marigold tip", () => {
+    const out = mark("field");
+    expect(out).toContain("get it done");
+    expect(out).toContain("font-manrope");
+    expect(out).toContain("motion-safe:animate-field-sweep");
+    expect(out).toMatch(/bg-th-acc-sub/);
+    expect(out).toMatch(/bg-th-hi/);
+    expect(out.indexOf("get it done")).toBeLessThan(out.indexOf("field-sweep"));
+  });
+
+  it("inline is the mark alone, in every theme", () => {
+    expect(mark("classic", "inline")).not.toContain("Get it Done!");
+    expect(mark("calm", "inline")).not.toContain("Done");
+    expect(mark("field", "inline")).not.toContain("get it done");
+    expect(mark("field", "inline")).toContain("motion-reduce:animate-loader-breathe");
+  });
+
+  it("each theme sits inside one status region that says Loading, with the mark hidden", () => {
+    for (const theme of ["classic", "calm", "field"] as const) {
+      const out = renderToStaticMarkup(createElement(LoaderView, { theme }));
+      expect(out.match(/role="status"/g)).toHaveLength(1);
+      expect(out).toMatch(/<div aria-hidden="true" class="flex flex-col/);
+      expect(out).toContain(LOADER_ENTER);
+    }
+  });
+});
+
+describe("Theme loaders: reduced motion (plan 53b §2)", () => {
+  it("Calm: no ripples, the disc breathes", () => {
+    expect(CALM_LOADER.ripple).toContain("motion-reduce:hidden");
+    expect(CALM_LOADER.ripple).toContain("motion-safe:animate-calm-ripple");
+    expect(CALM_LOADER.core).toContain("motion-reduce:animate-loader-breathe");
+  });
+
+  it("Field notes: the stroke is parked under the word (no animation), the word breathes", () => {
+    expect(FIELD_LOADER.stroke).toContain("left-[35%]");
+    expect(FIELD_LOADER.stroke).toContain("motion-safe:animate-field-sweep");
+    expect(FIELD_LOADER.stroke).not.toMatch(/motion-reduce:animate/);
+    expect(FIELD_LOADER.word).toBe("motion-reduce:animate-loader-breathe");
+    expect(FIELD_LOADER.track).toContain("w-[200px]");
+    expect(FIELD_LOADER.track).toContain("h-1");
+  });
+
+  it("every theme mark animation is motion-safe only", () => {
+    for (const s of [...Object.values(CALM_LOADER), ...Object.values(FIELD_LOADER)]) {
+      expect(s).not.toMatch(/(^|\s)animate-(calm|field)/);
+    }
+  });
+});
+
+describe("Tailwind config: theme loader timings (board 20)", () => {
+  const ext = tailwindConfig.theme?.extend as {
+    keyframes: Record<string, Record<string, Record<string, string>>>;
+    animation: Record<string, string>;
+  };
+
+  it("calmRipple and fieldSweep keyframes", () => {
+    expect(ext.keyframes.calmRipple).toEqual({ "0%": { transform: "scale(1)", opacity: ".55" }, "100%": { transform: "scale(1.9)", opacity: "0" } });
+    expect(ext.keyframes.fieldSweep).toEqual({ "0%": { left: "-30%" }, "100%": { left: "100%" } });
+  });
+
+  it("calm-ripple 1.6 s and field-sweep 1.8 s, looping", () => {
+    expect(ext.animation["calm-ripple"]).toBe("calmRipple 1.6s cubic-bezier(.2,.8,.2,1) infinite");
+    expect(ext.animation["field-sweep"]).toBe("fieldSweep 1.8s cubic-bezier(.65,0,.35,1) infinite");
   });
 });

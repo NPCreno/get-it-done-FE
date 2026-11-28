@@ -29,6 +29,9 @@ const config: Config = {
 			'loader-fade-out': 'loaderFadeOut 60ms linear both',
 			'page-in': 'pageIn 120ms cubic-bezier(.2,.8,.2,1) 40ms both',
 			'page-fade-in': 'loaderFadeIn 80ms linear both',
+			// RD-3 theme loaders (board 20): Calm's ripple, Field notes' pen sweep
+			'calm-ripple': 'calmRipple 1.6s cubic-bezier(.2,.8,.2,1) infinite',
+			'field-sweep': 'fieldSweep 1.8s cubic-bezier(.65,0,.35,1) infinite',
 		  },
 		  keyframes: {
 			fillText: {
@@ -86,6 +89,14 @@ const config: Config = {
 			pageIn: {
 			  '0%': { opacity: '0', transform: 'translateY(8px)' },
 			  '100%': { opacity: '1', transform: 'translateY(0)' },
+			},
+			calmRipple: {
+			  '0%': { transform: 'scale(1)', opacity: '.55' },
+			  '100%': { transform: 'scale(1.9)', opacity: '0' },
+			},
+			fieldSweep: {
+			  '0%': { left: '-30%' },
+			  '100%': { left: '100%' },
 			},
 		  },
   		colors: {
@@ -423,6 +434,8 @@ const config: Config = {
   			lato: ['var(--font-lato)', 'Lato', 'sans-serif'],
   			rancho: ['var(--font-rancho)', 'Rancho', 'cursive'],
   			poppins: ['var(--font-poppins)', 'Poppins', 'sans-serif'],
+  			// RD-3: Field notes' wordmark
+  			manrope: ['var(--font-manrope)', 'Manrope', 'sans-serif'],
   			// RD-1 theme tokens (src/styles/theme-tokens.css)
   			head: 'var(--f-head)',
   			body: 'var(--f-body)',

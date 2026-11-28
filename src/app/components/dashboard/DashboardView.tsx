@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import ToastHost from "@/app/components/ToastHost";
 import LoadingPage from "@/app/components/loader";
 import { PAGE_IN_CLASS } from "@/app/components/loaderClasses";
@@ -21,8 +21,10 @@ import { useDashboardData } from "./useDashboardData";
  * The dashboard body, without a layout. `/dashboard` wraps it in `MainLayout`; `/demo` renders it
  * inside its own shell. It must stay free of layout-only hooks (profile, notifications, token
  * reads): the lint override in `.eslintrc.json` enforces that for this folder.
+ * `notice` (RD-3): a card the signed-in dashboard puts under the header (the one-time "New: pick a look");
+ * /demo passes none.
  */
-export default function DashboardView() {
+export default function DashboardView({ notice }: { notice?: ReactNode } = {}) {
 
   // One toast controller for the page: the host and every handler below share it.
   const toast = useToastController();
@@ -72,6 +74,7 @@ export default function DashboardView() {
           {!firstLoad && (
             <>
               <DashboardHeader onPomodoroOpenChange={setIsPomodoroModalOpen} />
+              {notice}
               <StatsRow data={data} />
               <div className="w-full h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5 items-center justify-center text-center">
                 <TaskBoard

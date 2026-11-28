@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useFormState } from "@/app/context/FormProvider";
 import SidebarLink from "./sidebarLink";
+import ThemeWordmark from "./brand/ThemeWordmark";
 import { DashboardIcon, NotificationsIcon, ProfileIcon, ProjectsIcon } from "./icons/AppIcons";
 import { useUnreadCount } from "@/lib/query/notifications";
 import { useChatUnread } from "@/lib/query/chat";
@@ -141,9 +142,7 @@ export default function MobileSidebar() {
                 </filter>
               </defs>
             </svg>
-            <h1 className="ml-3 text-2xl text-th-acc font-rancho">
-              Get it Done!
-            </h1>
+            <ThemeWordmark place="drawer" as="h1" className="ml-3" />
           </div>
 
           {/* Navigation Links */}
